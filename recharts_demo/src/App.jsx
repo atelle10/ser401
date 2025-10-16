@@ -41,12 +41,14 @@ function App() {
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
-      <div style={{ height: 320, padding: 16 }}>
+      <div style={{ height: 320, width: 600, padding: 16 }}>
         <h2 style={{ margin: 0 }}>Recharts Demo</h2>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
+          <LineChart data={chartData} margin={{ top: 16, right: 24, left: 8, bottom: 24 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
+            <XAxis dataKey="month" 
+            interval={0}
+            tickMargin={10}/>
             <YAxis />
             <Tooltip />
             <Line type="monotone" dataKey="value" dot={false} />
