@@ -7,7 +7,7 @@ Most modern file upload interfaces support drag and drop:
 - Visual feedback on hover
 - Clear drop zone boundaries
 - State changes during drag
-- Support for multiple files or single file
+- Support for multiple files or single file based on requirements
 
 ### Click to Select
 Traditional file input with custom styling:
@@ -21,6 +21,7 @@ Advanced pattern for power users:
 - Ctrl+V or Cmd+V support
 - Useful for screenshots
 - Less common but valuable
+- Requires JavaScript handling
 
 ## Best Practices
 
@@ -39,6 +40,18 @@ Show errors for:
 - Network issues
 
 Provide clear recovery paths.
+
+### Accessibility
+- Keyboard navigation support
+- Screen reader announcements
+- Focus management
+- ARIA labels and roles
+
+### Mobile Considerations
+- Touch-friendly hit areas (44px minimum)
+- Camera access option
+- Simplified interface
+- Native file picker integration
 
 ## Examples from Design Systems
 
