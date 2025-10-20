@@ -1,0 +1,26 @@
+{
+  "designSystem": "File Upload Component Design Tokens",
+  "version": "0.1.0",
+  "created": "2025-10-20",
+  "designer": "Zachary Alexander",
+  "description": "Initial color palette for file upload component",
+
+  "colorPalette": {
+    "primary": {
+      "name": "Blue",
+      "description": "Primary brand color for interactive elements",
+      "shades": {
+        "50": {
+          "hex": "#EFF6FF",
+          "rgb": "rgb(239, 246, 255)",
+          "usage": "Lightest background"
+        },
+        "600": {
+          "hex": "#2563EB",
+          "rgb": "rgb(37, 99, 235)",
+          "usage": "Primary button background"
+        }
+      }
+    }
+  }
+}
