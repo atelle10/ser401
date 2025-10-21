@@ -1,25 +1,36 @@
 {
   "designSystem": "File Upload Component Design Tokens",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "created": "2025-10-20",
   "designer": "Zachary Alexander",
-  "description": "Initial color palette for file upload component",
+  "description": "Color palette with primary, success, and error colors",
 
   "colorPalette": {
     "primary": {
       "name": "Blue",
       "description": "Primary brand color for interactive elements",
       "shades": {
-        "50": {
-          "hex": "#EFF6FF",
-          "rgb": "rgb(239, 246, 255)",
-          "usage": "Lightest background"
-        },
-        "600": {
-          "hex": "#2563EB",
-          "rgb": "rgb(37, 99, 235)",
-          "usage": "Primary button background"
-        }
+        "50": {"hex": "#EFF6FF", "rgb": "rgb(239, 246, 255)", "usage": "Lightest background"},
+        "100": {"hex": "#DBEAFE", "rgb": "rgb(219, 234, 254)", "usage": "Light background"},
+        "500": {"hex": "#3B82F6", "rgb": "rgb(59, 130, 246)", "usage": "Hover state"},
+        "600": {"hex": "#2563EB", "rgb": "rgb(37, 99, 235)", "usage": "Primary button"},
+        "700": {"hex": "#1D4ED8", "rgb": "rgb(29, 78, 216)", "usage": "Button hover"}
+      }
+    },
+    "success": {
+      "name": "Green",
+      "description": "Success states and confirmations",
+      "shades": {
+        "50": {"hex": "#ECFDF5", "rgb": "rgb(236, 253, 245)", "usage": "Success background"},
+        "600": {"hex": "#10B981", "rgb": "rgb(16, 185, 129)", "usage": "Success state"}
+      }
+    },
+    "error": {
+      "name": "Red",
+      "description": "Error states and warnings",
+      "shades": {
+        "50": {"hex": "#FEF2F2", "rgb": "rgb(254, 242, 242)", "usage": "Error background"},
+        "600": {"hex": "#EF4444", "rgb": "rgb(239, 68, 68)", "usage": "Error state"}
       }
     }
   }
