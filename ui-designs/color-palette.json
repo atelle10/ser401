@@ -1,37 +1,62 @@
 {
   "designSystem": "File Upload Component Design Tokens",
-  "version": "0.2.0",
+  "version": "0.5.0",
   "created": "2025-10-20",
   "designer": "Zachary Alexander",
-  "description": "Color palette with primary, success, and error colors",
+  "description": "Color palette with spacing and typography",
 
   "colorPalette": {
     "primary": {
       "name": "Blue",
-      "description": "Primary brand color for interactive elements",
       "shades": {
-        "50": {"hex": "#EFF6FF", "rgb": "rgb(239, 246, 255)", "usage": "Lightest background"},
-        "100": {"hex": "#DBEAFE", "rgb": "rgb(219, 234, 254)", "usage": "Light background"},
-        "500": {"hex": "#3B82F6", "rgb": "rgb(59, 130, 246)", "usage": "Hover state"},
-        "600": {"hex": "#2563EB", "rgb": "rgb(37, 99, 235)", "usage": "Primary button"},
-        "700": {"hex": "#1D4ED8", "rgb": "rgb(29, 78, 216)", "usage": "Button hover"}
+        "50": {"hex": "#EFF6FF", "rgb": "rgb(239, 246, 255)"},
+        "100": {"hex": "#DBEAFE", "rgb": "rgb(219, 234, 254)"},
+        "500": {"hex": "#3B82F6", "rgb": "rgb(59, 130, 246)"},
+        "600": {"hex": "#2563EB", "rgb": "rgb(37, 99, 235)"},
+        "700": {"hex": "#1D4ED8", "rgb": "rgb(29, 78, 216)"},
+        "800": {"hex": "#1E40AF", "rgb": "rgb(30, 64, 175)"}
       }
     },
     "success": {
       "name": "Green",
-      "description": "Success states and confirmations",
       "shades": {
-        "50": {"hex": "#ECFDF5", "rgb": "rgb(236, 253, 245)", "usage": "Success background"},
-        "600": {"hex": "#10B981", "rgb": "rgb(16, 185, 129)", "usage": "Success state"}
+        "50": {"hex": "#ECFDF5", "rgb": "rgb(236, 253, 245)"},
+        "600": {"hex": "#10B981", "rgb": "rgb(16, 185, 129)"},
+        "700": {"hex": "#059669", "rgb": "rgb(5, 150, 105)"}
       }
     },
     "error": {
       "name": "Red",
-      "description": "Error states and warnings",
       "shades": {
-        "50": {"hex": "#FEF2F2", "rgb": "rgb(254, 242, 242)", "usage": "Error background"},
-        "600": {"hex": "#EF4444", "rgb": "rgb(239, 68, 68)", "usage": "Error state"}
+        "50": {"hex": "#FEF2F2", "rgb": "rgb(254, 242, 242)"},
+        "600": {"hex": "#EF4444", "rgb": "rgb(239, 68, 68)"},
+        "700": {"hex": "#DC2626", "rgb": "rgb(220, 38, 38)"}
       }
+    },
+    "neutral": {
+      "name": "Gray",
+      "shades": {
+        "50": {"hex": "#F9FAFB", "rgb": "rgb(249, 250, 251)"},
+        "300": {"hex": "#D1D5DB", "rgb": "rgb(209, 213, 219)"},
+        "500": {"hex": "#6B7280", "rgb": "rgb(107, 114, 128)"},
+        "700": {"hex": "#374151", "rgb": "rgb(55, 65, 81)"}
+      }
+    }
+  },
+  "spacing": {
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px"
+  },
+  "typography": {
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "fontSize": {
+      "sm": "12px",
+      "base": "14px",
+      "lg": "16px",
+      "xl": "18px"
     }
   }
 }
