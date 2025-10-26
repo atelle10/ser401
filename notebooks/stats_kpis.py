@@ -51,4 +51,21 @@ plt.gca().invert_yaxis()
 plt.tight_layout()
 plt.show()
 
+# %% [markdown]
+# #### Incidents By Week
+
+# %%
+days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+day_stats = (fire_example_df["Basic Incident Day Name (FD1.3)"].value_counts().reindex(days_of_week, fill_value=0))
+
+plt.figure(figsize=(8, 5))
+plt.bar(day_stats.index, day_stats.values)
+plt.xlabel("Week Day")
+plt.ylabel("No. of Incidents")
+plt.title("Incidents by Day of Week")
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+plt.show()
+
 
