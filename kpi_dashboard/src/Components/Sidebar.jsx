@@ -2,7 +2,7 @@ import React from 'react'
 
 const Sidebar = () => {
   return (
-    <div className='m-1 grid grid-cols-3 justify-center text-center font-bold text-blue-800 bg-red-200 size-fit shadow-red-500/40 shadow-lg rounded-2xl'>
+    <div className='m-1 grid grid-cols-3 justify-center text-center font-bold text-blue-800 shadow-blue-500/20 bg-white size-fit shadow-md rounded-2xl'>
         <div className="mt-15 h-8 col-span-3 p-2 cursor-pointer rounded-full flex justify-center items-center my-1">
             <p>Sidebar Item 1</p>
         </div>
