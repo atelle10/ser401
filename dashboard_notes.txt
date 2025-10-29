@@ -1,4 +1,5 @@
-- place KPI components into a grid style div
+- KPI Component Dashboard
+	- place KPI components into a grid style div
 	- "grid grid-cols-4 gap-<number>" 
 	- set margins to desired spacing , "m<l,r,t,b,y,x>-<number>
 	- { each KPI component has the following attributes
@@ -8,4 +9,8 @@
 		- "border-<number>
 		- "border-<color>-600
 		}
-	
+
+
+- Navigation Bar
+	- App name, Home , Fire , EMS , Upload , Account
+	- Light gray background 
