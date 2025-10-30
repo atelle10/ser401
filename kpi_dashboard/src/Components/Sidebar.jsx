@@ -2,21 +2,26 @@ import React from 'react'
 
 const Sidebar = () => {
   return (
-    <div className='m-1 grid grid-cols-3 justify-center text-center font-bold text-blue-800 shadow-blue-500/20 bg-white size-fit shadow-md rounded-2xl'>
-        <div className="mt-15 h-8 col-span-3 p-2 cursor-pointer rounded-full flex justify-center items-center my-1">
-            <p>Sidebar Item 1</p>
+    <div className='m-1 text-xs justify-center text-left font-bold shadow-blue-500/20 bg-white size-fit shadow-md rounded-2xl'>
+        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center">
+            <img src="./src/Components/assets/dashboard_icon.png" alt="Dashboard Icon" className='inline w-6 h-6 mr-2'/>
+            <p>Dashboard</p>
         </div>
-        <div className="h-8 col-span-3 p-2 cursor-pointer rounded-full flex justify-center items-center my-1">
-            <p>Sidebar Item 2</p>
+        <div className="h-8 p-2 cursor-pointer flex justify-left items-center">
+            <img src="./src/Components/assets/white fire icon.png" alt="White Fire Icon" className='inline w-5 h-5 mr-2'/>
+            <p>Fire Department</p>
         </div>
-        <div className="h-8 col-span-3 p-2 cursor-pointer rounded-full flex justify-center items-center my-1">
-            <p>Sidebar Item 3</p>
+        <div className="h-8 flex p-2 cursor-pointer justify-left items-center">
+            <img src="./src/Components/assets/white medical icon.png" alt="Medical Icon" className='inline w-5 h-5 mr-2 center'/>
+            <p>Medical (EMS)</p>
         </div>
-        <div className="h-8 col-span-3 p-2 cursor-pointer rounded-full flex justify-center items-center my-1">
-            <p>Sidebar Item 4</p>
+        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left  items-center">
+            <img src="./src/Components/assets/account_icon.png" alt="Account Icon" className='inline w-5 h-5 mr-2'/>
+            <p>Account</p>
         </div>
-        <div className="h-8 mb-15 col-span-3 p-2 cursor-pointer rounded-full flex justify-center items-center my-1">
-            <p>Sidebar Item 5</p>
+        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center">
+            <img src="./src/Components/assets/settings_icon.png" alt="Settings Icon" className='inline w-5 h-5 mr-2'/>
+            <p>Settings</p>
         </div>
     </div>
   )
