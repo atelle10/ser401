@@ -7,12 +7,14 @@ import Chart from './Dashboard/Chart'
 
 const Dashboard = () => {
   return (
-    <div className="grid grid-cols-4 gap-4 p-4">
+    <div className="grid grid-cols-4 gap-4 p-2">
         <KPI_1 />
         <KPI_2 />
         <KPI_3 />
         <KPI_4 />
-        <Chart />
+        <div className="col-span-4">
+            <Chart />
+        </div>
     </div>
   )
 }
