@@ -2,7 +2,7 @@ import React from 'react'
 
 const Sidebar = () => {
   return (
-    <div className='m-1 text-xs justify-center text-left font-bold shadow-blue-500/20 bg-white size-fit shadow-md rounded-2xl'>
+    <div className='m-1 mt-20 text-xs justify-center text-left font-bold shadow-blue-500/20 bg-white size-fit shadow-md rounded-2xl'>
         <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105">
             <img src="./src/Components/assets/dashboard_icon.png" alt="Dashboard Icon" className='inline w-6 h-6 mr-2'/>
             <p>Dashboard</p>
