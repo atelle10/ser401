@@ -5,6 +5,7 @@ import NavBar from './Components/NavBar.jsx'
 import Sidebar from './Components/Sidebar.jsx'
 import Logo from './Components/Logo.jsx'
 import User from './Components/User.jsx'
+import Dashboard from './Components/Dashboard.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode >
@@ -22,7 +23,7 @@ createRoot(document.getElementById('root')).render(
           <Sidebar />
         </div>
         <div className="col-span-6 row-span-5 border-gray-300 p-2 rounded-2xl bg-white">
-          {/* Main content goes here */}
+          <Dashboard />
         </div>
       </div>
     </StrictMode>,
