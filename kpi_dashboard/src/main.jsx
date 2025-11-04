@@ -6,6 +6,7 @@ import Sidebar from './Components/Sidebar.jsx'
 import Logo from './Components/Logo.jsx'
 import User from './Components/User.jsx'
 import Dashboard from './Components/Dashboard.jsx'
+import ChatBot from './Components/ChatBot.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode >
@@ -24,6 +25,9 @@ createRoot(document.getElementById('root')).render(
         </div>
         <div className="col-span-6 row-span-5 border-gray-300 p-2 rounded-2xl bg-white">
           <Dashboard />
+        </div>
+        <div className="col-span-1 flex rounded-2xl">
+          <ChatBot />
         </div>
       </div>
     </StrictMode>,
