@@ -22,7 +22,8 @@ const NavBar = () => {
              <Popup trigger=
                 {<button className='cursor-pointer justify-center'><img src="./src/Components/assets/upload icon.png" alt="Upload Icon" className='inline w-7 h-7'/>
                 Upload</button>}
-                position="bottom center">
+                position="bottom center"
+                closeOnDocumentClick>
                 <div>
                     <FileDropZone />
                 </div>
