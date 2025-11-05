@@ -24,7 +24,7 @@ print(fire_example_df.info())
 print(fire_example_df.describe)
 
 # %% [markdown]
-# #### Average Response Time (FIRE)
+# #### Average Response Time
 
 # %%
 fire_example_df["dispatch_time"] = pd.to_datetime(fire_example_df["Apparatus Resource Dispatch Date Time (FD18.3)"], errors="coerce")
@@ -52,7 +52,7 @@ plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# #### Incidents By Week (FIRE)
+# #### Incidents By Week
 
 # %%
 days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -69,7 +69,7 @@ plt.tight_layout()
 plt.show()
 
 # %% [markdown]
-# ### Resource Utilization (FIRE)
+# ### Resource Utilization
 
 # %%
 fire_example_df["clear_time"] = pd.to_datetime(
@@ -173,5 +173,215 @@ plt.axhline(y=hourly_incidents.mean(), color='r', linestyle='--', label=f'Averag
 plt.legend()
 plt.tight_layout()
 plt.show()
+
+# %% [markdown]
+# #### Response By Postal Code Analysis
+
+# %%
+geo_analysis = fire_example_df[
+    fire_example_df['Basic Incident Postal Code (FD1.19)'].notna() &
+    (fire_example_df['Basic Incident Postal Code (FD1.19)'] != '')
+].copy()
+
+geo_analysis['dispatch_time'] = pd.to_datetime(
+    geo_analysis['Apparatus Resource Dispatch Date Time (FD18.3)'], 
+    errors='coerce'
+)
+geo_analysis['arrival_time'] = pd.to_datetime(
+    geo_analysis['Apparatus Resource Arrival Date Time (FD18.4)'], 
+    errors='coerce'
+)
+geo_analysis['response_minutes'] = (
+    geo_analysis['arrival_time'] - geo_analysis['dispatch_time']
+).dt.total_seconds() / 60
+
+postal_stats = geo_analysis.groupby('Basic Incident Postal Code (FD1.19)').agg({
+    'Basic Incident Number (FD1)': 'count',
+    'response_minutes': 'mean'
+}).rename(columns={
+    'Basic Incident Number (FD1)': 'incident_count',
+    'response_minutes': 'avg_response_time'
+}).sort_values('incident_count', ascending=False)
+
+postal_stats = postal_stats[postal_stats['avg_response_time'].notna()]
+
+
+
+
+print("\n Geographic Response Analysis by Postal Code \n")
+postal_display = postal_stats.head(15).copy()
+postal_display['avg_response_time'] = postal_display['avg_response_time'].round(2)
+postal_display.columns = ['Incidents', 'Avg Response (min)']
+print(postal_display)
+
+
+
+
+fig1, axes1 = plt.subplots(1, 2, figsize=(16, 6))
+
+top_postal_codes = postal_stats.head(10)
+axes1[0].barh(range(len(top_postal_codes)), top_postal_codes['incident_count'].values, color='coral')
+axes1[0].set_yticks(range(len(top_postal_codes)))
+axes1[0].set_yticklabels(top_postal_codes.index)
+axes1[0].set_xlabel("Number of Incidents")
+axes1[0].set_title("Top 10 Postal Codes by Incident Count")
+axes1[0].invert_yaxis()
+
+axes1[1].barh(range(len(top_postal_codes)), top_postal_codes['avg_response_time'].values, color='steelblue')
+axes1[1].set_yticks(range(len(top_postal_codes)))
+axes1[1].set_yticklabels(top_postal_codes.index)
+axes1[1].set_xlabel("Avg Response Time (minutes)")
+axes1[1].set_title("Avg Response Time by Postal Code (Top 10 Areas)")
+axes1[1].invert_yaxis()
+
+plt.tight_layout()
+plt.show()
+
+fig2, axes2 = plt.subplots(1, 2, figsize=(16, 6))
+
+response_times_valid = geo_analysis['response_minutes'].dropna()
+response_times_valid = response_times_valid[
+    (response_times_valid > 0) & (response_times_valid < 60)
+]
+
+
+
+axes2[0].hist(response_times_valid, bins=30, color='lightgreen', edgecolor='black')
+axes2[0].axvline(response_times_valid.mean(), color='red', linestyle='--', 
+                label=f'Mean: {response_times_valid.mean():.2f} min')
+axes2[0].axvline(response_times_valid.median(), color='blue', linestyle='--', 
+                label=f'Median: {response_times_valid.median():.2f} min')
+axes2[0].set_xlabel("Response Time (minutes)")
+axes2[0].set_ylabel("Frequency")
+axes2[0].set_title("Response Time Distribution (All Areas)")
+axes2[0].legend()
+
+axes2[1].scatter(postal_stats['incident_count'], 
+               postal_stats['avg_response_time'], 
+               alpha=0.6, s=100, color='purple')
+axes2[1].set_xlabel("Number of Incidents")
+axes2[1].set_ylabel("Avg Response Time (minutes)")
+axes2[1].set_title("Incident Volume vs Response Time by Postal Code")
+axes2[1].grid(True, alpha=0.3)
+
+for idx, row in postal_stats.iterrows():
+    if row['incident_count'] > postal_stats['incident_count'].quantile(0.9) or \
+       row['avg_response_time'] > postal_stats['avg_response_time'].quantile(0.9):
+        axes2[1].annotate(idx, 
+                           (row['incident_count'], row['avg_response_time']),
+                           fontsize=8, alpha=0.7)
+
+plt.tight_layout()
+plt.show()
+
+print(f"\n Geographic Response Summary \n")
+summary_data = {
+    'Metric': [
+        'Total unique postal codes served',
+        'Overall average response time (min)',
+        'Fastest avg response (min)',
+        'Fastest response postal code',
+        'Slowest avg response (min)',
+        'Slowest response postal code'
+    ],
+    'Value': [
+        len(postal_stats),
+        round(postal_stats['avg_response_time'].mean(), 2),
+        round(postal_stats['avg_response_time'].min(), 2),
+        postal_stats['avg_response_time'].idxmin(),
+        round(postal_stats['avg_response_time'].max(), 2),
+        postal_stats['avg_response_time'].idxmax()
+    ]
+}
+summary_df = pd.DataFrame(summary_data)
+print(summary_df.to_string(index=False))
+
+# %% [markdown]
+# ### Additional EMS Stats
+
+# %%
+ems_example_df['left_scene_time'] = pd.to_datetime(
+    ems_example_df['Incident Unit Left Scene Date Time (eTimes.09)'], 
+    errors='coerce'
+)
+ems_example_df['hospital_arrival_time'] = pd.to_datetime(
+    ems_example_df['Incident Patient Arrived At Destination Date Time (eTimes.11)'], 
+    errors='coerce'
+)
+
+ems_example_df['transport_time'] = (
+    ems_example_df['hospital_arrival_time'] - ems_example_df['left_scene_time']
+).dt.total_seconds() / 60
+ems_example_df['was_transported'] = ems_example_df['hospital_arrival_time'].notna()
+
+
+unit_stats = ems_example_df.groupby('Response EMS Unit Call Sign (eResponse.14)').agg({
+    'Response Incident Number (eResponse.03)': 'count',
+    'was_transported': 'sum',
+    'transport_time': 'mean'
+}).rename(columns={
+    'Response Incident Number (eResponse.03)': 'Total Calls',
+    'was_transported': 'Transported',
+    'transport_time': 'Avg Transport Time (min)'
+}).sort_values('Total Calls', ascending=False).head(10)
+unit_stats['Transport Rate (%)'] = (unit_stats['Transported'] / unit_stats['Total Calls'] * 100).round(1)
+unit_stats['Avg Transport Time (min)'] = unit_stats['Avg Transport Time (min)'].round(2)
+
+
+
+
+print("EMS Unit Analysis (Top 10)")
+print(unit_stats[['Total Calls', 'Transported', 'Transport Rate (%)', 'Avg Transport Time (min)']])
+
+fig1, ax1 = plt.subplots(figsize=(12, 6))
+ax1.bar(unit_stats.index, unit_stats['Transport Rate (%)'], color='steelblue', edgecolor='black')
+ax1.set_xlabel('EMS Unit', fontsize=12)
+ax1.set_ylabel('Transport Rate (%)', fontsize=12)
+ax1.set_title('Hospital Transport Rate by Unit', fontsize=14)
+ax1.tick_params(axis='x', rotation=45)
+ax1.grid(axis='y', alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+fig2, (ax2, ax3) = plt.subplots(1, 2, figsize=(14, 5))
+
+
+
+top_units = unit_stats.head(10)
+ax2.barh(range(len(top_units)), top_units['Total Calls'].values, color='red', edgecolor='black')
+ax2.set_yticks(range(len(top_units)))
+ax2.set_yticklabels(top_units.index)
+ax2.set_xlabel('Number of Calls', fontsize=12)
+ax2.set_title('Top 10 Units by Call Volume', fontsize=12)
+ax2.invert_yaxis()
+ax2.grid(axis='x', alpha=0.3)
+
+transport_times = ems_example_df['transport_time'].dropna()
+transport_times = transport_times[(transport_times > 0) & (transport_times < 60)]
+ax3.hist(transport_times, bins=25, color='coral')
+ax3.axvline(transport_times.mean(), color='red', linestyle='--', label=f'Mean: {transport_times.mean():.1f} min')
+ax3.axvline(transport_times.median(), color='blue', linestyle='--', label=f'Median: {transport_times.median():.1f} min')
+ax3.set_xlabel('Transport Time (minutes)', fontsize=12)
+ax3.set_ylabel('Frequency', fontsize=12)
+ax3.set_title('Transport Time Distribution', fontsize=12)
+ax3.legend()
+ax3.grid(axis='y', alpha=0.3)
+
+plt.tight_layout()
+plt.show()
+
+total = len(ems_example_df)
+transported = ems_example_df['was_transported'].sum()
+transport_rate = transported / total * 100
+busiest_unit = unit_stats.index[0]
+busiest_unit_calls = unit_stats['Total Calls'].values[0]
+busiest_unit_pct = busiest_unit_calls / total * 100
+
+print("Additional Insights")
+print(f"Transport Rate")
+print(f"{transported:,} of {total:,} calls transported ({transport_rate:.1f}%)\n")
+
+print(f"Busiest Unit")
+print(f"{busiest_unit}: {busiest_unit_calls:,} calls ({busiest_unit_pct:.1f}% of total)")
 
 
