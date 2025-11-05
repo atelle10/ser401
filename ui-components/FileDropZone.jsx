@@ -6,16 +6,20 @@ const FileDropZone = ({ onFileSelect, acceptedFormats = ['.csv', '.xlsx'] }) => 
   const [error, setError] = useState(null);
 
   const validateFile = (file) => {
+    // Check file extension against accepted formats
     const fileExt = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
     if (!acceptedFormats.includes(fileExt)) {
       setError(`Only ${acceptedFormats.join(', ')} files accepted`);
       return false;
     }
-    // FAMAR files are usually under 10MB
-    if (file.size > 10 * 1024 * 1024) {
+    
+    // Validate file size - FAMAR incident files typically under 10MB
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
       setError('File too large (max 10MB)');
       return false;
     }
+    
     setError(null);
     return true;
   };
