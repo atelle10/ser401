@@ -20,14 +20,12 @@ createRoot(document.getElementById('root')).render(
         <div className="col-span-1 flex justify-end h-2">
           <User />
         </div>
-        <div className="col-span-1 flex rounded-2xl">
+        <div className="col-span-1 flex flex-col gap-0 rounded-2xl">
           <Sidebar />
+          <ChatBot />
         </div>
         <div className="col-span-6 row-span-5 border-gray-300 p-2 rounded-2xl bg-white">
           <Dashboard />
-        </div>
-        <div className="col-span-1 flex rounded-2xl">
-          <ChatBot />
         </div>
       </div>
     </StrictMode>,
