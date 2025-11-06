@@ -16,7 +16,7 @@ createRoot(document.getElementById('root')).render(
           <Sidebar />
           <ChatBot />
         </div>
-        <div className="col-span-6 flex flex-col gap-1">
+        <div className="col-span-6 flex flex-col gap-0">
           <div className="flex justify-between items-center">
             <NavBar />
             <User />
