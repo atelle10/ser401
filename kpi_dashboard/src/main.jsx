@@ -10,24 +10,16 @@ import ChatBot from './Components/ChatBot.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode >
-      <div className="min-w-6xl min-h-[720px] m-2 p-2 bg-gray-200 rounded-3xl shadow-lg grid grid-cols-7 gap-1 grid-rows-auto">
-        <div className="col-span-1 flex h-2 mb-2">
+      <div className="min-w-6xl min-h-[720px] m-2 p-2 bg-gray-200 rounded-3xl shadow-lg grid grid-cols-7 gap-1">
+        <div className="col-span-1 flex flex-col gap-1">
           <Logo />
-        </div>
-        <div className="col-span-5 flex justify-center h-2">
-          <NavBar />
-        </div>
-        <div className="col-span-1 flex justify-end h-2">
-          <User />
-        </div>
-        <div className="col-span-1 flex rounded-2xl">
           <Sidebar />
-        </div>
-        <div className="col-span-6 row-span-2 border-gray-300 p-2 rounded-2xl bg-white">
-          <Dashboard />
-        </div>
-        <div className="col-span-1 flex rounded-2xl">
           <ChatBot />
+        </div>
+        <div className="col-span-6 flex flex-col gap-1">
+          <NavBar />
+          <User />
+          <Dashboard />
         </div>
       </div>
     </StrictMode>,
