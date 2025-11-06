@@ -11,14 +11,16 @@ import ChatBot from './Components/ChatBot.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode >
       <div className="min-w-6xl min-h-[720px] m-2 p-2 bg-gray-200 rounded-3xl shadow-lg grid grid-cols-7 gap-1">
-        <div className="col-span-1 flex flex-col gap-1">
+        <div className="col-span-1 flex flex-col gap-0">
           <Logo />
           <Sidebar />
           <ChatBot />
         </div>
         <div className="col-span-6 flex flex-col gap-1">
-          <NavBar />
-          <User />
+          <div className="flex justify-between items-center">
+            <NavBar />
+            <User />
+          </div>
           <Dashboard />
         </div>
       </div>
