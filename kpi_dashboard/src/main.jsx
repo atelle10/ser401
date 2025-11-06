@@ -13,12 +13,16 @@ createRoot(document.getElementById('root')).render(
       <div className="min-w-6xl h-screen m-2 p-2 bg-gray-200 rounded-3xl shadow-lg grid grid-cols-7 gap-1">
         <div className="col-span-1 flex flex-col gap-1">
           <Logo />
-          <Sidebar />
-          <ChatBot />
+          <div className="flex flex-col gap-0">
+            <Sidebar />
+            <ChatBot />
+          </div>
         </div>
         <div className="col-span-6 flex flex-col gap-0 h-full">
-          <div className="flex justify-between items-center w-full gap-1">
-            <NavBar className="flex-1" />
+          <div className="flex items-center w-full gap-2">
+            <div className="flex-1 pl-[6px]">
+              <NavBar />
+            </div>
             <User />
           </div>
           <Dashboard className="flex-1 overflow-auto" />
