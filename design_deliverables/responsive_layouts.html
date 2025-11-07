@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Layout Mockups - Mobile & Tablet</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #212529;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .device-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        
+        .device {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .device-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 8px;
+        }
+        
+        .device-specs {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        
+        .device-frame {
+            border: 3px solid #212529;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            background: white;
+        }
+        
+        .mobile-frame {
+            width: 100%;
+            max-width: 375px;
+            margin: 0 auto;
+            aspect-ratio: 375 / 812;
+        }
+        
+        .tablet-frame {
+            width: 100%;
+            max-width: 768px;
+            margin: 0 auto;
+            aspect-ratio: 768 / 1024;
+        }
+        
+        .device-notch {
+            width: 120px;
+            height: 20px;
+            background: #212529;
+            border-radius: 0 0 12px 12px;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        
+        .screen-content {
+            height: 100%;
+            overflow-y: auto;
+            padding: 16px;
+            background: #f8f9fa;
+        }
+        
+        /* Mobile Upload Area */
+        .mobile-upload {
+            background: white;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 32px 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .mobile-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 12px;
+        }
+        
+        .mobile-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #3498db;
+        }
+        
+        .mobile-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #34495e;
+            margin-bottom: 8px;
+        }
+        
+        .mobile-hint {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 16px;
+        }
+        
+        .mobile-button {
+            width: 100%;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .mobile-types {
+            font-size: 11px;
+            color: #95a5a6;
+            margin-top: 12px;
+        }
+        
+        /* Mobile File Card */
+        .mobile-file-card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-file-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .mobile-file-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .mobile-file-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+        
+        .mobile-file-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .mobile-file-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #212529;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 2px;
+        }
+        
+        .mobile-file-size {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .mobile-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .mobile-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .mobile-btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .mobile-btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* Tablet styles */
+        .tablet-upload {
+            background: white;
+            border: 2px dashed #3498db;
+            border-radius: 12px;
+            padding: 40px 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .tablet-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 16px;
+        }
+        
+        .tablet-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #3498db;
+        }
+        
+        .tablet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .annotation {
+            position: absolute;
+            background: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            pointer-events: none;
+        }
+        
+        .touch-target {
+            position: relative;
+        }
+        
+        .touch-target::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 2px dashed rgba(52, 152, 219, 0.5);
+            border-radius: 4px;
+            pointer-events: none;
+        }
+        
+        .notes {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 16px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        
+        .notes-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #856404;
+        }
+        
+        .notes-list {
+            font-size: 13px;
+            color: #856404;
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .notes-list li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Responsive Layout Mockups</h1>
+        
+        <div class="device-showcase">
+            <!-- Mobile Portrait -->
+            <div class="device">
+                <div class="device-title">Mobile Portrait</div>
+                <div class="device-specs">iPhone 12/13/14 • 390×844px</div>
+                
+                <div class="device-frame mobile-frame">
+                    <div class="device-notch"></div>
+                    <div class="screen-content">
+                        <div class="mobile-upload">
+                            <div class="mobile-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                                </svg>
+                            </div>
+                            <div class="mobile-text">Tap to upload file</div>
+                            <div class="mobile-hint">or</div>
+                            <button class="mobile-button touch-target">
+                                <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+                                    <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                                </svg>
+                                Choose File
+                            </button>
+                            <div class="mobile-types">CSV, Excel • Max 50 MB</div>
+                        </div>
+                        
+                        <div class="mobile-file-card">
+                            <div class="mobile-file-header">
+                                <div class="mobile-file-icon">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
+                                    </svg>
+                                </div>
+                                <div class="mobile-file-info">
+                                    <div class="mobile-file-name">Fire-Data-2024.csv</div>
+                                    <div class="mobile-file-size">2.3 MB</div>
+                                </div>
+                            </div>
+                            <div class="mobile-actions">
+                                <button class="mobile-btn mobile-btn-secondary touch-target">Cancel</button>
+                                <button class="mobile-btn mobile-btn-primary touch-target">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="notes">
+                    <div class="notes-title">Mobile Design Notes:</div>
+                    <ul class="notes-list">
+                        <li>Buttons min 44×44px (touch-friendly)</li>
+                        <li>Single column layout</li>
+                        <li>Drag-drop disabled (file picker only)</li>
+                        <li>Reduced padding (40px → 16px)</li>
+                        <li>Stacked action buttons</li>
+                        <li>Larger text for readability</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Tablet Portrait -->
+            <div class="device">
+                <div class="device-title">Tablet Portrait</div>
+                <div class="device-specs">iPad Air • 820×1180px</div>
+                
+                <div class="device-frame tablet-frame">
+                    <div class="screen-content">
+                        <div class="tablet-upload">
+                            <div class="tablet-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                                </svg>
+                            </div>
+                            <div class="mobile-text" style="font-size: 18px;">Drag and drop file here</div>
+                            <div class="mobile-hint" style="font-size: 14px;">or</div>
+                            <button class="mobile-button" style="width: auto; min-width: 200px; margin: 0 auto;">
+                                <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+                                    <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+                                </svg>
+                                Choose File
+                            </button>
+                            <div class="mobile-types" style="font-size: 12px; margin-top: 16px;">
+                                Supported formats: CSV, Excel (.xlsx, .xls) • Max size: 50 MB
+                            </div>
+                        </div>
+                        
+                        <div class="tablet-grid">
+                            <div class="mobile-file-card" style="margin-bottom: 0;">
+                                <div class="mobile-file-header">
+                                    <div class="mobile-file-icon" style="width: 48px; height: 48px;">
+                                        <svg viewBox="0 0 24 24" style="width: 28px; height: 28px;">
+                                            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="mobile-file-info">
+                                        <div class="mobile-file-name" style="font-size: 15px;">Fire-Stats-2024.csv</div>
+                                        <div class="mobile-file-size" style="font-size: 13px;">2.3 MB • CSV file</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mobile-file-card" style="margin-bottom: 0;">
+                                <div class="mobile-file-header">
+                                    <div class="mobile-file-icon" style="width: 48px; height: 48px;">
+                                        <svg viewBox="0 0 24 24" style="width: 28px; height: 28px;">
+                                            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="mobile-file-info">
+                                        <div class="mobile-file-name" style="font-size: 15px;">Medical-Data.xlsx</div>
+                                        <div class="mobile-file-size" style="font-size: 13px;">1.8 MB • Excel file</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="notes">
+                    <div class="notes-title">Tablet Design Notes:</div>
+                    <ul class="notes-list">
+                        <li>Drag-drop enabled (larger screen)</li>
+                        <li>Two-column grid for file lists</li>
+                        <li>Desktop-like spacing (slightly reduced)</li>
+                        <li>Touch targets still 44×44px minimum</li>
+                        <li>Inline actions (not stacked)</li>
+                        <li>Supports landscape orientation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison Section -->
+        <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="margin-top: 0;">Responsive Breakpoint Strategy</h2>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f8f9fa;">
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Breakpoint</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Width Range</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Key Changes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;"><strong>Mobile Portrait</strong></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">320px - 480px</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
+                            • Single column<br>
+                            • Stacked buttons<br>
+                            • No drag-drop<br>
+                            • Reduced padding
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;"><strong>Mobile Landscape</strong></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">481px - 767px</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
+                            • Same as portrait<br>
+                            • Slight padding increase<br>
+                            • Wider upload area
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;"><strong>Tablet Portrait</strong></td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">768px - 1023px</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">
+                            • Two-column grids<br>
+                            • Drag-drop enabled<br>
+                            • Inline actions<br>
+                            • Desktop-like layout
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;"><strong>Desktop</strong></td>
+                        <td style="padding: 12px;">1024px+</td>
+                        <td style="padding: 12px;">
+                            • Full layout<br>
+                            • Max-width constraints<br>
+                            • All features enabled<br>
+                            • Hover states active
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3 style="margin-top: 32px;">Touch Target Sizing</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
+                <div style="background: #e7f3ff; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Minimum Size</div>
+                    <div style="font-size: 24px; color: #3498db; font-weight: 700;">44×44px</div>
+                    <div style="font-size: 13px; color: #6c757d; margin-top: 4px;">iOS/Android standard</div>
+                </div>
+                <div style="background: #d4edda; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Recommended</div>
+                    <div style="font-size: 24px; color: #27ae60; font-weight: 700;">48×48px</div>
+                    <div style="font-size: 13px; color: #6c757d; margin-top: 4px;">Better UX, less errors</div>
+                </div>
+                <div style="background: #fff3cd; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Spacing Between</div>
+                    <div style="font-size: 24px; color: #f39c12; font-weight: 700;">8px min</div>
+                    <div style="font-size: 13px; color: #6c757d; margin-top: 4px;">Prevents mis-taps</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
