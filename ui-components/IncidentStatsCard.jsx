@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
+import TrendIndicator from './TrendIndicator';
 
-const IncidentStatsCard = ({ title, data, calcType = 'count' }) => {
+const IncidentStatsCard = ({ title, data, calcType = 'count', trend }) => {
   const statValue = useMemo(() => {
     if (!data || data.length === 0) return 0;
 
@@ -35,12 +36,19 @@ const IncidentStatsCard = ({ title, data, calcType = 'count' }) => {
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-white">
+    <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
       <h4 className="text-sm text-gray-600 mb-2">{title}</h4>
-      <div className="flex items-baseline gap-2">
+      <div className="flex items-baseline gap-2 mb-2">
         <p className="text-3xl font-bold text-blue-800">{statValue}</p>
         <span className="text-sm text-gray-500">{getUnitLabel()}</span>
       </div>
+      
+      {trend && (
+        <TrendIndicator 
+          value={trend} 
+          inverse={calcType === 'avgResponseTime'} 
+        />
+      )}
       
       {calcType === 'count' && data && data.length > 0 && (
         <p className="text-xs text-gray-500 mt-2">

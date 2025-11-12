@@ -20,7 +20,10 @@ Handles upload errors with user-friendly messages. Provides retry functionality 
 Displays incident records in sortable, filterable table. Includes pagination and responsive design for large datasets.
 
 ### IncidentStatsCard.jsx
-Shows incident statistics including response times, incident type breakdowns, and aggregated metrics.
+Shows incident statistics including response times, incident type breakdowns, and aggregated metrics. Pass a `trend` prop to show percentage changes.
+
+### TrendIndicator.jsx
+Shows up/down arrows with percentage change. Use `inverse={true}` for metrics where lower is better (e.g., response times).
 
 ## Usage
 
@@ -42,4 +45,20 @@ const [parsedData, setParsedData] = useState(null);
 <FileDropZone onFileSelect={(file) => setUploadedFile(file)} />
 {uploadedFile && <IncidentDataPreview file={uploadedFile} />}
 {parsedData && <FireMedicalDataTable data={parsedData} />}
+
+// KPI cards - trend optional, won't show if not provided or < 0.1%
+<IncidentStatsCard 
+  title="Total Incidents" 
+  data={parsedData} 
+  calcType="count"
+  trend={8.5}
+/>
+
+// Response time uses inverse - lower is better so down arrow = green
+<IncidentStatsCard 
+  title="Avg Response Time" 
+  data={parsedData} 
+  calcType="avgResponseTime"
+  trend={-5.2}
+/>
 ```
