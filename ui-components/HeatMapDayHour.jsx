@@ -13,7 +13,6 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
-  // Build heat map grid - O(n) single pass instead of nested loops per cell
   const heatData = useMemo(() => {
     if (!data?.length) return null;
 
@@ -27,10 +26,9 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
       const incidentDate = new Date(incident.timestamp);
       if (incidentDate < cutoff) return;
       
-      // Regional filter - postal codes define urban vs rural
       const isTargetRegion = region === 'south' 
-        ? incident.postal_code < 85260  // South Scottsdale urban codes
-        : incident.postal_code >= 85260; // North Scottsdale rural codes
+        ? incident.postal_code < 85260
+        : incident.postal_code >= 85260;
       
       if (!isTargetRegion) return;
 
@@ -52,8 +50,22 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
     );
   }
 
-  // TODO: Add color intensity logic and rendering
-  return <div>Heat map coming soon...</div>;
+  // Color intensity based on percentage of max - more intuitive than absolute values
+  const getColor = (count) => {
+    if (count === 0) return 'bg-gray-50';
+    const intensity = Math.ceil((count / heatData.maxCount) * 5);
+    const colors = [
+      'bg-blue-100',
+      'bg-blue-200', 
+      'bg-blue-400',
+      'bg-blue-600',
+      'bg-blue-800'
+    ];
+    return colors[Math.min(intensity - 1, 4)];
+  };
+
+  // TODO: Build table markup
+  return <div>Rendering logic next...</div>;
 };
 
 export default HeatMapDayHour;
