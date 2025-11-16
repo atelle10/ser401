@@ -13,6 +13,7 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
+  // Build heat map grid - O(n) single pass instead of nested loops per cell
   const heatData = useMemo(() => {
     if (!data?.length) return null;
 
@@ -26,9 +27,10 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
       const incidentDate = new Date(incident.timestamp);
       if (incidentDate < cutoff) return;
       
+      // Regional filter - postal codes define urban vs rural
       const isTargetRegion = region === 'south' 
-        ? incident.postal_code < 85260
-        : incident.postal_code >= 85260;
+        ? incident.postal_code < 85260  // South Scottsdale urban codes
+        : incident.postal_code >= 85260; // North Scottsdale rural codes
       
       if (!isTargetRegion) return;
 
@@ -64,8 +66,75 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
     return colors[Math.min(intensity - 1, 4)];
   };
 
-  // TODO: Build table markup
-  return <div>Rendering logic next...</div>;
+  return (
+    <div className="border rounded-lg p-4 bg-white">
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h3 className="text-lg font-semibold">
+            Incident Volume Heat Map - {region === 'south' ? 'South (Urban)' : 'North (Rural)'}
+          </h3>
+          <p className="text-sm text-gray-600">Day of Week × Hour of Day</p>
+        </div>
+        
+        <select 
+          value={selectedWeeks}
+          onChange={(e) => setSelectedWeeks(Number(e.target.value))}
+          className="border rounded px-3 py-1 text-sm"
+        >
+          <option value={1}>Last week</option>
+          <option value={5}>Last 5 weeks</option>
+          <option value={12}>Last 12 weeks</option>
+        </select>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="border p-2 bg-gray-100 text-xs sticky left-0">Hour</th>
+              {DAYS.map(day => (
+                <th key={day} className="border p-2 bg-gray-100 text-xs font-medium">
+                  {day}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {HOURS.map(hour => (
+              <tr key={hour}>
+                <td className="border p-2 bg-gray-50 text-xs font-medium text-right sticky left-0">
+                  {hour.toString().padStart(2, '0')}:00
+                </td>
+                {DAYS.map((_, dayIdx) => {
+                  const count = heatData.grid[dayIdx][hour];
+                  return (
+                    <td
+                      key={dayIdx}
+                      className={`border p-3 ${getColor(count)} transition-colors cursor-pointer hover:opacity-80`}
+                      title={`${DAYS[dayIdx]} ${hour}:00 - ${count} incidents`}
+                    >
+                      <span className="text-xs font-medium">{count || ''}</span>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-4 flex items-center gap-4 text-xs text-gray-600">
+        <span>Low</span>
+        <div className="flex gap-1">
+          {['bg-gray-50', 'bg-blue-100', 'bg-blue-200', 'bg-blue-400', 'bg-blue-600', 'bg-blue-800'].map((color, i) => (
+            <div key={i} className={`w-6 h-4 ${color} border`}></div>
+          ))}
+        </div>
+        <span>High</span>
+        <span className="ml-auto">Max: {heatData.maxCount} incidents/hour</span>
+      </div>
+    </div>
+  );
 };
 
 export default HeatMapDayHour;
