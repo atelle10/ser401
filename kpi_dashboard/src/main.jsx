@@ -1,16 +1,26 @@
-import { StrictMode } from 'react'
+import { StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import './main.css'
-import NavBar from './Components/NavBar.jsx'
-import Sidebar from './Components/Sidebar.jsx'
-import Logo from './Components/Logo.jsx'
-import User from './Components/User.jsx'
-import Dashboard from './Components/Dashboard.jsx'
-import ChatBot from './Components/ChatBot.jsx'
+import Login from './Components/Login.jsx'
+import { loggedInStatus } from './Components/Login.jsx'
 import Home from './Components/Home.jsx'
 
-createRoot(document.getElementById('root')).render(
+const root = createRoot(document.getElementById('root'));
+
+function LoginPage() {
+  useEffect(() => {
+    console.log('Logged In Status:', loggedInStatus);
+  }, [loggedInStatus]),
+
+  root.render(
   <StrictMode >
-      <Home />
+    <div>
+      {loggedInStatus === true ? <Home /> : () =>(<Login />, LoginPage())}
+    </div>
     </StrictMode>,
-)
+  );
+}
+
+LoginPage();
+
+

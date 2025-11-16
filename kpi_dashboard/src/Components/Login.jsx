@@ -1,17 +1,17 @@
     // Login.js
     import React, { useState } from 'react';
 
-    const loggedIn = true;
+    let loggedIn = false;
 
     const Login = () => {
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
-
+      
       const handleSubmit = (e) => {
         e.preventDefault();
         // Handle login logic here (e.g., send credentials to an API)
         console.log('Email:', email, 'Password:', password);
-        loggedIn = true;
+        loggedIn = true; // Update loggedIn status upon successful login
         // Clear form fields after submission (optional)
         setEmail('');
         setPassword('');
@@ -47,4 +47,5 @@
       );
     };
 
+    export let loggedInStatus = {loggedIn};
     export default Login;
