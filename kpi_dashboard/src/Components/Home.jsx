@@ -1,10 +1,9 @@
-import NavBar from './Components/NavBar.jsx'
-import Sidebar from './Components/Sidebar.jsx'
-import Logo from './Components/Logo.jsx'
-import User from './Components/User.jsx'
-import Dashboard from './Components/Dashboard.jsx'
-import ChatBot from './Components/ChatBot.jsx'
-import Login from './Components/Login.jsx'
+import NavBar from './NavBar.jsx'
+import Sidebar from './Sidebar.jsx'
+import Logo from './Logo.jsx'
+import User from './User.jsx'
+import Dashboard from './Dashboard.jsx'
+import ChatBot from './ChatBot.jsx'
 
 const Home = () => {
   return (
