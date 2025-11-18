@@ -7,7 +7,7 @@ import ChatBot from './ChatBot.jsx'
 
 const Home = () => {
   return(
-      <div className="min-w-6xl h-screen m-2 p-2 bg-gray-200 rounded-3xl shadow-lg grid grid-cols-7 gap-1">
+      <div className="min-w-6xl h-screen m-2 p-2 bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 rounded-3xl shadow-lg grid grid-cols-7 gap-1">
             <div className="col-span-1 flex flex-col gap-2">
               <Logo />
               <div className="flex flex-col gap-2">
