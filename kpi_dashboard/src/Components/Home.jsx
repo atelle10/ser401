@@ -8,6 +8,7 @@ import Upload from './Upload.jsx'
 import Settings from './Settings.jsx'
 import ChatBot from './ChatBot.jsx'
 import famarLogo from './assets/famar_logo.png'
+import Account from './Account.jsx';
 
 const Home = () => {
   const [currentView, setCurrentView] = useState('dashboard')
@@ -18,10 +19,12 @@ const Home = () => {
         return <Dashboard />
       case 'upload':
         return <Upload />
+      case 'account':
+        return <Account onBack={() => setCurrentView('dashboard')} />;
       case 'settings':
         return <Settings />
       default:
-        return <Dashboard />
+        return <Dashboard className="flex-1 overflow-auto" />
     }
   }
 
@@ -56,7 +59,7 @@ const Home = () => {
               
               {/* User */}
               <div className="flex-shrink-0">
-                <User />
+                <User onViewAccount={() => setCurrentView('account')}/>
               </div>
             </div>
             

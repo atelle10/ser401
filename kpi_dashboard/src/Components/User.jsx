@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import accountIcon from './assets/account.png'
 
-const User = () => {
+const User = ({ onViewAccount }) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -15,6 +15,11 @@ const User = () => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const handleViewAccount = () => {
+    setOpen(false);
+    if (onViewAccount) onViewAccount();
+  };
 
   return (
     <div className="relative" ref={menuRef}>
@@ -29,7 +34,7 @@ const User = () => {
         {open && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 animate-fade-in">
             <button
-              onClick={() => console.log("Go to account")}
+              onClick={handleViewAccount}
               className="block w-full text-left px-4 py-2 hover:bg-gray-100"
               >
                 View Account Details
