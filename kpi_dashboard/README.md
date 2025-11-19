@@ -1,3 +1,15 @@
+# How to run KPI Dashboard
+ ## Prerequisites
+ - Latest version of Node js
+ - Current "kpi_dashboard" directory from staging branch of github repository
+
+1. Navigate to the 'kpi_dashboard' in a command line terminal 
+2. Run 'npm install' .This will ensure you have all dependencies needed to run the program
+3. Run 'npm run dev' to start the software
+4. In a web browser, enter 'http://localhost:5173' to access the software's start(login) page
+
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
