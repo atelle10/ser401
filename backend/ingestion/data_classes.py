@@ -22,3 +22,19 @@ class UploadedFile:
     extension: str
     size_mb: int
     dataframe: pd.DataFrame
+
+
+@dataclass
+class DataSet:
+    id: str
+    name: str
+    data: pd.DataFrame
+
+    def get_summary(self):
+        return self.data.info()
+
+    def get_shape(self):
+        return self.data.shape
+
+    def describe(self):
+        return self.data.describe()
