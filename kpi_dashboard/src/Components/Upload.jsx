@@ -14,18 +14,31 @@ const Upload = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target.result;
-        const firstLine = text.split('\n')[0].toLowerCase();
+        const lines = text.split('\n').filter(l => l.trim());
+        
+        if (lines.length < 2) {
+          reject('File appears empty or has no data rows');
+          return;
+        }
+
+        const headerLine = lines[0].toLowerCase();
         
         // Real FAMAR exports have these - learned this from reviewing their data
         const requiredFields = ['incident', 'timestamp', 'unit'];
         const missingFields = requiredFields.filter(field => 
-          !firstLine.includes(field)
+          !headerLine.includes(field)
         );
 
         if (missingFields.length > 0) {
           reject(`CSV missing columns: ${missingFields.join(', ')}`);
         } else {
-          resolve(true);
+          // Quick sanity check - make sure at least one data row looks valid
+          const secondLine = lines[1].split(',');
+          if (secondLine.length < 3) {
+            reject('CSV format looks malformed - too few columns in data');
+          } else {
+            resolve(true);
+          }
         }
       };
       reader.onerror = () => reject('Could not read file');
