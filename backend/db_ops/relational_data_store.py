@@ -26,7 +26,32 @@ class RelationalDataStore:
             self.connection.close()
 
     def read_table(self, table_name: str) -> pd.DataFrame:
-        pass
+        cursor = self.connection.cursor()
+        
+        query = f"SELECT * FROM {table_name}"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+        
+        cursor.close()
+        return pd.DataFrame(rows, columns=columns)
+
 
     def write_data(self, dataset: DataSet, table_name: str) -> bool:
-        pass
+        try:
+            cursor = self.connection.cursor()
+            df = dataset.data
+            
+            columns = ', '.join(df.columns)
+            placeholders = ', '.join(['%s'] * len(df.columns))
+            
+            query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+            rows = df.values.tolist()
+            cursor.executemany(query, rows)
+            self.connection.commit()
+            
+            cursor.close()
+            return True
+        
+        except Exception:
+            return False
