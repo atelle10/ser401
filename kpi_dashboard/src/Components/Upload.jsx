@@ -7,6 +7,7 @@ const Upload = () => {
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [uploadResult, setUploadResult] = useState(null);
+  const [abortController, setAbortController] = useState(null);
 
   // Check CSV has required columns - Frank cares about call #, timestamps, units
   const validateCSV = async (file) => {
@@ -67,12 +68,16 @@ const Upload = () => {
     setProgress(0);
     setErrorMsg('');
 
+    const controller = new AbortController();
+    setAbortController(controller);
+
     const formData = new FormData();
     formData.append('file', selectedFile);
 
+    let progressInterval;
     try {
       // Simulate progress - real API doesn't give us streaming progress yet
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setProgress(prev => Math.min(prev + 10, 90));
       }, 200);
 
@@ -81,7 +86,11 @@ const Upload = () => {
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
-      }).catch(() => {
+        signal: controller.signal
+      }).catch((err) => {
+        if (err.name === 'AbortError') {
+          throw new Error('Upload cancelled');
+        }
         // Fallback for dev - simulate success since backend isn't ready
         return { ok: true, json: async () => ({ 
           rows_processed: 1247,
@@ -100,10 +109,23 @@ const Upload = () => {
       const result = await response.json();
       setUploadResult(result);
       setUploadStatus('success');
+      setAbortController(null);
     } catch (err) {
+      if (progressInterval) clearInterval(progressInterval);
       setUploadStatus('error');
       setErrorMsg(err.message || 'Upload failed - check connection');
       setProgress(0);
+      setAbortController(null);
+    }
+  };
+
+  const cancelUpload = () => {
+    if (abortController) {
+      abortController.abort();
+      setUploadStatus('error');
+      setErrorMsg('Upload cancelled by user');
+      setProgress(0);
+      setAbortController(null);
     }
   };
 
@@ -198,6 +220,12 @@ const Upload = () => {
                       style={{ width: `${progress}%` }}
                     />
                   </div>
+                  <button 
+                    onClick={cancelUpload}
+                    className="w-full py-1.5 px-3 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 text-sm transition-colors"
+                  >
+                    Cancel Upload
+                  </button>
                 </div>
               )}
 
