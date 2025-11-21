@@ -1,0 +1,10 @@
+{
+  "turnoutTimeTargetSec": {
+    "national": 80,
+    "local": 75
+  },
+  "responseTimeTargetSec": {
+    "national": 480,
+    "local": 420
+  }
+}
