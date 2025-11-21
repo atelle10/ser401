@@ -36,7 +36,7 @@ const Home = () => {
           <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
             <Logo />
             <div className="flex flex-col gap-2">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
               <ChatBot />
             </div>
           </div>
@@ -70,7 +70,7 @@ const Home = () => {
             
             {/* Mobile Bottom Navigation (Sidebar items) */}
             <div className="lg:hidden mt-auto">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
             </div>
           </div>
         </div>
