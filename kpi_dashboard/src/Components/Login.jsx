@@ -63,10 +63,10 @@
                 <div className='flex justify-center gap-2 m-2'>
                   <button type="submit" className='px-2 py-1 rounded-lg border border-gray-400 bg-blue-500 transition-all duration-500 ease-in-out hover:-translate-y-0.5 hover:scale-105 pointer-events-auto '>Login</button>
                 </div>
-                <div className='flex text-xs justify-center m-2'>
-                  <p>Don't have an account? <a onClick={handleSignUp} className="text-blue-700 hover:underline" href='#'>Register</a></p>
-                </div>
               </form>
+                <div className='flex text-xs justify-center m-2'>
+                  <p>Don't have an account? <button className="text-blue-700 hover:underline" onClick={() => handleSignUp()}>Register</button></p>
+                </div>
             </div>
         </div>
       </div>

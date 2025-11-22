@@ -9,7 +9,7 @@ const root = createRoot(document.getElementById('root'));
 root.render(
 <StrictMode >
   <div>
-    <Register />
+    <Login />
   </div>
   </StrictMode>,
 );
