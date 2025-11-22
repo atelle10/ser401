@@ -1,15 +1,13 @@
-    import React, { useEffect, useState } from 'react';
-    import Home from './Home';
+import {React, useEffect, useState} from 'react'
 
-    let loggedIn = false;
-    let loginStatus = '';
+let loggedIn = false;
+let loginStatus = '';
 
-    const Register = () => {
+const Register = () => {
       const [firstName, setFirstName] = useState('');
       const [lastName, setLastName] = useState('');
       const [username, setUsername] = useState('');
       const [password, setPassword] = useState('');
-      const [borderColor, setBorderColor] = useState('border-gray-400');
       const [confirmPassword, setConfirmPassword] = useState('');
       const [email, setEmail] = useState('');
       const [phone, setPhone] = useState('');
@@ -22,7 +20,6 @@
       const passwordsMatch = () => {
         if (password !== confirmPassword) {
           loginStatus = 'Passwords do not match';
-          setBorderColor('border-red-500');
         } else {
           loginStatus = '';
         }
@@ -39,28 +36,23 @@
         loggedIn = true; // Update loggedIn status upon successful login
         setUsername('');
         setPassword('');
+        setConfirmPassword('');
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setPhone('');
+        setAccountType('Select Account Type');
       };
 
-      const handleSignUp = (e) => {
-        e.preventDefault(); 
-        // Handle sign-up logic here (e.g., send credentials to an API)
-        console.log('Sign Up - Username:', username, 'Password:', password);
-        <Register />;
-        setUsername('');
-        setPassword('');
-      };
-
-      return (
-        <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
-          <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
-          <div className="p-2 bg-white shadow-xl backdrop-blur-sm border border-black space-y-4">
-            <div className="flex flex-col items-center justify-center bg-transparent rounded-lg p-2">
-              <h1 className='text-2xl font-bold mb-4'>Registration Form</h1>
+  return (
+    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
+        <div className=" flex items-center justify-center absolute inset-0 max-w-lg w-full mx-auto bg-[url('./src/Components/assets/login_logo.png')] bg-no-repeat bg-center">
+            <div className="shadow-xl w-full max-w-md  bg-transprarent backdrop-blur-md rounded-lg border border-white flex flex-col items-center justify-center p-2 ">
+              <h1 className='text-xl font-bold mb-4'>Registration Form</h1>
               <form onSubmit={handleSubmit}>
                 <div>
-                  <label className='text-lg mb-2'>Name: </label>
                   <input 
-                  className='p-1 rounded-lg border bg-transparent text-black borderColor m-1'
+                  className='p-1 rounded-lg border text-black border-gray-400 w-1/2 mb-2'
                   type="text"
                   id="firstName"
                   placeholder="First Name"
@@ -69,7 +61,7 @@
                   required
                   />
                   <input 
-                  className='p-1 rounded-lg border bg-transparent text-black transition-colors borderColor m-1'
+                  className='p-1 rounded-lg border text-black border-gray-400 w-1/2 mb-2'
                   type="text"
                   id="lastName"
                   placeholder="Last Name"
@@ -78,10 +70,8 @@
                   required
                   />
                 </div>
-                <div>
-                <label className='text-lg mb-2'>Username: </label>
                   <input
-                    className='p-1 rounded-lg border bg-transparent text-black border-gray-400 m-1'
+                    className='p-1 rounded-lg border text-black border-gray-400 w-full mb-2'
                     type="text"
                     id="username"
                     placeholder="Username"
@@ -89,11 +79,8 @@
                     onChange={(e) => setUsername(e.target.value)}
                     required
                   />
-                </div>
-                <div>
-                  <label className='text-lg mb-2'>Password: </label>
                   <input
-                    className='p-1 rounded-lg border bg-transparent text-black border-gray-400 m-1'
+                    className='p-1 rounded-lg border text-black border-[borderColor] w-1/2 mb-2'
                     type="password"
                     placeholder="Password"
                     id="password"
@@ -102,7 +89,7 @@
                     required
                   />
                   <input
-                    className='p-1 rounded-lg border bg-transparent text-black border-gray-400 m-1'   
+                    className='p-1 rounded-lg border text-black [borderColor] w-1/2 mb-2'   
                     type="password"
                     placeholder="Confirm Password"
                     id="confirmPassword"
@@ -110,11 +97,8 @@
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                   />  
-                </div>
-                <div>
-                  <label className='text-lg mb-2'>Email: </label>
                   <input 
-                    className='p-1 rounded-lg border bg-transparent text-black border-gray-400 m-1'
+                    className='p-1 rounded-lg border text-black border-gray-400 mb-2 w-full'
                     type="email"
                     placeholder="Email"
                     id="email"
@@ -122,11 +106,8 @@
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
-                </div>
-                <div>
-                  <label className='text-lg mb-2'>Phone: </label>
                   <input
-                    className='p-1 rounded-lg border bg-transparent text-black border-gray-400 m-1'
+                    className='p-1 rounded-lg border text-black border-gray-400 mb-2 w-full'
                     type="tel"
                     placeholder="Phone Number"
                     id="phone"
@@ -134,7 +115,6 @@
                     onChange={(e) => setPhone(e.target.value)}
                     required
                   />
-                </div>
                 <div className='flex justify-center gap-2 m-2'>
                   <select
                     className='p-1 rounded-lg border text-black border-gray-400 m-1'
@@ -149,7 +129,7 @@
                   </select>
                 </div>
                 <div className='flex justify-center gap-2 m-2'>
-                  <button type="submit" className='px-2 py-1 rounded-lg border border-gray-400 bg-blue-500 transition-all duration-500 ease-in-out hover:-translate-y-0.5 hover:scale-105 pointer-events-auto '>Sign Up</button>
+                  <button type="submit" className='px-2 py-1 rounded-lg border border-gray-400 bg-blue-500 transition-all duration-500 ease-in-out hover:-translate-y-0.5 hover:scale-105 pointer-events-auto '>Create Account</button>
                 </div>
                 <div className='flex text-xs justify-center m-2'>
                   <p>{loginStatus}</p>
@@ -157,8 +137,8 @@
               </form>
             </div>
         </div>
-      </div>
-      );
-    };
+    </div>
+  )
+}
 
-    export default Register;
+export default Register
