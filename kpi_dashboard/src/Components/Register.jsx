@@ -1,142 +1,244 @@
-import {React, useEffect, useState} from 'react'
-import RequestSent from './RequestSent.jsx';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { Navigate, Link } from 'react-router-dom';
 
 let registered = false;
-let loginStatus = '';
 
 const Register = () => {
-      const [firstName, setFirstName] = useState('');
-      const [lastName, setLastName] = useState('');
-      const [username, setUsername] = useState('');
-      const [password, setPassword] = useState('');
-      const [confirmPassword, setConfirmPassword] = useState('');
-      const [email, setEmail] = useState('');
-      const [phone, setPhone] = useState('');
-      const [accountType, setAccountType] = useState('Select Account Type');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [accountType, setAccountType] = useState('');
+  const [error, setError] = useState('');
+  const [passwordMatch, setPasswordMatch] = useState(true);
 
-      useEffect(() => {
-        passwordsMatch();
-      }, [password, confirmPassword]);
+  useEffect(() => {
+    if (password && confirmPassword) {
+      setPasswordMatch(password === confirmPassword);
+    }
+  }, [password, confirmPassword]);
 
-      const passwordsMatch = () => {
-        if (password !== confirmPassword) {
-          loginStatus = 'Passwords do not match';
-        } else {
-          loginStatus = '';
-        }
-      };
-
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        // Handle login logic here (e.g., send credentials to an API)
-        console.log('Username:', username, 'Password:', password);
-        // Update loggedIn status upon successful login
-        setUsername('');
-        setPassword('');
-        setConfirmPassword('');
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setPhone('');
-        setAccountType('Select Account Type');
-        registered = true;
-      };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    
+    // Validation
+    if (!accountType) {
+      setError('Please select an account type');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    // Handle registration logic here (e.g., send credentials to an API)
+    console.log('Registration:', { firstName, lastName, username, email, phone, accountType });
+    
+    // Clear form
+    setUsername('');
+    setPassword('');
+    setConfirmPassword('');
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setPhone('');
+    setAccountType('');
+    registered = true;
+  };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
-        <div className=" flex items-center justify-center absolute inset-0 max-w-lg w-full mx-auto bg-[url('./src/Components/assets/login_logo.png')] bg-no-repeat bg-center">
-            <div className="shadow-xl w-full max-w-md  bg-transprarent backdrop-blur-md rounded-lg border border-white flex flex-col items-center justify-center p-2 ">
-              <h1 className='text-xl font-bold mb-4'>Registration Form</h1>
-              <form onSubmit={handleSubmit}>
-                <div>
-                  <input 
-                  className='p-1 rounded-lg border text-black border-gray-400 w-1/2 mb-2'
-                  type="text"
-                  id="firstName"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  />
-                  <input 
-                  className='p-1 rounded-lg border text-black border-gray-400 w-1/2 mb-2'
-                  type="text"
-                  id="lastName"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  />
-                </div>
-                  <input
-                    className='p-1 rounded-lg border text-black border-gray-400 w-full mb-2'
-                    type="text"
-                    id="username"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                  <input
-                    className='p-1 rounded-lg border text-black border-[borderColor] w-1/2 mb-2'
-                    type="password"
-                    placeholder="Password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <input
-                    className='p-1 rounded-lg border text-black [borderColor] w-1/2 mb-2'   
-                    type="password"
-                    placeholder="Confirm Password"
-                    id="confirmPassword"
-                    value={confirmPassword} 
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />  
-                  <input 
-                    className='p-1 rounded-lg border text-black border-gray-400 mb-2 w-full'
-                    type="email"
-                    placeholder="Email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <input
-                    className='p-1 rounded-lg border text-black border-gray-400 mb-2 w-full'
-                    type="tel"
-                    placeholder="Phone Number"
-                    id="phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                <div className='flex justify-center gap-2 m-2'>
-                  <select
-                    className='p-1 rounded-lg border text-black border-gray-400 m-1'
-                    id="accountType"
-                    value={accountType}
-                    onChange={(e) => setAccountType(e.target.value)}
-                  >
-                    <option value="" disabled >Select Account Type</option>
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                    <option value="monitoring">Monitor Only</option>
-                  </select>
-                </div>
-                <div className='flex justify-center gap-2 m-2'>
-                  <button type="submit" className='px-2 py-1 rounded-lg border border-gray-400 bg-blue-500 transition-all duration-500 ease-in-out hover:-translate-y-0.5 hover:scale-105 pointer-events-auto '>Create Account</button>
-                </div>
-                <div className='flex text-xs justify-center m-2'>
-                  <p>{loginStatus}</p>
-                </div>
-              </form>
-              {registered && <Navigate to="/request-sent" replace />}
-            </div>
+    <div className="w-screen min-h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 py-8">
+      <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
+      
+      {/* Main Registration Card - matching dashboard style */}
+      <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg mx-4">
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Create Account</h1>
+          <p className="text-sm text-gray-600 mt-1">Sign up to get started</p>
         </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                First Name
+              </label>
+              <input
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                type="text"
+                id="firstName"
+                placeholder="John"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                Last Name
+              </label>
+              <input
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                type="text"
+                id="lastName"
+                placeholder="Doe"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Username */}
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              type="text"
+              id="username"
+              placeholder="johndoe"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <input
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              type="email"
+              id="email"
+              placeholder="john@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              Phone Number
+            </label>
+            <input
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              type="tel"
+              id="phone"
+              placeholder="(555) 123-4567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Password Row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                type="password"
+                id="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              <input
+                className={`w-full px-4 py-2 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                  !passwordMatch && confirmPassword 
+                    ? 'border-red-500 focus:ring-red-500' 
+                    : 'border-gray-300 focus:ring-blue-500 focus:border-transparent'
+                }`}
+                type="password"
+                id="confirmPassword"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          
+          {/* Password match indicator */}
+          {!passwordMatch && confirmPassword && (
+            <p className="text-xs text-red-600">Passwords do not match</p>
+          )}
+
+          {/* Account Type */}
+          <div>
+            <label htmlFor="accountType" className="block text-sm font-medium text-gray-700 mb-1">
+              Account Type
+            </label>
+            <select
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              id="accountType"
+              value={accountType}
+              onChange={(e) => setAccountType(e.target.value)}
+              required
+            >
+              <option value="">Select Account Type</option>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="monitoring">Monitor Only</option>
+            </select>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            Create Account
+          </button>
+
+          {/* Login Link */}
+          <div className="text-center text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link 
+              className="text-blue-600 font-semibold hover:text-blue-700 hover:underline" 
+              to="/"
+            >
+              Login Here
+            </Link>
+          </div>
+        </form>
+      </div>
+      
+      {registered && <Navigate to="/request-sent" replace />}
     </div>
   )
 }

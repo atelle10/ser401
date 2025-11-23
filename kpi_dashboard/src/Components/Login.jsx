@@ -1,67 +1,117 @@
-    import React, { useState } from 'react';
-    import { Navigate } from 'react-router-dom';
-    import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-    let loggedIn = false;
+let loggedIn = false;
 
-    const Login = () => {
-      const [username, setUsername] = useState('');
-      const [password, setPassword] = useState('');
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    
+    // Basic validation
+    if (!username || !password) {
+      setError('Please enter both username and password');
+      return;
+    }
+    
+    // Handle login logic here (e.g., send credentials to an API)
+    console.log('Username:', username, 'Password:', password);
+    loggedIn = true;
+    setUsername('');
+    setPassword('');
+  };
+
+  return (
+    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
+      <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
       
-      const handleSubmit = (e) => {
-        e.preventDefault();
-        // Handle login logic here (e.g., send credentials to an API)
-        console.log('Username:', username, 'Password:', password);
-        loggedIn = true; // Update loggedIn status upon successful login
-        setUsername('');
-        setPassword('');
-      };
-
-      return (
-        <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
-          <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
-          <div className="p-2 bg-gray-200 rounded-3xl shadow-xl bg-transparent backdrop-blur-sm border border-white space-y-4">
-            <div>
-              <img src="./src/Components/assets/famar_logo.png" alt="Famar Logo" className="mx-auto object-center w-32 h-32" />
-            </div>
-            <div className="flex flex-col items-center justify-center bg-transparent rounded-lg p-2">
-              <form onSubmit={handleSubmit}>
-                <div>
-                  <input
-                    className='p-1 rounded-lg border bg-transparent text-white border-gray-400 m-1'
-                    type="text"
-                    id="username"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <input
-                    className='p-1 rounded-lg border bg-transparent text-white border-gray-400 m-1'
-                    type="password"
-                    placeholder="Password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className='flex justify-center gap-2 m-2'>
-                  <button type="submit" className='px-2 py-1 rounded-lg border border-gray-400 bg-blue-500 transition-all duration-500 ease-in-out hover:-translate-y-0.5 hover:scale-105 pointer-events-auto '>Login</button>
-                </div>
-                <div className='flex text-xs justify-center m-2'>
-                  <p>Don't have an account? <Link className="text-blue-700 font-bold hover:underline" to="/register">Register Here</Link></p>
-                </div>
-              </form>
-            </div>
+      {/* Main Login Card - matching dashboard style */}
+      <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-md space-y-6">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <img 
+            src="./src/Components/assets/famar_logo.png" 
+            alt="Famar Logo" 
+            className="w-32 h-32 object-contain" 
+          />
         </div>
-        {
-          loggedIn && <Navigate to="/home" replace />
-        }
-      </div>
-      );
-    };
 
-    export default Login;
+        {/* Title */}
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
+          <p className="text-sm text-gray-600 mt-1">Sign in to continue to dashboard</p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Username Input */}
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              type="text"
+              id="username"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Password Input */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              type="password"
+              placeholder="Enter your password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {/* Login Button */}
+          <button 
+            type="submit" 
+            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            Login
+          </button>
+
+          {/* Register Link */}
+          <div className="text-center text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link 
+              className="text-blue-600 font-semibold hover:text-blue-700 hover:underline" 
+              to="/register"
+            >
+              Register Here
+            </Link>
+          </div>
+        </form>
+      </div>
+      
+      {loggedIn && <Navigate to="/home" replace />}
+    </div>
+  );
+};
+
+export default Login;

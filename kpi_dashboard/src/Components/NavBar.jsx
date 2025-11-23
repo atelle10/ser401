@@ -9,7 +9,7 @@ const NavBar = ({ currentView, setCurrentView }) => {
   }
 
   return (
-    <div className='flex justify-center text-center font-bold h-10 shadow-blue-500/20 shadow-md rounded-2xl bg-white w-full'>
+    <div className='flex justify-center items-center gap-4 text-center font-bold h-10 shadow-blue-500/20 shadow-md rounded-2xl bg-white w-full px-4'>
         <div 
           className={getItemClass('dashboard')}
           onClick={() => setCurrentView('dashboard')}

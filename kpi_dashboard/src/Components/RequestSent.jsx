@@ -1,17 +1,46 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import Register from './Register.jsx';
 
 const RequestSent = () => {
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
-        <div className=" flex items-center justify-center absolute inset-0 max-w-lg w-full mx-auto bg-[url('./src/Components/assets/login_logo.png')] bg-no-repeat bg-center">
-            <div className="shadow-xl w-full max-w-md rounded-lg border bg-white border-white flex flex-col items-center justify-center p-2 ">
-                <h1 className='text-xl font-bold mb-4'>Account Request Sent</h1>
-                <p className='mb-4 text-center'>Thank you for registering! Your account request has been sent successfully. Our team will review your information and get back to you shortly.</p>
-                <Link to="/" className='px-4 py-2 rounded-lg border border-gray-400 bg-blue-500 text-white transition-all duration-500 ease-in-out hover:-translate-y-0.5 hover:scale-105'>Return to Login</Link>
-            </div>
+      <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
+      
+      {/* Success Card - matching dashboard style */}
+      <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4 text-center space-y-6">
+        {/* Success Icon */}
+        <div className="flex justify-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
         </div>
+
+        {/* Title and Message */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-3">Request Sent Successfully</h1>
+          <p className="text-gray-600">
+            Thank you for registering! Your account request has been submitted and is pending approval. 
+            Our team will review your information and notify you via email once your account is activated.
+          </p>
+        </div>
+
+        {/* Expected Timeline */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-blue-800">
+            <strong>Expected Response Time:</strong> 1-2 business days
+          </p>
+        </div>
+
+        {/* Return Button */}
+        <Link 
+          to="/" 
+          className="inline-block w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          Return to Login
+        </Link>
+      </div>
     </div>
   )
 }
