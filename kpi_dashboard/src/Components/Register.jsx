@@ -1,6 +1,8 @@
 import {React, useEffect, useState} from 'react'
+import RequestSent from './RequestSent.jsx';
+import { Navigate } from 'react-router-dom';
 
-let loggedIn = false;
+let registered = false;
 let loginStatus = '';
 
 const Register = () => {
@@ -25,15 +27,11 @@ const Register = () => {
         }
       };
 
-      if (loggedIn) {
-        return <Home />;
-      }
-      
       const handleSubmit = (e) => {
         e.preventDefault();
         // Handle login logic here (e.g., send credentials to an API)
         console.log('Username:', username, 'Password:', password);
-        loggedIn = true; // Update loggedIn status upon successful login
+        // Update loggedIn status upon successful login
         setUsername('');
         setPassword('');
         setConfirmPassword('');
@@ -42,6 +40,7 @@ const Register = () => {
         setEmail('');
         setPhone('');
         setAccountType('Select Account Type');
+        registered = true;
       };
 
   return (
@@ -122,7 +121,7 @@ const Register = () => {
                     value={accountType}
                     onChange={(e) => setAccountType(e.target.value)}
                   >
-                    <option value="" >Select Account Type</option>
+                    <option value="" disabled >Select Account Type</option>
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="monitoring">Monitor Only</option>
@@ -135,6 +134,7 @@ const Register = () => {
                   <p>{loginStatus}</p>
                 </div>
               </form>
+              {registered && <Navigate to="/request-sent" replace />}
             </div>
         </div>
     </div>
