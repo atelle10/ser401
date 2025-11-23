@@ -1,20 +1,76 @@
-import React from 'react'
-import KPI_1 from './Dashboard/KPIs/KPI_1'
-import KPI_2 from './Dashboard/KPIs/KPI_2'
-import KPI_3 from './Dashboard/KPIs/KPI_3'
-import KPI_4 from './Dashboard/KPIs/KPI_4'
+import React, { useState } from 'react'
+import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
+import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
+import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import Chart from './Dashboard/Chart'
 
+// Mock data for development
+const mockIncidentData = [
+  { timestamp: '2025-11-20T08:00:00', unit: 'E101', incident_type: 'EMS', duration: 45 },
+  { timestamp: '2025-11-20T09:30:00', unit: 'R202', incident_type: 'Fire', duration: 120 },
+  { timestamp: '2025-11-20T14:15:00', unit: 'E101', incident_type: 'EMS', duration: 30 },
+  { timestamp: '2025-11-21T10:00:00', unit: 'LA301', incident_type: 'EMS', duration: 60 },
+  { timestamp: '2025-11-21T16:45:00', unit: 'E101', incident_type: 'Fire', duration: 90 },
+]
+
 const Dashboard = () => {
+  const [region, setRegion] = useState('south')
+  const [timeWindow, setTimeWindow] = useState(7)
+
   return (
-    <div className="grid grid-cols-4 gap-4 p-2">
-        <KPI_1 />
-        <KPI_2 />
-        <KPI_3 />
-        <KPI_4 />
-        <div className="col-span-4">
-            <Chart />
+    <div className="p-4 space-y-6">
+      {/* Filters */}
+      <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow">
+        <div>
+          <label className="text-sm font-medium mr-2">Region:</label>
+          <select
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+            className="px-3 py-1 border rounded"
+          >
+            <option value="south">South Scottsdale</option>
+            <option value="north">North Scottsdale</option>
+          </select>
         </div>
+        <div>
+          <label className="text-sm font-medium mr-2">Time Window:</label>
+          <select
+            value={timeWindow}
+            onChange={(e) => setTimeWindow(Number(e.target.value))}
+            className="px-3 py-1 border rounded"
+          >
+            <option value={7}>Last 7 Days</option>
+            <option value={14}>Last 14 Days</option>
+            <option value={30}>Last 30 Days</option>
+          </select>
+        </div>
+      </div>
+
+      {/* KPI Components Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
+          <HeatMapDayHour incidents={mockIncidentData} region={region} weeks={1} />
+        </div>
+        
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+          <UnitHourUtilization incidents={mockIncidentData} />
+        </div>
+
+        <div className="col-span-1 lg:col-span-2 bg-white p-4 rounded-lg shadow">
+          <h3 className="font-semibold mb-3">Call Volume Trend</h3>
+          <CallVolumeLinearChart 
+            incidents={mockIncidentData} 
+            region={region}
+            granularity="daily"
+          />
+        </div>
+
+        <div className="col-span-1 lg:col-span-2 bg-white p-4 rounded-lg shadow">
+          <Chart />
+        </div>
+      </div>
     </div>
   )
 }

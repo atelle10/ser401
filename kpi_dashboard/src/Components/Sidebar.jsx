@@ -1,9 +1,19 @@
 import React from 'react'
 
-const Sidebar = () => {
+const Sidebar = ({ currentView, setCurrentView }) => {
+  const getItemClass = (view) => {
+    const baseClass = "h-8 p-2 cursor-pointer rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
+    return currentView === view
+      ? `${baseClass} bg-blue-400 text-white`
+      : `${baseClass} hover:bg-blue-400`
+  }
+
   return (
     <div className='text-xs justify-center text-left font-bold shadow-blue-500/20 bg-white w-full shadow-md rounded-2xl p-2'>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
+        <div 
+          className={getItemClass('dashboard')}
+          onClick={() => setCurrentView('dashboard')}
+        >
             <img src="./src/Components/assets/dashboard_icon.png" alt="Dashboard Icon" className='inline w-6 h-6 mr-2'/>
             <p>Dashboard</p>
         </div>
@@ -19,7 +29,10 @@ const Sidebar = () => {
             <img src="./src/Components/assets/account_icon.png" alt="Account Icon" className='inline w-5 h-5 mr-2'/>
             <p>Account</p>
         </div>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
+        <div 
+          className={getItemClass('settings')}
+          onClick={() => setCurrentView('settings')}
+        >
             <img src="./src/Components/assets/settings_icon.png" alt="Settings Icon" className='inline w-5 h-5 mr-2'/>
             <p>Settings</p>
         </div>
