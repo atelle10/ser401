@@ -1,4 +1,4 @@
-    import React, { useState } from 'react';
+    import React, { use, useState } from 'react';
     import Home from './Home';
 
     let loggedIn = false;
@@ -24,7 +24,6 @@
         e.preventDefault(); 
         // Handle sign-up logic here (e.g., send credentials to an API)
         console.log('Sign Up - Username:', username, 'Password:', password);
-        <Register />;
         setUsername('');
         setPassword('');
       };
