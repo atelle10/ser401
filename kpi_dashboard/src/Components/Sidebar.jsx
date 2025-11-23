@@ -11,7 +11,7 @@ const Sidebar = ({ currentView, setCurrentView }) => {
   return (
     <div className='text-xs justify-center text-left font-bold shadow-blue-500/20 bg-white w-full shadow-md rounded-2xl p-2'>
       {/* Desktop: Vertical list, Mobile: Horizontal scrollable */}
-      <div className='flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible'>
+      <div className='flex lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-x-visible'>
         <div 
           className={getItemClass('dashboard')}
           onClick={() => setCurrentView('dashboard')}
