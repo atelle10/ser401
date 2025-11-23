@@ -52,13 +52,13 @@ export default function Settings() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-6">Settings</h1>
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+      <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Settings</h1>
 
       <div className="bg-white rounded-lg shadow divide-y">
         {/* Display Settings */}
-        <div className="p-6">
-          <h2 className="font-medium text-lg mb-4">Display</h2>
+        <div className="p-4 sm:p-6">
+          <h2 className="font-medium text-base sm:text-lg mb-3 sm:mb-4">Display</h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Theme</label>
@@ -117,8 +117,8 @@ export default function Settings() {
         </div>
 
         {/* Data Settings */}
-        <div className="p-6">
-          <h2 className="font-medium text-lg mb-4">Data</h2>
+        <div className="p-4 sm:p-6">
+          <h2 className="font-medium text-base sm:text-lg mb-3 sm:mb-4">Data</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -151,8 +151,8 @@ export default function Settings() {
         </div>
 
         {/* Notification Settings */}
-        <div className="p-6">
-          <h2 className="font-medium text-lg mb-4">Notifications</h2>
+        <div className="p-4 sm:p-6">
+          <h2 className="font-medium text-base sm:text-lg mb-3 sm:mb-4">Notifications</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -184,21 +184,21 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="p-6 flex items-center justify-between">
+        {/* Actions - Stack on mobile, side-by-side on larger screens */}
+        <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <button
             onClick={handleReset}
-            className="px-4 py-2 rounded border hover:bg-gray-50"
+            className="px-4 py-2 rounded border hover:bg-gray-50 text-sm sm:text-base"
           >
             Reset to Defaults
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {saved && (
-              <span className="text-sm text-green-600">Saved successfully</span>
+              <span className="text-sm text-green-600 text-center">Saved successfully</span>
             )}
             <button
               onClick={handleSave}
-              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
             >
               Save Changes
             </button>

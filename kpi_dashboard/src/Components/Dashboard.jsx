@@ -18,26 +18,26 @@ const Dashboard = () => {
   const [timeWindow, setTimeWindow] = useState(7)
 
   return (
-    <div className="p-4 space-y-6">
-      {/* Filters */}
-      <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow">
-        <div>
-          <label className="text-sm font-medium mr-2">Region:</label>
+    <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
+      {/* Filters - Stack on mobile, side-by-side on larger screens */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-lg shadow">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="px-3 py-1 border rounded"
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto"
           >
             <option value="south">South Scottsdale</option>
             <option value="north">North Scottsdale</option>
           </select>
         </div>
-        <div>
-          <label className="text-sm font-medium mr-2">Time Window:</label>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Time Window:</label>
           <select
             value={timeWindow}
             onChange={(e) => setTimeWindow(Number(e.target.value))}
-            className="px-3 py-1 border rounded"
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto"
           >
             <option value={7}>Last 7 Days</option>
             <option value={14}>Last 14 Days</option>
@@ -46,8 +46,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* KPI Components Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
           <HeatMapDayHour incidents={mockIncidentData} region={region} weeks={1} />

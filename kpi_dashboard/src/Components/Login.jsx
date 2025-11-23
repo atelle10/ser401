@@ -27,24 +27,24 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
+    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 p-4">
       <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
       
-      {/* Main Login Card - matching dashboard style */}
-      <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-md space-y-6">
+      {/* Main Login Card - matching dashboard style - Mobile Responsive */}
+      <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-md space-y-4 sm:space-y-6">
         {/* Logo */}
         <div className="flex justify-center">
           <img 
             src="./src/Components/assets/famar_logo.png" 
             alt="Famar Logo" 
-            className="w-32 h-32 object-contain" 
+            className="w-24 h-24 sm:w-32 sm:h-32 object-contain" 
           />
         </div>
 
         {/* Title */}
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
-          <p className="text-sm text-gray-600 mt-1">Sign in to continue to dashboard</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Welcome Back</h1>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">Sign in to continue to dashboard</p>
         </div>
 
         {/* Form */}

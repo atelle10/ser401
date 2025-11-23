@@ -57,21 +57,21 @@ const Register = () => {
   };
 
   return (
-    <div className="w-screen min-h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 py-8">
+    <div className="w-screen min-h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 py-4 sm:py-8 px-4">
       <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
       
-      {/* Main Registration Card - matching dashboard style */}
-      <div className="relative bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg mx-4">
+      {/* Main Registration Card - matching dashboard style - Mobile Responsive */}
+      <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-lg">
         {/* Title */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Create Account</h1>
-          <p className="text-sm text-gray-600 mt-1">Sign up to get started</p>
+        <div className="text-center mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Create Account</h1>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">Sign up to get started</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name Row */}
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          {/* Name Row - Stack on mobile, side-by-side on larger screens */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
                 First Name
@@ -150,8 +150,8 @@ const Register = () => {
             />
           </div>
 
-          {/* Password Row */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Password Row - Stack on mobile, side-by-side on larger screens */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
