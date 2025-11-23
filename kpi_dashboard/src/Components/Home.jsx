@@ -25,13 +25,13 @@ const Home = () => {
   }
 
   return(
-      <div className="min-w-full h-screen m-0 sm:m-2 p-1 sm:p-2 bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 rounded-none sm:rounded-3xl shadow-lg">
+      <div className="min-w-full h-screen m-0 sm:m-2 p-0.5 sm:p-1 bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 rounded-none sm:rounded-3xl shadow-lg">
         {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
-        <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-1">
+        <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5">
           {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
-          <div className="hidden lg:flex lg:col-span-1 flex-col gap-1">
+          <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
             <Logo />
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
               <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
               <ChatBot />
             </div>
@@ -40,7 +40,7 @@ const Home = () => {
           {/* Main Content Column */}
           <div className="flex-1 lg:col-span-6 flex flex-col gap-0 h-full overflow-hidden">
             {/* Top Bar with Logo (mobile only), NavBar, and User */}
-            <div className="flex items-center w-full gap-1 sm:gap-2">
+            <div className="flex items-center w-full gap-2">
               {/* Mobile Logo - Smaller version */}
               <div className="lg:hidden flex-shrink-0">
                 <div className="bg-white rounded-xl shadow-md p-1">
