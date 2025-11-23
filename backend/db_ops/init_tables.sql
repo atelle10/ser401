@@ -1,0 +1,56 @@
+DROP TABLE IF EXISTS fire;
+DROP TABLE IF EXISTS ems;
+
+CREATE TABLE fire (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    `Basic Incident Number (FD1)` VARCHAR(255),
+    `Basic Incident City Name (FD1.16)` VARCHAR(255),
+    `Basic Primary Station Name (FD1.4)` VARCHAR(255),
+    `Basic Incident Type Code (FD1.21)` VARCHAR(255),
+    `Basic Incident Type Code And Description (FD1.21)` VARCHAR(500),
+    `Basic Secondary Station Names List (FD1.4.1)` TEXT,
+    `Basic Incident PSAP Date Time (FD1.51)` VARCHAR(255),
+    `Basic Shift Or Platoon (FD1.30)` VARCHAR(255),
+    `Apparatus Resource Dispatch Date Time (FD18.3)` VARCHAR(255),
+    `Apparatus Resource En Route Date Time (FD18.10)` VARCHAR(255),
+    `Apparatus Resource Arrival Date Time (FD18.4)` VARCHAR(255),
+    `Apparatus Resource Arrival At Hospital Date Time (FD1.73)` VARCHAR(255),
+    `Apparatus Resource Clear Date Time (FD18.5)` VARCHAR(255),
+    `Apparatus Resource ID (FD18.1)` VARCHAR(255),
+    `Basic Incident Year (FD1.3)` INT,
+    `Basic Incident Month (FD1.3)` INT,
+    `Basic Incident Day Of Month (FD1.3)` INT,
+    `Basic Incident Day Of Week (FD1.3)` INT,
+    `Basic Incident Week (FD1.3)` INT,
+    `Basic Incident Day Name (FD1.3)` VARCHAR(50),
+    `Basic Incident Type (FD1.21)` TEXT,
+    `Apparatus Resource Type Category (FD18.2)` VARCHAR(255),
+    `Apparatus Resource Type Code (FD18.2)` INT,
+    `Basic Incident Postal Code (FD1.19)` INT,
+    `Basic Arrival At Hospital Date Time (FD1.76)` VARCHAR(255),
+    `Apparatus Resource In Quarters Date Time (FD1.74)` VARCHAR(255),
+    `Apparatus Resource In Service Date Time (FD18.5.1)` VARCHAR(255),
+    `Apparatus Resource Leave Scene Date Time (FD1.72)` VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_incident_number (`Basic Incident Number (FD1)`),
+    INDEX idx_incident_year (`Basic Incident Year (FD1.3)`),
+    INDEX idx_incident_type (`Basic Incident Type Code (FD1.21)`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE ems (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    `Response Incident Number (eResponse.03)` BIGINT,
+    `Response EMS Response Number (eResponse.04)` VARCHAR(255),
+    `Response EMS Unit Call Sign (eResponse.14)` VARCHAR(255),
+    `Response EMS Vehicle Unit Number (eResponse.13)` VARCHAR(255),
+    `Response Level Of Care Of This Unit (3.4=eResponse.15/3.5=itResponse.115)` VARCHAR(255),
+    `Incident Unit Left Scene Date Time (eTimes.09)` VARCHAR(255),
+    `Incident Unit Left Scene Date Time With Not Values (eTimes.09)` VARCHAR(255),
+    `Incident Patient Arrived At Destination Date Time (eTimes.11)` VARCHAR(255),
+    `Incident Patient Arrived At Destination Date Time With Not Values (eTimes.11)` VARCHAR(255),
+    `Incident Dispatch Priority Patient Acuity (eDispatch.05)` VARCHAR(255),
+    `Disposition Destination Name Delivered Transferred To (eDisposition.01)` VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_incident_number (`Response Incident Number (eResponse.03)`),
+    INDEX idx_response_number (`Response EMS Response Number (eResponse.04)`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
