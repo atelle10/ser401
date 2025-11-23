@@ -1,29 +1,18 @@
-    import React, { use, useState } from 'react';
-    import Home from './Home';
+    import React, { useState } from 'react';
+    import { Navigate } from 'react-router-dom';
+    import { Link } from 'react-router-dom';
 
     let loggedIn = false;
 
     const Login = () => {
       const [username, setUsername] = useState('');
       const [password, setPassword] = useState('');
-
-      if (loggedIn) {
-        return <Home />;
-      }
       
       const handleSubmit = (e) => {
         e.preventDefault();
         // Handle login logic here (e.g., send credentials to an API)
         console.log('Username:', username, 'Password:', password);
         loggedIn = true; // Update loggedIn status upon successful login
-        setUsername('');
-        setPassword('');
-      };
-
-      const handleSignUp = (e) => {
-        e.preventDefault(); 
-        // Handle sign-up logic here (e.g., send credentials to an API)
-        console.log('Sign Up - Username:', username, 'Password:', password);
         setUsername('');
         setPassword('');
       };
@@ -63,11 +52,14 @@
                   <button type="submit" className='px-2 py-1 rounded-lg border border-gray-400 bg-blue-500 transition-all duration-500 ease-in-out hover:-translate-y-0.5 hover:scale-105 pointer-events-auto '>Login</button>
                 </div>
                 <div className='flex text-xs justify-center m-2'>
-                  <p>Don't have an account? <a onClick={handleSignUp} className="text-blue-700 hover:underline" href='#'>Register</a></p>
+                  <p>Don't have an account? <Link className="text-blue-700 font-bold hover:underline" to="/register">Register Here</Link></p>
                 </div>
               </form>
             </div>
         </div>
+        {
+          loggedIn && <Navigate to="/home" replace />
+        }
       </div>
       );
     };
