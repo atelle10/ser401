@@ -41,13 +41,15 @@ const Home = () => {
           <div className="flex-1 lg:col-span-6 flex flex-col gap-1 sm:gap-0 h-full overflow-hidden">
             {/* Top Bar with Logo (mobile only), NavBar, and User */}
             <div className="flex items-center w-full gap-2">
-              {/* Mobile Logo */}
+              {/* Mobile Logo - Smaller version */}
               <div className="lg:hidden flex-shrink-0">
-                <Logo />
+                <div className="bg-white rounded-xl shadow-md p-1">
+                  <img src="./src/Components/assets/famar_logo.png" alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+                </div>
               </div>
               
               {/* NavBar */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pl-[6px]">
                 <NavBar currentView={currentView} setCurrentView={setCurrentView} />
               </div>
               
