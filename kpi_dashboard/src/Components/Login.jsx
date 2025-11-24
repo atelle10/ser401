@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import loginLogo from './assets/login_logo.png';
+import famarLogo from './assets/famar_logo.png';
 
 let loggedIn = false;
 
@@ -28,14 +30,14 @@ const Login = () => {
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 p-4">
-      <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
+      <div className='absolute inset-0 bg-no-repeat bg-center opacity-70' style={{ backgroundImage: `url(${loginLogo})` }}></div>
       
       {/* Main Login Card - matching dashboard style - Mobile Responsive */}
       <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-md space-y-4 sm:space-y-6">
         {/* Logo */}
         <div className="flex justify-center">
           <img 
-            src="./src/Components/assets/famar_logo.png" 
+            src={famarLogo} 
             alt="Famar Logo" 
             className="w-24 h-24 sm:w-32 sm:h-32 object-contain" 
           />

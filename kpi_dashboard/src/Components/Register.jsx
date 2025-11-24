@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate, Link } from 'react-router-dom';
+import loginLogo from './assets/login_logo.png'
 
 let registered = false;
 
@@ -58,7 +59,7 @@ const Register = () => {
 
   return (
     <div className="w-screen min-h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 py-4 sm:py-8 px-4">
-      <div className='absolute inset-0 bg-[url("./src/Components/assets/login_logo.png")] bg-no-repeat bg-center opacity-70'></div>
+      <div className='absolute inset-0 bg-no-repeat bg-center opacity-70' style={{ backgroundImage: `url(${loginLogo})` }}></div>
       
       {/* Main Registration Card - matching dashboard style - Mobile Responsive */}
       <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-lg">

@@ -1,4 +1,8 @@
 import React from 'react'
+import homeIcon from './assets/home icon.png'
+import fireIcon from './assets/fire icon.png'
+import medicalIcon from './assets/medical icon.png'
+import uploadIcon from './assets/upload icon.png'
 
 const NavBar = ({ currentView, setCurrentView }) => {
   const getItemClass = (view) => {
@@ -14,22 +18,22 @@ const NavBar = ({ currentView, setCurrentView }) => {
           className={getItemClass('dashboard')}
           onClick={() => setCurrentView('dashboard')}
         >
-            <img src="./src/Components/assets/home icon.png" alt="Home Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
+            <img src={homeIcon} alt="Home Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
             <p className="hidden sm:inline text-sm md:text-base">Home</p>
         </div>
         <div className="h-8 p-2 hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-white cursor-pointer rounded-full flex justify-center items-center my-1">
-            <img src="./src/Components/assets/fire icon.png" alt="Fire Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
+            <img src={fireIcon} alt="Fire Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
             <p className="hidden sm:inline text-sm md:text-base">Fire</p>
         </div>
         <div className="h-8 p-2 hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-white cursor-pointer rounded-full flex justify-center items-center my-1">
-            <img src="./src/Components/assets/medical icon.png" alt="Medical Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
+            <img src={medicalIcon} alt="Medical Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
             <p className="hidden sm:inline text-sm md:text-base">Medical</p>
         </div>
         <div 
           className={getItemClass('upload')}
           onClick={() => setCurrentView('upload')}
         >
-            <img src="./src/Components/assets/upload icon.png" alt="Upload Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
+            <img src={uploadIcon} alt="Upload Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
             <p className="hidden sm:inline text-sm md:text-base">Upload</p>
         </div>
     </div>
