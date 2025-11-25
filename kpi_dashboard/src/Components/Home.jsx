@@ -9,9 +9,16 @@ import Settings from './Settings.jsx'
 import ChatBot from './ChatBot.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx';
+import accountIcon from './assets/account.png'
 
 const Home = () => {
   const [currentView, setCurrentView] = useState('dashboard')
+  const [userProfile, setUserProfile] = useState({
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    role: 'Administrator',
+    avatar: accountIcon,
+  })
 
   const renderContent = () => {
     switch(currentView) {
@@ -20,7 +27,13 @@ const Home = () => {
       case 'upload':
         return <Upload />
       case 'account':
-        return <Account onBack={() => setCurrentView('dashboard')} />;
+        return (
+          <Account
+            profile={userProfile}
+            onUpdateProfile={setUserProfile}
+            onBack={() => setCurrentView('dashboard')}
+          />
+        );
       case 'settings':
         return <Settings />
       default:
@@ -59,7 +72,10 @@ const Home = () => {
               
               {/* User */}
               <div className="flex-shrink-0">
-                <User onViewAccount={() => setCurrentView('account')}/>
+                <User
+                  profile={userProfile}
+                  onViewAccount={() => setCurrentView('account')}
+                />
               </div>
             </div>
             

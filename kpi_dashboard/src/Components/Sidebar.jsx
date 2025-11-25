@@ -13,6 +13,14 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
       : `${baseClass} hover:bg-blue-400`
   }
 
+  const handleAccountClick = () => {
+    if (onAccountClick) {
+      onAccountClick()
+    } else if (setCurrentView) {
+      setCurrentView('account')
+    }
+  }
+
   return (
     <div className='text-xs justify-center text-left font-bold shadow-blue-500/20 bg-white w-full shadow-md rounded-2xl p-2'>
       {/* Desktop: Vertical list, Mobile: Horizontal scrollable */}
@@ -32,7 +40,7 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
             <img src={whiteMedicalIcon} alt="Medical Icon" className='inline w-5 h-5 lg:mr-2 center'/>
             <p className="hidden lg:inline whitespace-nowrap">Medical (EMS)</p>
         </div>
-        <div className={getItemClass('account')} onClick={onAccountClick}>
+        <div className={getItemClass('account')} onClick={handleAccountClick}>
             <img src={accountIcon} alt="Account Icon" className='inline w-5 h-5 lg:mr-2'/>
             <p className="hidden lg:inline whitespace-nowrap">Account</p>
         </div>
