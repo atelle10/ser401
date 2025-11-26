@@ -8,9 +8,17 @@ import Upload from './Upload.jsx'
 import Settings from './Settings.jsx'
 import ChatBot from './ChatBot.jsx'
 import famarLogo from './assets/famar_logo.png'
+import Account from './Account.jsx';
+import accountIcon from './assets/account.png'
 
 const Home = () => {
   const [currentView, setCurrentView] = useState('dashboard')
+  const [userProfile, setUserProfile] = useState({
+    name: 'John Doe',
+    email: 'john.doe@example.com',
+    role: 'Administrator',
+    avatar: accountIcon,
+  })
 
   const renderContent = () => {
     switch(currentView) {
@@ -18,10 +26,18 @@ const Home = () => {
         return <Dashboard />
       case 'upload':
         return <Upload />
+      case 'account':
+        return (
+          <Account
+            profile={userProfile}
+            onUpdateProfile={setUserProfile}
+            onBack={() => setCurrentView('dashboard')}
+          />
+        );
       case 'settings':
         return <Settings />
       default:
-        return <Dashboard />
+        return <Dashboard className="flex-1 overflow-auto" />
     }
   }
 
@@ -33,7 +49,7 @@ const Home = () => {
           <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
             <Logo />
             <div className="flex flex-col gap-2">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
               <ChatBot />
             </div>
           </div>
@@ -56,7 +72,10 @@ const Home = () => {
               
               {/* User */}
               <div className="flex-shrink-0">
-                <User />
+                <User
+                  profile={userProfile}
+                  onViewAccount={() => setCurrentView('account')}
+                />
               </div>
             </div>
             
@@ -67,7 +86,7 @@ const Home = () => {
             
             {/* Mobile Bottom Navigation (Sidebar items) */}
             <div className="lg:hidden mt-auto">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
             </div>
           </div>
         </div>
