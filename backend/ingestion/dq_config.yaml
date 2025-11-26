@@ -1,0 +1,43 @@
+fire:
+  numeric_columns:
+    - "Basic Incident Year (FD1.3)"
+    - "Basic Incident Month (FD1.3)"
+    - "Basic Incident Day Of Month (FD1.3)"
+    - "Basic Incident Day Of Week (FD1.3)"
+    - "Basic Incident Week (FD1.3)"
+    - "Apparatus Resource Type Code (FD18.2)"
+    - "Basic Incident Postal Code (FD1.19)"
+  
+  ok_for_nan_columns:
+    - "Basic Primary Station Name (FD1.4)"
+    - "Basic Secondary Station Names List (FD1.4.1)"
+    - "Basic Incident Type Code (FD1.21)"
+    - "Basic Incident Type Code And Description (FD1.21)"
+    - "Basic Incident PSAP Date Time (FD1.51)"
+    - "Basic Shift Or Platoon (FD1.30)"
+    - "Apparatus Resource En Route Date Time (FD18.10)"
+    - "Apparatus Resource Arrival Date Time (FD18.4)"
+    - "Apparatus Resource Arrival At Hospital Date Time (FD1.73)"
+    - "Apparatus Resource Clear Date Time (FD18.5)"
+    - "Apparatus Resource ID (FD18.1)"
+    - "Basic Incident Type (FD1.21)"
+    - "Apparatus Resource Type Category (FD18.2)"
+    - "Apparatus Resource Type Code (FD18.2)"
+    - "Basic Arrival At Hospital Date Time (FD1.76)"
+    - "Apparatus Resource In Quarters Date Time (FD1.74)"
+    - "Apparatus Resource In Service Date Time (FD18.5.1)"
+    - "Apparatus Resource Leave Scene Date Time (FD1.72)"
+
+ems:
+  numeric_columns:
+    - "Response Incident Number (eResponse.03)"
+
+  ok_for_nan_columns:
+    - "Response EMS Response Number (eResponse.04)"
+    - "Response Level Of Care Of This Unit (3.4=eResponse.15/3.5=itResponse.115)"
+    - "Incident Unit Left Scene Date Time (eTimes.09)"
+    - "Incident Unit Left Scene Date Time With Not Values (eTimes.09)"
+    - "Incident Patient Arrived At Destination Date Time (eTimes.11)"
+    - "Incident Patient Arrived At Destination Date Time With Not Values (eTimes.11)"
+    - "Incident Dispatch Priority Patient Acuity (eDispatch.05)"
+    - "Disposition Destination Name Delivered Transferred To (eDisposition.01)"
