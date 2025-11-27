@@ -26,8 +26,6 @@ uvicorn main:app --reload --port 8000
 Frontend
 
 Bash
-￼
-￼
 Copy
 cd kpi_dashboard
 npm install --legacy-peer-deps
