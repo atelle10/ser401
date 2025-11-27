@@ -1,16 +1,10 @@
-import { StrictMode, useEffect } from 'react'
-import { createRoot } from 'react-dom/client'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'  // ← THIS IS YOUR REAL FILE
 import './main.css'
-import Login from './Components/Login.jsx';
 
-const root = createRoot(document.getElementById('root'));
-
-root.render(
-<StrictMode >
-  <div>
-    <Login />
-  </div>
-  </StrictMode>,
-);
-
-
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
