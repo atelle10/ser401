@@ -1,32 +1,41 @@
-# ser401
-SER401 Capstone Project | Authors: Zachary Alexander, Mike Krasnik, Damian Dray, Leroy Sturdivent, Andrew Tellez
+# Task-504: KPI Dashboard with Role-Based FastAPI Backend
 
-# FAMAR Dashboard – T1 SSO Login (COMPLETE – November 19, 2025)
+**Completed & Fully Working**
 
-**Task:** T1 / US #315 – Role-Based Access Control & Login  
-**Branch:** `sprint-3-task-475-login-flow`  
+### Features
+- Real FAMAR login screen (original design preserved)
+- Authentication via FastAPI `/auth/token` using access codes
+- Valid codes only:
+  - `admincode` → ADMIN
+  - `viewercode` → VIEWER
+  - `mockcode` → ANALYST
+- Invalid codes rejected
+- JWT stored in localStorage
+- Real FAMAR dashboard with sidebar, chatbot, and full fire department theme
+- Protected routes
 
-## How to Run (2 terminals)
+### How to Run
 
-### 1. Backend – FastAPI mock server (multi-role support)
+**Backend**
 ```bash
-# From the frontend/backend folder
-uvicorn main:app --port 8000 --reload
-2. Frontend – React app
-Bash# From the frontend folder
-npm start
-Open → http://localhost:3000
-Instant Role Demo Links
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install fastapi uvicorn python-jose[cryptography] passlib[bcrypt] pydantic
+uvicorn main:app --reload --port 8000
+Frontend
 
-Admin   → http://localhost:3000/auth/callback?code=admincode
-Analyst → http://localhost:3000/auth/callback?code=mockcode
-Viewer  → http://localhost:3000/auth/callback?code=viewercode
+Bash
+￼
+￼
+Copy
+cd kpi_dashboard
+npm install --legacy-peer-deps
+npm run dev
+Open → http://localhost:5173
 
-What This Delivers
+Test Codes
+Username: anything
+Password: admincode | viewercode | mockcode
+Task-504 COMPLETE — NUCLEAR SUCCESS
 
-Production-grade FAMAR login screen (gradient background, large centered text, official Microsoft logo)
-Huge readable toasts (24px font, no duplicates via toastId)
-Full JWT decoding + role extraction on the frontend
-Protected routes and role-based rendering fully implemented
-Dashboard correctly displays “Logged in as: ADMIN / ANALYST / VIEWER”
-Tiny FastAPI mock backend (frontend/backend/main.py) that returns properly signed JWTs based on the code
