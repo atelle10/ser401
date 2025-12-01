@@ -86,6 +86,13 @@ Desktop.ini
 
 
 # Custom
+<<<<<<< HEAD
 mock_data/
 *.csv
+<<<<<<< HEAD
 node_modules/
+=======
+=======
+mock_data/node_modules/
+>>>>>>> 10e62cc (feat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)

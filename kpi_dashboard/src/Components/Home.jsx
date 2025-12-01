@@ -1,117 +1,121 @@
-import React, { useEffect, useState } from 'react'
-import NavBar from './NavBar.jsx'
-import Sidebar from './Sidebar.jsx'
-import Logo from './Logo.jsx'
-import User from './User.jsx'
-import Dashboard from './Dashboard.jsx'
-import Upload from './Upload.jsx'
-import Settings from './Settings.jsx'
-import ChatBot from './ChatBot.jsx'
-import famarLogo from './assets/famar_logo.png'
+import React, { useState } from 'react';
+import NavBar from './NavBar.jsx';
+import Sidebar from './Sidebar.jsx';
+import Logo from './Logo.jsx';
+import User from './User.jsx';
+import Dashboard from './Dashboard.jsx';
+import Upload from './Upload.jsx';
+import Settings from './Settings.jsx';
+import ChatBot from './ChatBot.jsx';
 import Account from './Account.jsx';
-import accountIcon from './assets/account.png'
+import famarLogo from './assets/famar_logo.png';
+import accountIcon from './assets/account.png';
 import backgroundImage2 from './assets/background_img.png';
 import { authClient } from '../utils/authClient.js';
 
 const fallbackProfile = {
   name: 'User',
   email: '',
-  role: 'User',
+  role: 'viewer',
   avatar: accountIcon,
-}
+};
 
 const buildProfile = (user) => {
-  if (!user) return fallbackProfile
-  const name = user.name || user.username || user.email || fallbackProfile.name
+  if (!user) return fallbackProfile;
+  const name = user.name || user.username || user.email || fallbackProfile.name;
   return {
     name,
     email: user.email || '',
-    role: user.role || user.accountType || fallbackProfile.role,
+    role: (user.role || user.accountType || 'viewer').toLowerCase(),
     avatar: user.image || user.avatar || fallbackProfile.avatar,
-  }
-}
+  };
+};
 
 const Home = () => {
-  const { data: session } = authClient.useSession()
-  const [currentView, setCurrentView] = useState('dashboard')
-  const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
+  const { data: session } = authClient.useSession();
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user));
 
-  useEffect(() => {
-    setUserProfile(buildProfile(session?.user))
-  }, [session?.user])
+  React.useEffect(() => {
+    setUserProfile(buildProfile(session?.user));
+  }, [session?.user]);
+
+  const role = userProfile.role.toLowerCase();
+
+  const handleLogout = () => {
+    authClient.signOut(); // Better Auth logout (clears session)
+  };
 
   const renderContent = () => {
-    switch(currentView) {
+    switch (currentView) {
       case 'dashboard':
-        return <Dashboard />
+        return <Dashboard role={role} />;
       case 'upload':
-        return <Upload />
+        return (role === 'admin' || role === 'analyst') ? <Upload /> : <Dashboard role={role} />;
       case 'account':
-        return (
-          <Account
-            profile={userProfile}
-            onUpdateProfile={setUserProfile}
-            onBack={() => setCurrentView('dashboard')}
-          />
-        );
+        return <Account profile={userProfile} onUpdateProfile={setUserProfile} onBack={() => setCurrentView('dashboard')} />;
       case 'settings':
-        return <Settings />
+        return role === 'admin' ? <Settings /> : <Dashboard role={role} />;
       default:
-        return <Dashboard className="flex-1 overflow-auto" />
+        return <Dashboard role={role} />;
     }
-  }
+  };
 
-  return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
-        {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
-        <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
-          {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
-          <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
-            <Logo />
-            <div className="flex flex-col gap-2">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
-              <ChatBot />
+  return (
+    <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start" style={{ backgroundImage: `url(${backgroundImage2})` }}>
+      <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
+        {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
+        <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
+          <Logo />
+          <div className="flex flex-col gap-2">
+            <Sidebar
+              role={role}
+              currentView={currentView}
+              setCurrentView={setCurrentView}
+              onAccountClick={() => setCurrentView('account')}
+            />
+            <ChatBot />
+          </div>
+        </div>
+
+        {/* Main Content Column */}
+        <div className="flex-1 lg:col-span-6 flex flex-col gap-0">
+          <div className="flex items-center w-full gap-2">
+            <div className="lg:hidden flex-shrink-0">
+              <div className="bg-white rounded-xl shadow-md p-1">
+                <img src={famarLogo} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0 pl-[6px]">
+              <NavBar role={role} currentView={currentView} setCurrentView={setCurrentView} />
+            </div>
+            <div className="flex-shrink-0">
+              <User
+                profile={userProfile}
+                onViewAccount={() => setCurrentView('account')}
+                handleLogout={handleLogout}
+              />
             </div>
           </div>
-          
-          {/* Main Content Column */}
-          <div className="flex-1 lg:col-span-6 flex flex-col gap-0">
-            {/* Top Bar with Logo (mobile only), NavBar, and User */}
-            <div className="flex items-center w-full gap-2">
-              {/* Mobile Logo - Smaller version */}
-              <div className="lg:hidden flex-shrink-0">
-                <div className="bg-white rounded-xl shadow-md p-1">
-                  <img src={famarLogo} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-                </div>
-              </div>
-              
-              {/* NavBar */}
-              <div className="flex-1 min-w-0 pl-[6px]">
-                <NavBar currentView={currentView} setCurrentView={setCurrentView} />
-              </div>
-              
-              {/* User */}
-              <div className="flex-shrink-0">
-                <User
-                  profile={userProfile}
-                  onViewAccount={() => setCurrentView('account')}
-                />
-              </div>
-            </div>
-            
-            {/* Content Area - Page scrolls (no inner scroll) */}
-            <div className="flex-1">
-              {renderContent()}
-            </div>
-            
-            {/* Mobile Bottom Navigation (Sidebar items) */}
-            <div className="lg:hidden mt-auto self-center">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
-            </div>
+
+          {/* Content Area */}
+          <div className="flex-1">
+            {renderContent()}
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          <div className="lg:hidden mt-auto self-center">
+            <Sidebar
+              role={role}
+              currentView={currentView}
+              setCurrentView={setCurrentView}
+              onAccountClick={() => setCurrentView('account')}
+            />
           </div>
         </div>
       </div>
-  )
+    </div>
+  );
 };
 
-  export default Home;
+export default Home;

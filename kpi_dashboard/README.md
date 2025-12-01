@@ -1,28 +1,30 @@
-# How to run KPI Dashboard
- ## Prerequisites
- - Latest version of Node js
- - Current "kpi_dashboard" directory from staging branch of github repository
+# FAMAR KPI Dashboard
+AI-Powered BI Dashboard for Scottsdale Fire Department (FAMAR KPI Dashboard).
 
-1. Navigate to the 'kpi_dashboard' in a command line terminal 
-2. Run 'npm install' .This will ensure you have all dependencies needed to run the program
-3. Run 'npm run dev' to start the software
-4. In a web browser, enter 'http://localhost:5173' to access the software's start(login) page
+## Task #561: Role-Based Access Control & Login
+Implemented secure Microsoft Entra ID SSO with 3-tier RBAC (user story #315 from security epic #285):
+- **Viewer** (default/general/read-only): Basic KPI placeholders + restricted message. No Upload or Settings access.
+- **Analyst**: Advanced KPIs/filters + full Upload page. No Settings.
+- **Admin**: Advanced KPIs + Upload + Settings page.
+- Backend (`main.py`): Validates Microsoft id_token, extracts "roles" claim from Azure app roles, issues custom JWT with role.
+- Frontend: View switching + conditionals hide/protect features (no "Access Denied" tease — clean UI).
+- Polished Sidebar/NavBar/User to match staging (responsive, hover effects, navigation).
+- Tested all roles (normal logins, logout between).
+Roles assigned in Azure (Enterprise applications → Users and groups). Unassigned = viewer (safe fallback).
 
+## Prerequisites
+- Node.js (latest LTS recommended)
+- Python 3.12+
+- Git
+- Microsoft account for login (ASU emails or assigned test accounts for role testing)
 
+## How to Run Locally
+The project has a **frontend** (React/Vite) and **backend** (FastAPI).
 
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Backend Setup (FastAPI)
+   ```bash
+   cd backend
+   python -m venv venv # Create virtual env (once)
+   source venv/bin/activate # Activate (every session)
+   pip install fastapi uvicorn[standard] python-jose[cryptography] httpx pydantic
+   uvicorn main:app --reload --port 8000
