@@ -1,13 +1,15 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from 'react'
 import { authClient } from '../utils/authClient';
+=======
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
 import NavBar from './NavBar.jsx'
 import Sidebar from './Sidebar.jsx'
 import Logo from './Logo.jsx'
 import User from './User.jsx'
 import Dashboard from './Dashboard.jsx'
-import Upload from './Upload.jsx'
-import Settings from './Settings.jsx'
 import ChatBot from './ChatBot.jsx'
+<<<<<<< HEAD
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx';
 import accountIcon from './assets/account.png'
@@ -39,29 +41,21 @@ const Home = () => {
   useEffect(() => {
     setUserProfile(buildProfile(session?.user))
   }, [session?.user])
+=======
 
-  const renderContent = () => {
-    switch(currentView) {
-      case 'dashboard':
-        return <Dashboard />
-      case 'upload':
-        return <Upload />
-      case 'account':
-        return (
-          <Account
-            profile={userProfile}
-            onUpdateProfile={setUserProfile}
-            onBack={() => setCurrentView('dashboard')}
-          />
-        );
-      case 'settings':
-        return <Settings />
-      default:
-        return <Dashboard className="flex-1 overflow-auto" />
-    }
-  }
+const Home = ({ setIsAuthenticated }) => {
+  const handleLogout = () => {
+    console.log('handleLogout executed!');  // Log to confirm call
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    window.location.href = "/";
+  };
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
+
+  console.log('Home rendered, passing handleLogout to User');  // Log pass
 
   return(
+<<<<<<< HEAD
       <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-center justify-center">
         {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
@@ -71,19 +65,24 @@ const Home = () => {
             <div className="flex flex-col gap-2">
               <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
               <ChatBot />
-            </div>
-          </div>
-          
-          {/* Main Content Column */}
-          <div className="flex-1 lg:col-span-6 flex flex-col gap-0">
-            {/* Top Bar with Logo (mobile only), NavBar, and User */}
-            <div className="flex items-center w-full gap-2">
-              {/* Mobile Logo - Smaller version */}
-              <div className="lg:hidden flex-shrink-0">
-                <div className="bg-white rounded-xl shadow-md p-1">
-                  <img src={famarLogo} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-                </div>
+=======
+      <div className="min-w-6xl h-screen m-2 p-2 bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 rounded-3xl shadow-lg grid grid-cols-7 gap-1">
+            <div className="col-span-1 flex flex-col gap-2">
+              <Logo />
+              <div className="flex flex-col gap-2">
+                <Sidebar />
+                <ChatBot />
               </div>
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
+            </div>
+            <div className="col-span-6 flex flex-col gap-0 h-full">
+              <div className="flex items-center w-full gap-2">
+                <div className="flex-1 pl-[6px]">
+                  <NavBar />
+                </div>
+                <User handleLogout={handleLogout} />  {/* Ensure passed */}
+              </div>
+<<<<<<< HEAD
               
               {/* NavBar */}
               <div className="flex-1 min-w-0 pl-[6px]">
@@ -107,11 +106,12 @@ const Home = () => {
             {/* Mobile Bottom Navigation (Sidebar items) */}
             <div className="lg:hidden mt-auto self-center">
               <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
+=======
+              <Dashboard className="flex-1 overflow-auto" />
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
             </div>
           </div>
-        </div>
-      </div>
   )
 };
 
-  export default Home;
+export default Home;

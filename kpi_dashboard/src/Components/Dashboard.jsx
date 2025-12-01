@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
-import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
-import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
-import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
+import React from 'react'
+import KPI_1 from './Dashboard/KPIs/KPI_1'
+import KPI_2 from './Dashboard/KPIs/KPI_2'
+import KPI_3 from './Dashboard/KPIs/KPI_3'
+import KPI_4 from './Dashboard/KPIs/KPI_4'
 import Chart from './Dashboard/Chart'
 
+<<<<<<< HEAD
 // Mock data for development
 const mockIncidentData = [
   { timestamp: '2025-11-20T08:00:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T08:05:00', clear_time: '2025-11-20T08:50:00' },
@@ -13,11 +15,11 @@ const mockIncidentData = [
   { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
 ]
 
+=======
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
 const Dashboard = () => {
-  const [region, setRegion] = useState('south')
-  const [timeWindow, setTimeWindow] = useState(7)
-
   return (
+<<<<<<< HEAD
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
       {/* Filters - Stack on mobile, side-by-side on larger screens */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
@@ -72,6 +74,16 @@ const Dashboard = () => {
           <Chart />
         </div>
       </div>
+=======
+    <div className="grid grid-cols-4 gap-4 p-2">
+        <KPI_1 />
+        <KPI_2 />
+        <KPI_3 />
+        <KPI_4 />
+        <div className="col-span-4">
+            <Chart />
+        </div>
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
     </div>
   )
 }

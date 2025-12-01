@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import accountIcon from './assets/account.png'
@@ -23,8 +24,13 @@ const User = ({ onViewAccount, profile }) => {
     setOpen(false);
     if (onViewAccount) onViewAccount();
   };
+=======
+import React from 'react'
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
 
+const User = () => {
   return (
+<<<<<<< HEAD
     <div className="relative" ref={menuRef}>
       <div 
         onClick={() => setOpen(!open)}
@@ -54,8 +60,13 @@ const User = ({ onViewAccount, profile }) => {
                 </button>
        </div>
       )}
+=======
+    <div className="h-10 p-2 bg-white hover:bg-red-400 hover:text-white cursor-pointer rounded-full flex flex-row items-center justify-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 shrink mb-2 shadow-blue-500/20 shadow-md w-fit">
+            <img src="./src/Components/assets/account.png" alt="Account Icon" className='inline- w-7 h-7 mr-2'/>
+            <span>John Doe</span>
+>>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
     </div>
-  );
-};
+  )
+}
 
 export default User
