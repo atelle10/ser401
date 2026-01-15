@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import famarLogo from './assets/famar_logo.png';
-import backgroundImage from './assets/sfd_bg.png';
-
+import backgroundImage from './assets/sfd_bg.jpg';
+import backgroundImage2 from './assets/sfd_bg_2.jpg';
+import sfdlogo from './assets/sfd_bg_2_transparentbg.png';
 
 
 let loggedIn = false;
@@ -54,6 +55,7 @@ const Login = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="w-screen h-screen flex items-center justify-center bg-no-repeat bg-black p-1" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       <div className="flex items-center md:flex-row bg-gray-100 rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2 bg-transparent">
         {/* Main Login Card - matching dashboard style - Mobile Responsive */}
@@ -64,6 +66,48 @@ const Login = () => {
               src={famarLogo} 
               alt="Famar Logo" 
               className="w-24 h-24 sm:w-32 sm:h-32 object-contain" 
+=======
+    <div className="w-auto h-auto flex items-center justify-center bg-no-repeat bg-gray-500 p-1">
+      <div className='rounded-lg h-full w-1/2 flex items-center justify-center overflow-hidden'>
+        <img src={backgroundImage} alt="Login Logo" className="h-screen m-1" />
+        <div className='absolute h-full w-full flex items-center justify-center '>
+          <img src={sfdlogo} alt="SFD Logo" className="absolute m-1 inset-y-0 opacity-60" />
+        </div>
+      </div>
+      
+      {/* Main Login Card - matching dashboard style - Mobile Responsive */}
+      <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-fit w-auto max-w-md space-y-4 sm:space-y-6">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <img 
+            src={famarLogo} 
+            alt="Famar Logo" 
+            className="w-24 h-24 sm:w-32 sm:h-32 object-contain" 
+          />
+        </div>
+
+        {/* Title */}
+        <div className="text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Welcome Back</h1>
+          <p className="text-xs sm:text-sm text-gray-600 mt-1">Sign in to continue to dashboard</p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Username Input */}
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              type="text"
+              id="username"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+>>>>>>> 28daf90 (UI change draft 1)
             />
           </div>
 
