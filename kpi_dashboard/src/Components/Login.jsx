@@ -3,6 +3,10 @@ import { Navigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import loginLogo from './assets/login_logo.png';
 import famarLogo from './assets/famar_logo.png';
+import backgroundImage from './assets/sfd_bg.jpg';
+import backgroundImage2 from './assets/sfd_bg_2.jpg';
+import sfdlogo from './assets/sfd_bg_2_transparentbg.png';
+
 
 let loggedIn = false;
 
@@ -29,11 +33,16 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 p-4">
-      <div className='absolute inset-0 bg-no-repeat bg-center opacity-70' style={{ backgroundImage: `url(${loginLogo})` }}></div>
+    <div className="w-auto h-auto flex items-center justify-center bg-no-repeat bg-gray-500 p-1">
+      <div className='rounded-lg h-full w-1/2 flex items-center justify-center overflow-hidden'>
+        <img src={backgroundImage} alt="Login Logo" className="h-screen m-1" />
+        <div className='absolute h-full w-full flex items-center justify-center '>
+          <img src={sfdlogo} alt="SFD Logo" className="absolute m-1 inset-y-0 opacity-60" />
+        </div>
+      </div>
       
       {/* Main Login Card - matching dashboard style - Mobile Responsive */}
-      <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-md space-y-4 sm:space-y-6">
+      <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-fit w-auto max-w-md space-y-4 sm:space-y-6">
         {/* Logo */}
         <div className="flex justify-center">
           <img 
