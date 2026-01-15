@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Home from './Components/Home.jsx';
-import CompleteProfile from './Components/CompleteProfile.jsx'; 
+import CompleteProfile from './Components/CompleteProfile.jsx';
 import { authClient } from './utils/authClient.js'; // Better Auth client
 
 const needsProfileCompletion = (user) =>
@@ -48,7 +48,7 @@ const RequireGuest = ({ children }) => {
 };
 
 const Login = () => {
-  const { signIn } = authClient; // Better Auth signIn for "microsoft"
+  const { signIn, isPending } = authClient; // Better Auth signIn for "microsoft"
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r from-red-400 via-slate-300 to-blue-400">
@@ -56,9 +56,10 @@ const Login = () => {
         <h1 className="text-7xl font-bold mb-16 text-gray-800">FAMAR KPI Dashboard</h1>
         <button
           onClick={() => signIn("microsoft")}
-          className="px-20 py-10 bg-blue-600 hover:bg-blue-700 text-white text-4xl font-bold rounded-2xl shadow-2xl transition transform hover:scale-105"
+          disabled={isPending}
+          className="px-20 py-10 bg-blue-600 hover:bg-blue-700 text-white text-4xl font-bold rounded-2xl shadow-2xl transition transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Sign in with Microsoft
+          {isPending ? 'Signing in...' : 'Sign in with Microsoft'}
         </button>
       </div>
     </div>
