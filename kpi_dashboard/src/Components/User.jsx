@@ -21,13 +21,12 @@ const User = ({ onViewAccount, profile }) => {
   const handleViewAccount = () => {
     setOpen(false);
     if (onViewAccount) onViewAccount();
-    // Placeholder — replace with actual account modal/route later
     alert('Account details coming soon');
   };
 
   const performLogout = async () => {
     setOpen(false);
-    await authClient.signOut(); // Better Auth secure logout
+    await authClient.signOut();
   };
 
   return (
@@ -39,9 +38,7 @@ const User = ({ onViewAccount, profile }) => {
         <img
           src={avatarSrc}
           alt="Account Icon"
-          className=" 
-
-inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 sm:mr-2 rounded-full object-cover"
+          className="inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 sm:mr-2 rounded-full object-cover"
         />
         <span className="hidden md:inline text-sm truncate max-w-[120px]">{displayName}</span>
       </div>

@@ -1,142 +1,66 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import famarLogo from './assets/famar_logo.png';
-import backgroundImage from './assets/sfd_bg.png';
+import React, { useState, useRef, useEffect } from 'react';
+import accountIcon from './assets/account.png';
 import { authClient } from '../utils/authClient.js';
 
-const Login = () => {
-  const navigate = useNavigate();
-  const { data: session } = authClient.useSession();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const User = ({ onViewAccount, profile }) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  const displayName = profile?.name || profile?.email || 'User';
+  const avatarSrc = profile?.avatar || accountIcon;
 
   useEffect(() => {
-    if (session?.user) {
-      navigate('/home', { replace: true });
-    }
-  }, [session, navigate]);
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
-  const handleEmailSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
-    }
-
-    setIsSubmitting(true);
-    const result = await authClient.signIn.email({ email, password });
-    setIsSubmitting(false);
-
-    if (result?.error) {
-      setError(result.error.message || 'Sign in failed. Please try again.');
-      return;
-    }
-
-    setEmail('');
-    setPassword('');
-    navigate('/home', { replace: true });
+  const handleViewAccount = () => {
+    setOpen(false);
+    if (onViewAccount) onViewAccount();
+    alert('Account details coming soon');
   };
 
-  const handleMicrosoftSignIn = async () => {
-    setError('');
-    setIsSubmitting(true);
-    const result = await authClient.signIn.social({
-      provider: 'microsoft',
-      callbackURL: '/home',
-    });
-    setIsSubmitting(false);
-
-    if (result?.error) {
-      setError(result.error.message || 'Microsoft sign in failed. Please try again.');
-      return;
-    }
+  const performLogout = async () => {
+    setOpen(false);
+    await authClient.signOut();
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-no-repeat bg-black p-1" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      <div className="flex items-center md:flex-row bg-gray-100 rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2 bg-transparent">
-        <div className="backdrop-blur-md bg-white/30 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-1/2 w-auto max-w-md space-y-4 sm:space-y-6">
-          <div className="flex justify-center">
-            <img src={famarLogo} alt="Famar Logo" className="w-24 h-24 sm:w-32 sm:h-32 object-contain" />
-          </div>
-
-          <div className="text-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-black">Welcome Back</h1>
-            <p className="text-xs sm:text-sm text-gray-800 mt-1">Sign in to continue to dashboard</p>
-          </div>
-
-          {/* Microsoft SSO Button – Primary */}
-          <button 
-            onClick={handleMicrosoftSignIn}
-            disabled={isSubmitting}
-            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 23 23" aria-hidden="true" focusable="false">
-              <rect x="1" y="1" width="10" height="10" fill="#F25022" />
-              <rect x="12" y="1" width="10" height="10" fill="#7FBA00" />
-              <rect x="1" y="12" width="10" height="10" fill="#00A4EF" />
-              <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
-            </svg>
-            {isSubmitting ? 'Signing in...' : 'Sign in with Microsoft'}
-          </button>
-
-          {/* Or divider */}
-          <div className="text-center text-sm text-gray-600 my-4">or</div>
-
-          {/* Email/Password Form – Dev Fallback */}
-          <form onSubmit={handleEmailSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-black mb-1">Email</label>
-              <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-black mb-1">Password</label>
-              <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                type="password"
-                placeholder="Enter your password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-
-            {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg"><p className="text-sm text-red-600">{error}</p></div>}
-
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Signing in...' : 'Login'}
-            </button>
-          </form>
-
-          {/* Register Link */}
-          <div className="text-center text-sm text-black">
-            Don't have an account?{' '}
-            <Link className="text-blue-600 font-semibold hover:text-blue-700 hover:underline" to="/register">
-              Register Here
-            </Link>
-          </div>
-        </div>
+    <div className="relative" ref={menuRef}>
+      <div
+        onClick={() => setOpen(!open)}
+        className="h-10 p-2 bg-blue-500/40 hover:text-blue-800 hover:bg-white text-white cursor-pointer rounded-full flex flex-row items-center justify-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 shrink shadow-blue-500/20 shadow-md w-fit"
+      >
+        <img
+          src={avatarSrc}
+          alt="Account Icon"
+          className="inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 sm:mr-2 rounded-full object-cover"
+        />
+        <span className="hidden md:inline text-sm truncate max-w-[120px]">{displayName}</span>
       </div>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 animate-fade-in z-50">
+          <button
+            onClick={handleViewAccount}
+            className="block w-full text-left px-4 py-2 hover:bg-blue-500/40 text-sm"
+          >
+            View Account Details
+          </button>
+          <button
+            onClick={performLogout}
+            className="block w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-red-600"
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Login;
+export default User;

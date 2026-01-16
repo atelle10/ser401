@@ -43,7 +43,7 @@ const Home = () => {
   const role = userProfile.role.toLowerCase();
 
   const handleLogout = () => {
-    authClient.signOut(); // Better Auth logout (clears session)
+    authClient.signOut();
   };
 
   const renderContent = () => {
@@ -64,7 +64,6 @@ const Home = () => {
   return (
     <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start" style={{ backgroundImage: `url(${backgroundImage2})` }}>
       <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
-        {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
         <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
           <Logo />
           <div className="flex flex-col gap-2">
@@ -78,7 +77,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Main Content Column */}
         <div className="flex-1 lg:col-span-6 flex flex-col gap-0">
           <div className="flex items-center w-full gap-2">
             <div className="lg:hidden flex-shrink-0">
@@ -98,12 +96,10 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Content Area */}
           <div className="flex-1">
             {renderContent()}
           </div>
 
-          {/* Mobile Bottom Navigation */}
           <div className="lg:hidden mt-auto self-center">
             <Sidebar
               role={role}
