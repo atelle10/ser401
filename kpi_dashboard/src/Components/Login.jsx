@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import loginLogo from './assets/login_logo.png';
 import famarLogo from './assets/famar_logo.png';
-import backgroundImage from './assets/sfd_bg.jpg';
-import backgroundImage2 from './assets/sfd_bg_2.jpg';
-import sfdlogo from './assets/sfd_bg_2_transparentbg.png';
+import backgroundImage2 from './assets/background_img.png';
+
 
 
 let loggedIn = false;
@@ -33,18 +31,10 @@ const Login = () => {
   };
 
   return (
-    <div className="w-auto h-auto flex items-center justify-center bg-no-repeat bg-black p-1">
-      <div className="flex items-center md:flex-row bg-gray-100 rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2">
-        {/* Left Side - Background Image with Overlay Logo */}
-        <div className='rounded-lg h-full w-1/2 flex items-center justify-center overflow-hidden'>
-          <img src={backgroundImage} alt="Login Logo" className="rounded-2xl  h-fit m-1" />
-          <div className='absolute h-full w-full flex items-center justify-center rounded-2xl overflow-hidden'>
-            <img src={sfdlogo} alt="SFD Logo" className="absolute m-1 opacity-80" />
-          </div>
-        </div>
-        
+    <div className="w-screen h-screen flex items-center justify-center bg-no-repeat bg-black p-1" style={{ backgroundImage: `url(${backgroundImage2})`, backgroundSize: 'cover' }}>
+      <div className="flex items-center md:flex-row bg-gray-100 rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2 bg-transparent">
         {/* Main Login Card - matching dashboard style - Mobile Responsive */}
-        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-1/2 w-auto max-w-md space-y-4 sm:space-y-6">
+        <div className="backdrop-blur-md bg-white/20 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-1/2 w-auto max-w-md space-y-4 sm:space-y-6">
           {/* Logo */}
           <div className="flex justify-center">
             <img 
@@ -56,15 +46,15 @@ const Login = () => {
 
           {/* Title */}
           <div className="text-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Welcome Back</h1>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1">Sign in to continue to dashboard</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-black">Welcome Back</h1>
+            <p className="text-xs sm:text-sm text-gray-800 mt-1">Sign in to continue to dashboard</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Username Input */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="username" className="block text-sm font-medium text-black mb-1">
                 Username
               </label>
               <input
@@ -80,7 +70,7 @@ const Login = () => {
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-black mb-1">
                 Password
               </label>
               <input
@@ -110,7 +100,7 @@ const Login = () => {
             </button>
 
             {/* Register Link */}
-            <div className="text-center text-sm text-gray-600">
+            <div className="text-center text-sm text-black">
               Don't have an account?{' '}
               <Link 
                 className="text-blue-600 font-semibold hover:text-blue-700 hover:underline" 
