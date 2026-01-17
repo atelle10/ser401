@@ -10,6 +10,7 @@ import ChatBot from './ChatBot.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx';
 import accountIcon from './assets/account.png'
+import backgroundImage2 from './assets/background_img.png';
 
 const Home = () => {
   const [currentView, setCurrentView] = useState('dashboard')
@@ -42,7 +43,7 @@ const Home = () => {
   }
 
   return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 overflow-x-hidden">
+      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-center justify-center">
         {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
           {/* Sidebar Column - Hidden on mobile, visible on lg+ */}

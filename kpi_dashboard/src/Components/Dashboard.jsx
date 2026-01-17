@@ -20,13 +20,13 @@ const Dashboard = () => {
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
       {/* Filters - Stack on mobile, side-by-side on larger screens */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-lg shadow">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="px-3 py-2 text-sm border rounded w-full sm:w-auto"
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           >
             <option value="south">South Scottsdale</option>
             <option value="north">North Scottsdale</option>
@@ -37,7 +37,7 @@ const Dashboard = () => {
           <select
             value={timeWindow}
             onChange={(e) => setTimeWindow(Number(e.target.value))}
-            className="px-3 py-2 text-sm border rounded w-full sm:w-auto"
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           >
             <option value={7}>Last 7 Days</option>
             <option value={14}>Last 14 Days</option>
@@ -48,17 +48,17 @@ const Dashboard = () => {
 
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
           <HeatMapDayHour incidents={mockIncidentData} region={region} weeks={1} />
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow">
+
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg ">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
           <UnitHourUtilization incidents={mockIncidentData} />
         </div>
 
-        <div className="col-span-1 lg:col-span-2 bg-white p-4 rounded-lg shadow">
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
           <CallVolumeLinearChart 
             incidents={mockIncidentData} 
@@ -67,7 +67,7 @@ const Dashboard = () => {
           />
         </div>
 
-        <div className="col-span-1 lg:col-span-2 bg-white p-4 rounded-lg shadow">
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <Chart />
         </div>
       </div>
