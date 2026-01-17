@@ -1,7 +1,7 @@
-from .data_classes import UploadedFile, DQPolicy
+from backend.ingestion.data_classes import UploadedFile, DQPolicy
 from typing import List
 import pandas as pd
-from .data_quality_engine import DQEngine
+from backend.ingestion.data_quality_engine import DQEngine
 import os
 
 
@@ -61,7 +61,7 @@ class IngestionService():
 
 
 if __name__ == "__main__":
-    from .data_classes import DQRule, DQPolicy
+    from backend.ingestion.data_classes import DQRule, DQPolicy
     from backend.db_ops.relational_data_store import RelationalDataStore
     from backend.ingestion.data_classes import DataSet
     
@@ -99,16 +99,16 @@ if __name__ == "__main__":
 
     
     # this section tests the writing of the data to db.
-    db_url = "postgresql://postgres:postgres@localhost:5432/fire_ems_db"
+    db_url = "postgresql://michael@localhost:5432/famar_db"
     store = RelationalDataStore(db_url)
     store.connect()
 
-    fire_df = pd.read_csv("/Users/michael/Documents/ASU/ser401/notebooks/fire.csv")
+    fire_df = pd.read_csv("/Users/michael/Documents/ASU/ser401/notebooks/fire_test.csv")
     fire_dataset = DataSet(id="fire_data1", name="fire_data", data=fire_df)
     result = store.write_data(fire_dataset, is_fire=True)
     print(f"Fire write_data: {result}")
 
-    ems_df = pd.read_csv("/Users/michael/Documents/ASU/ser401/notebooks/ems.csv")
+    ems_df = pd.read_csv("/Users/michael/Documents/ASU/ser401/notebooks/ems_test.csv")
     ems_dataset = DataSet(id="ems_data1", name="ems_data", data=ems_df)
     result = store.write_data(ems_dataset, is_fire=False)
     print(f"EMS write_data: {result}")
