@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate, Link, useNavigate } from 'react-router-dom';
 import loginLogo from './assets/login_logo.png'
+import backgroundImage from './assets/sfd_bg.png';
 import { authClient } from '../utils/authClient.js';
 
 const Register = () => {
@@ -82,15 +83,13 @@ const Register = () => {
   };
 
   return (
-    <div className="w-screen min-h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 py-4 sm:py-8 px-4">
-      <div className='absolute inset-0 bg-no-repeat bg-center opacity-70' style={{ backgroundImage: `url(${loginLogo})` }}></div>
-      
+    <div className="w-screen h-fit flex items-center justify-center bg-no-repeat bg-black py-4 sm:py-8 px-4" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {/* Main Registration Card - matching dashboard style - Mobile Responsive */}
-      <div className="relative bg-white rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-lg">
+      <div className="h-fit relative bg-white/30 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-lg">
         {/* Title */}
         <div className="text-center mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Create Account</h1>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1">Sign up to get started</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-black">Create Account</h1>
+          <p className="text-xs sm:text-sm text-black mt-1">Sign up to get started</p>
         </div>
 
         {/* Form */}
@@ -98,7 +97,7 @@ const Register = () => {
           {/* Name Row - Stack on mobile, side-by-side on larger screens */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="firstName" className="block text-sm font-semibold text-black mb-1">
                 First Name
               </label>
               <input
@@ -112,7 +111,7 @@ const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="lastName" className="block text-sm font-semibold text-black mb-1">
                 Last Name
               </label>
               <input
@@ -129,7 +128,7 @@ const Register = () => {
 
           {/* Username */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="block text-sm font-semibold text-black mb-1">
               Username
             </label>
             <input
@@ -145,7 +144,7 @@ const Register = () => {
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-semibold text-black mb-1">
               Email
             </label>
             <input
@@ -161,7 +160,7 @@ const Register = () => {
 
           {/* Phone */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="phone" className="block text-sm  font-semibold  text-black mb-1">
               Phone Number
             </label>
             <input
@@ -178,7 +177,7 @@ const Register = () => {
           {/* Password Row - Stack on mobile, side-by-side on larger screens */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm  font-semibold  text-black mb-1">
                 Password
               </label>
               <input
@@ -192,7 +191,7 @@ const Register = () => {
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-black mb-1">
                 Confirm Password
               </label>
               <input
@@ -218,7 +217,7 @@ const Register = () => {
 
           {/* Account Type */}
           <div>
-            <label htmlFor="accountType" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="accountType" className="block text-sm font-semibold text-black mb-1">
               Account Type
             </label>
             <select
@@ -252,7 +251,7 @@ const Register = () => {
           </button>
 
           {/* Login Link */}
-          <div className="text-center text-sm text-gray-600">
+          <div className="text-center text-sm text-black">
             Already have an account?{' '}
             <Link 
               className="text-blue-600 font-semibold hover:text-blue-700 hover:underline" 
