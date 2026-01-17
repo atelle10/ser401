@@ -74,5 +74,7 @@ class RelationalDataStore:
             self.connection.commit()
             return True
 
-        except Exception:
+        except Exception as e:
+            print(e)
+            self.connection.rollback()
             return False
