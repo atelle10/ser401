@@ -22,7 +22,7 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
   }
  
   return (
-    <div className='w-fit lg:w-full text-xs text-white justify-center text-left font-bold shadow-blue-500/30 shadow-md rounded-2xl bg-blue-500/40 p-2'>
+    <div className='text-xs text-white justify-center text-left font-bold shadow-blue-500/30 shadow-md rounded-2xl bg-blue-500/40 p-2'>
       {/* Desktop: Vertical list, Mobile: Horizontal scrollable */}
       <div className='flex lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-x-visible'>
         <div 
