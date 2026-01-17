@@ -62,7 +62,9 @@ class IngestionService():
 
 if __name__ == "__main__":
     from .data_classes import DQRule, DQPolicy
-
+    from backend.db_ops.relational_data_store import RelationalDataStore
+    from backend.ingestion.data_classes import DataSet
+    
     policy = DQPolicy(
         policy_id="dq_001",
         name="BASIC_POLICY",
@@ -94,3 +96,21 @@ if __name__ == "__main__":
         print("EMS good.")
     except ValueError as e:
         print(e)
+
+    
+    # this section tests the writing of the data to db.
+    db_url = "postgresql://postgres:postgres@localhost:5432/fire_ems_db"
+    store = RelationalDataStore(db_url)
+    store.connect()
+
+    fire_df = pd.read_csv("/Users/michael/Documents/ASU/ser401/notebooks/fire.csv")
+    fire_dataset = DataSet(id="fire_data1", name="fire_data", data=fire_df)
+    result = store.write_data(fire_dataset, is_fire=True)
+    print(f"Fire write_data: {result}")
+
+    ems_df = pd.read_csv("/Users/michael/Documents/ASU/ser401/notebooks/ems.csv")
+    ems_dataset = DataSet(id="ems_data1", name="ems_data", data=ems_df)
+    result = store.write_data(ems_dataset, is_fire=False)
+    print(f"EMS write_data: {result}")
+
+    store.disconnect()
