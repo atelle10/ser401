@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import famarLogo from './assets/famar_logo.png';
-import backgroundImage2 from './assets/background_img.png';
+import backgroundImage from './assets/sfd_bg.png';
 
 
 
@@ -31,7 +31,7 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-no-repeat bg-black p-1" style={{ backgroundImage: `url(${backgroundImage2})`, backgroundSize: 'cover' }}>
+    <div className="w-screen h-screen flex items-center justify-center bg-no-repeat bg-black p-1" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       <div className="flex items-center md:flex-row bg-gray-100 rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2 bg-transparent">
         {/* Main Login Card - matching dashboard style - Mobile Responsive */}
         <div className="backdrop-blur-md bg-white/20 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-1/2 w-auto max-w-md space-y-4 sm:space-y-6">
