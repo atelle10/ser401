@@ -11,25 +11,6 @@ import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx';
 import accountIcon from './assets/account.png'
 import backgroundImage2 from './assets/background_img.png';
-import { authClient } from '../utils/authClient.js';
-
-const fallbackProfile = {
-  name: 'User',
-  email: '',
-  role: 'User',
-  avatar: accountIcon,
-}
-
-const buildProfile = (user) => {
-  if (!user) return fallbackProfile
-  const name = user.name || user.username || user.email || fallbackProfile.name
-  return {
-    name,
-    email: user.email || '',
-    role: user.role || user.accountType || fallbackProfile.role,
-    avatar: user.image || user.avatar || fallbackProfile.avatar,
-  }
-}
 
 const Home = () => {
   const { data: session } = authClient.useSession()
@@ -62,7 +43,7 @@ const Home = () => {
   }
 
   return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
+      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-center justify-center">
         {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
           {/* Sidebar Column - Hidden on mobile, visible on lg+ */}

@@ -26,7 +26,7 @@ const Dashboard = () => {
           <select
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           >
             <option value="south">South Scottsdale</option>
             <option value="north">North Scottsdale</option>
@@ -50,12 +50,12 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
+          <HeatMapDayHour incidents={mockIncidentData} region={region} weeks={1} />
         </div>
 
-        <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg ">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={mockIncidentData} />
+          <UnitHourUtilization incidents={mockIncidentData} />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
@@ -67,8 +67,7 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
-        <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <Chart />
         </div>
       </div>
