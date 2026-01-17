@@ -27,7 +27,7 @@ const User = ({ onViewAccount, profile }) => {
     <div className="relative" ref={menuRef}>
       <div 
         onClick={() => setOpen(!open)}
-        className="h-10 p-2 bg-white hover:bg-red-400 hover:text-white cursor-pointer rounded-full flex flex-row items-center justify-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 shrink shadow-blue-500/20 shadow-md w-fit"
+        className="h-10 p-2 bg-blue-500/40 hover:text-blue-800 hover:bg-white text-white cursor-pointer rounded-full flex flex-row items-center justify-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 shrink shadow-blue-500/20 shadow-md w-fit"
         >
           <img src={avatarSrc} alt="Account Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 sm:mr-2 rounded-full object-cover'/>
           <span className="hidden md:inline text-sm truncate max-w-[120px]">{displayName}</span>
