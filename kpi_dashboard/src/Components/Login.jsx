@@ -1,31 +1,52 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import loginLogo from './assets/login_logo.png';
 import famarLogo from './assets/famar_logo.png';
-
-let loggedIn = false;
+import { authClient } from '../utils/authClient.js';
 
 const Login = () => {
-  const [username, setUsername] = useState('');
+  const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (session?.user) {
+      navigate('/home', { replace: true });
+    }
+  }, [session, navigate]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    // Basic validation
-    if (!username || !password) {
-      setError('Please enter both username and password');
+
+    if (!email || !password) {
+      setError('Please enter both email and password');
       return;
     }
-    
-    // Handle login logic here (e.g., send credentials to an API)
-    console.log('Username:', username, 'Password:', password);
-    loggedIn = true;
-    setUsername('');
+
+    setIsSubmitting(true);
+    const result = await authClient.signIn.email({ email, password });
+    setIsSubmitting(false);
+
+    if (result?.error) {
+      const fallback = result.error.status
+        ? `Sign in failed (${result.error.status} ${result.error.statusText})`
+        : 'Sign in failed. Please try again.';
+      setError(result.error.message || fallback);
+      return;
+    }
+
+    if (result?.data?.redirect && result.data.url) {
+      window.location.assign(result.data.url);
+      return;
+    }
+
+    setEmail('');
     setPassword('');
+    navigate('/home', { replace: true });
   };
 
   return (
@@ -51,19 +72,20 @@ const Login = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Username Input */}
+          {/* Email Input */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              Username
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
             </label>
             <input
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              type="text"
-              id="username"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              type="email"
+              id="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
 
@@ -73,13 +95,14 @@ const Login = () => {
               Password
             </label>
             <input
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               type="password"
               placeholder="Enter your password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
             />
           </div>
 
@@ -93,9 +116,10 @@ const Login = () => {
           {/* Login Button */}
           <button 
             type="submit" 
-            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
+            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
           >
-            Login
+            {isSubmitting ? 'Signing in...' : 'Login'}
           </button>
 
           {/* Register Link */}
@@ -110,8 +134,6 @@ const Login = () => {
           </div>
         </form>
       </div>
-      
-      {loggedIn && <Navigate to="/home" replace />}
     </div>
   );
 };
