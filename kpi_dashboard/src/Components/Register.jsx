@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useNavigate } from 'react-router-dom';
 import loginLogo from './assets/login_logo.png'
-
-let registered = false;
+import { authClient } from '../utils/authClient.js';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -15,6 +15,8 @@ const Register = () => {
   const [accountType, setAccountType] = useState('');
   const [error, setError] = useState('');
   const [passwordMatch, setPasswordMatch] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   useEffect(() => {
     if (password && confirmPassword) {
@@ -22,7 +24,7 @@ const Register = () => {
     }
   }, [password, confirmPassword]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
@@ -37,13 +39,30 @@ const Register = () => {
       return;
     }
     
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
-    
-    // Handle registration logic here (e.g., send credentials to an API)
-    console.log('Registration:', { firstName, lastName, username, email, phone, accountType });
+
+    const name = `${firstName} ${lastName}`.trim();
+    setIsSubmitting(true);
+    const result = await authClient.signUp.email({
+      name: name || 'New User',
+      email,
+      password,
+      username,
+      phone,
+      accountType,
+    });
+    setIsSubmitting(false);
+
+    if (result?.error) {
+      const fallback = result.error.status
+        ? `Sign up failed (${result.error.status} ${result.error.statusText})`
+        : 'Sign up failed. Please try again.';
+      setError(result.error.message || fallback);
+      return;
+    }
     
     // Clear form
     setUsername('');
@@ -54,7 +73,12 @@ const Register = () => {
     setEmail('');
     setPhone('');
     setAccountType('');
-    registered = true;
+    if (result?.data?.token === null) {
+      setRegistered(true);
+      return;
+    }
+
+    navigate('/home', { replace: true });
   };
 
   return (
@@ -78,7 +102,7 @@ const Register = () => {
                 First Name
               </label>
               <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 type="text"
                 id="firstName"
                 placeholder="John"
@@ -92,7 +116,7 @@ const Register = () => {
                 Last Name
               </label>
               <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 type="text"
                 id="lastName"
                 placeholder="Doe"
@@ -109,7 +133,7 @@ const Register = () => {
               Username
             </label>
             <input
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               type="text"
               id="username"
               placeholder="johndoe"
@@ -125,7 +149,7 @@ const Register = () => {
               Email
             </label>
             <input
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               type="email"
               id="email"
               placeholder="john@example.com"
@@ -141,7 +165,7 @@ const Register = () => {
               Phone Number
             </label>
             <input
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               type="tel"
               id="phone"
               placeholder="(555) 123-4567"
@@ -158,7 +182,7 @@ const Register = () => {
                 Password
               </label>
               <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 type="password"
                 id="password"
                 placeholder="••••••••"
@@ -172,7 +196,7 @@ const Register = () => {
                 Confirm Password
               </label>
               <input
-                className={`w-full px-4 py-2 bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                className={`w-full px-4 py-2 bg-white text-gray-900 placeholder-gray-400 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
                   !passwordMatch && confirmPassword 
                     ? 'border-red-500 focus:ring-red-500' 
                     : 'border-gray-300 focus:ring-blue-500 focus:border-transparent'
@@ -198,7 +222,7 @@ const Register = () => {
               Account Type
             </label>
             <select
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               id="accountType"
               value={accountType}
               onChange={(e) => setAccountType(e.target.value)}
@@ -221,9 +245,10 @@ const Register = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
+            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
           >
-            Create Account
+            {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </button>
 
           {/* Login Link */}
