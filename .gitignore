@@ -88,3 +88,4 @@ Desktop.ini
 # Custom
 mock_data/
 *.csv
+node_modules/
