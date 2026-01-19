@@ -6,11 +6,11 @@ import Chart from './Dashboard/Chart'
 
 // Mock data for development
 const mockIncidentData = [
-  { timestamp: '2025-11-20T08:00:00', unit: 'E101', incident_type: 'EMS', duration: 45 },
-  { timestamp: '2025-11-20T09:30:00', unit: 'R202', incident_type: 'Fire', duration: 120 },
-  { timestamp: '2025-11-20T14:15:00', unit: 'E101', incident_type: 'EMS', duration: 30 },
-  { timestamp: '2025-11-21T10:00:00', unit: 'LA301', incident_type: 'EMS', duration: 60 },
-  { timestamp: '2025-11-21T16:45:00', unit: 'E101', incident_type: 'Fire', duration: 90 },
+  { timestamp: '2025-11-20T08:00:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T08:00:00', clear_time: '2025-11-20T08:45:00' },
+  { timestamp: '2025-11-20T09:30:00', postal_code: 85261, unit_id: 'R202', en_route_time: '2025-11-20T09:30:00', clear_time: '2025-11-20T11:30:00' },
+  { timestamp: '2025-11-20T14:15:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T14:15:00', clear_time: '2025-11-20T14:45:00' },
+  { timestamp: '2025-11-21T10:00:00', postal_code: 85255, unit_id: 'LA301', en_route_time: '2025-11-21T10:00:00', clear_time: '2025-11-21T11:00:00' },
+  { timestamp: '2025-11-21T16:45:00', postal_code: 85261, unit_id: 'E101', en_route_time: '2025-11-21T16:45:00', clear_time: '2025-11-21T18:15:00' },
 ]
 
 const Dashboard = () => {
@@ -50,18 +50,18 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour incidents={mockIncidentData} region={region} weeks={1} />
+          <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
         </div>
         
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization incidents={mockIncidentData} />
+          <UnitHourUtilization data={mockIncidentData} />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-white p-4 rounded-lg shadow">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
           <CallVolumeLinearChart 
-            incidents={mockIncidentData} 
+            data={mockIncidentData} 
             region={region}
             granularity="daily"
           />
