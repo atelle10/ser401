@@ -4,7 +4,7 @@ import accountIcon from './assets/account.png'
 const fallbackProfile = {
   name: 'John Doe',
   email: 'john.doe@example.com',
-  role: 'Administrator',
+  role: 'User',
   avatar: accountIcon,
 }
 
@@ -160,7 +160,7 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
           <div>
             <h3 className="text-xs font-bold text-gray-600 uppercase">Role</h3>
             <p className="border p-2 rounded-md mt-1 text-sm bg-gray-100 text-gray-600">
-              {formData?.role || 'Administrator'}
+              {formData?.role || 'User'}
             </p>
           </div>
 

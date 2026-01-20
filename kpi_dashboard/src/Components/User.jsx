@@ -6,7 +6,7 @@ import { authClient } from '../utils/authClient.js';
 const User = ({ onViewAccount, profile }) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
-  const displayName = profile?.name || 'John Doe';
+  const displayName = profile?.name || profile?.email || 'User';
   const avatarSrc = profile?.avatar || accountIcon;
 
   useEffect(() => {
