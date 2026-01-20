@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# YOUR REAL APP REGISTRATION
+#REAL APP REGISTRATION
 TENANT_ID = "41f88ecb-ca63-404d-97dd-ab0a169fd138"
 CLIENT_ID = "a972773a-46e3-47dd-aea6-80fb76f1f6a6"
 JWKS_URL = f"https://login.microsoftonline.com/{TENANT_ID}/discovery/v2.0/keys"
@@ -37,7 +37,7 @@ async def exchange_microsoft_token(req: TokenExchange):
         header = jwt.get_unverified_header(req.token)
         rsa_key = next(k for k in jwks["keys"] if k["kid"] == header["kid"])
 
-        # CRITICAL: Hardcode your exact tenant in issuer
+        # CRITICAL: Hardcode exact tenant in issuer
         payload = jwt.decode(
             req.token,
             rsa_key,
