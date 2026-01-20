@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import accountIcon from './assets/account.png'
+import { authClient } from '../utils/authClient.js';
 
 const fallbackProfile = {
   name: 'John Doe',
@@ -12,33 +13,20 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
   const [formData, setFormData] = useState(profile)
   const [editing, setEditing] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
-  const [tempAvatarUrl, setTempAvatarUrl] = useState(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
   // TODO: Wire save to backend profile endpoint (and avatar upload) in a later sprint.
 
   useEffect(() => {
     setFormData(profile || fallbackProfile)
     setEditing(false)
     setHasChanges(false)
-    if (tempAvatarUrl) {
-      URL.revokeObjectURL(tempAvatarUrl)
-      setTempAvatarUrl(null)
-    }
   }, [profile])
-
-  useEffect(() => {
-    return () => {
-      if (tempAvatarUrl) {
-        URL.revokeObjectURL(tempAvatarUrl)
-      }
-    }
-  }, [tempAvatarUrl])
 
   const isDirty = (data) => {
     const base = profile || fallbackProfile
     return (
-      data?.name !== base?.name ||
-      data?.email !== base?.email ||
-      data?.avatar !== base?.avatar
+      data?.name !== base?.name
     )
   }
 
@@ -51,50 +39,42 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
     })
   }
 
-  const handleAvatarChange = (e) => {
-    if (!editing) return
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (tempAvatarUrl) {
-      URL.revokeObjectURL(tempAvatarUrl)
-    }
-    const imageUrl = URL.createObjectURL(file)
-    setTempAvatarUrl(imageUrl)
-    setFormData((prev) => {
-      const updated = { ...prev, avatar: imageUrl }
-      setHasChanges(isDirty(updated))
-      return updated
-    })
-  }
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editing || !hasChanges) return
+    setSaveError('')
+    setIsSaving(true)
+
+    const name = formData?.name?.trim()
+    const result = await authClient.updateUser({ name })
+    setIsSaving(false)
+
+    if (result?.error) {
+      const fallback = result.error.status
+        ? `Update failed (${result.error.status} ${result.error.statusText})`
+        : 'Update failed. Please try again.'
+      setSaveError(result.error.message || fallback)
+      return
+    }
+
     if (onUpdateProfile) {
-      onUpdateProfile(formData)
+      onUpdateProfile({ ...formData, name })
     }
     setEditing(false)
     setHasChanges(false)
-    if (tempAvatarUrl) {
-      URL.revokeObjectURL(tempAvatarUrl)
-      setTempAvatarUrl(null)
-    }
   }
 
   const handleStartEditing = () => {
     setEditing(true)
     setHasChanges(false)
     setFormData(profile || fallbackProfile)
+    setSaveError('')
   }
 
   const handleCancel = () => {
     setEditing(false)
     setHasChanges(false)
     setFormData(profile || fallbackProfile)
-    if (tempAvatarUrl) {
-      URL.revokeObjectURL(tempAvatarUrl)
-      setTempAvatarUrl(null)
-    }
+    setSaveError('')
   }
 
   return (
@@ -119,16 +99,9 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
             className="w-20 h-20 rounded-full shadow mb-3 object-cover"
           />
           {editing && (
-            <label className="text-sm font-medium cursor-pointer text-blue-600 hover:underline">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-                disabled={!editing}
-              />
-              Change photo
-            </label>
+            <p className="text-xs text-gray-500">
+              Profile photo updates aren&apos;t supported yet.
+            </p>
           )}
           <h2 className="text-lg font-medium mt-2">{formData?.name}</h2>
           <p className="text-gray-600 text-sm">{formData?.email}</p>
@@ -153,8 +126,11 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
               value={formData?.email || ''}
               onChange={handleInputChange('email')}
               className="border p-2 rounded-md mt-1 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:bg-gray-100"
-              disabled={!editing}
+              disabled
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Email updates are not available yet.
+            </p>
           </div>
 
           <div>
@@ -163,6 +139,12 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
               {formData?.role || 'User'}
             </p>
           </div>
+
+          {saveError && (
+            <div className="p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+              {saveError}
+            </div>
+          )}
 
           <div className="flex justify-end pt-2 gap-3">
             {!editing && (
@@ -185,9 +167,10 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
                 {hasChanges && (
                   <button
                     onClick={handleSave}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition-colors"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                    disabled={isSaving}
                   >
-                    Save changes
+                    {isSaving ? 'Saving...' : 'Save changes'}
                   </button>
                 )}
               </>
