@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import NavBar from './NavBar.jsx'
 import Sidebar from './Sidebar.jsx'
 import Logo from './Logo.jsx'
@@ -10,15 +10,34 @@ import ChatBot from './ChatBot.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx';
 import accountIcon from './assets/account.png'
+import { authClient } from '../utils/authClient.js';
+
+const fallbackProfile = {
+  name: 'User',
+  email: '',
+  role: 'User',
+  avatar: accountIcon,
+}
+
+const buildProfile = (user) => {
+  if (!user) return fallbackProfile
+  const name = user.name || user.username || user.email || fallbackProfile.name
+  return {
+    name,
+    email: user.email || '',
+    role: user.role || user.accountType || fallbackProfile.role,
+    avatar: user.image || user.avatar || fallbackProfile.avatar,
+  }
+}
 
 const Home = () => {
+  const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
-  const [userProfile, setUserProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    role: 'Administrator',
-    avatar: accountIcon,
-  })
+  const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
+
+  useEffect(() => {
+    setUserProfile(buildProfile(session?.user))
+  }, [session?.user])
 
   const renderContent = () => {
     switch(currentView) {
