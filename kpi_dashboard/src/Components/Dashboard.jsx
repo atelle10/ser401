@@ -1,27 +1,36 @@
-import React from 'react'
+import React, { useState } from 'react'
+
+// Basic KPIs (always visible)
 import KPI_1 from './Dashboard/KPIs/KPI_1'
 import KPI_2 from './Dashboard/KPIs/KPI_2'
 import KPI_3 from './Dashboard/KPIs/KPI_3'
 import KPI_4 from './Dashboard/KPIs/KPI_4'
 import Chart from './Dashboard/Chart'
 
-<<<<<<< HEAD
-// Mock data for development
-const mockIncidentData = [
-  { timestamp: '2025-11-20T08:00:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T08:05:00', clear_time: '2025-11-20T08:50:00' },
-  { timestamp: '2025-11-20T09:30:00', postal_code: 85280, unit_id: 'R202', en_route_time: '2025-11-20T09:35:00', clear_time: '2025-11-20T11:35:00' },
-  { timestamp: '2025-11-20T14:15:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T14:20:00', clear_time: '2025-11-20T14:50:00' },
-  { timestamp: '2025-11-21T10:00:00', postal_code: 85270, unit_id: 'LA301', en_route_time: '2025-11-21T10:05:00', clear_time: '2025-11-21T11:35:00' },
-  { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
-]
+// Advanced analytics (staging)
+import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
+import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
+import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 
-=======
->>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
-const Dashboard = () => {
+const Dashboard = ({ role }) => {
+  const canViewAdvanced = role === 'admin' || role === 'analyst'
+
+  const [region, setRegion] = useState('south')
+  const [timeWindow, setTimeWindow] = useState(7)
+
+  // Mock data retained from staging (unchanged)
+  const mockIncidentData = [
+    { timestamp: '2025-11-20T08:00:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T08:05:00', clear_time: '2025-11-20T08:50:00' },
+    { timestamp: '2025-11-20T09:30:00', postal_code: 85280, unit_id: 'R202', en_route_time: '2025-11-20T09:35:00', clear_time: '2025-11-20T11:35:00' },
+    { timestamp: '2025-11-20T14:15:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T14:20:00', clear_time: '2025-11-20T14:50:00' },
+    { timestamp: '2025-11-21T10:00:00', postal_code: 85270, unit_id: 'LA301', en_route_time: '2025-11-21T10:05:00', clear_time: '2025-11-21T11:35:00' },
+    { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
+  ]
+
   return (
-<<<<<<< HEAD
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
-      {/* Filters - Stack on mobile, side-by-side on larger screens */}
+
+      {/* Filters */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
@@ -34,6 +43,7 @@ const Dashboard = () => {
             <option value="north">North Scottsdale</option>
           </select>
         </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Time Window:</label>
           <select
@@ -48,42 +58,48 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
+      {/* KPI grid (always visible) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
-        </div>
-
-        <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={mockIncidentData} />
-        </div>
-
-        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Call Volume Trend</h3>
-          <CallVolumeLinearChart 
-            data={mockIncidentData} 
-            region={region}
-            granularity="daily"
-          />
-        </div>
-
-        {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
-        <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <Chart />
-        </div>
-      </div>
-=======
-    <div className="grid grid-cols-4 gap-4 p-2">
         <KPI_1 />
         <KPI_2 />
         <KPI_3 />
         <KPI_4 />
-        <div className="col-span-4">
-            <Chart />
+
+        <div className="col-span-1 lg:col-span-2">
+          <Chart />
         </div>
->>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
+      </div>
+
+      {/* Advanced analytics — analyst/admin only */}
+      {canViewAdvanced && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
+            <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
+          </div>
+
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+            <UnitHourUtilization data={mockIncidentData} />
+          </div>
+
+          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Call Volume Trend</h3>
+            <CallVolumeLinearChart
+              data={mockIncidentData}
+              region={region}
+              granularity="daily"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Viewer message */}
+      {role === 'viewer' && (
+        <div className="mt-6 text-center text-gray-600">
+          <p>Basic dashboard view. Contact an administrator for elevated access.</p>
+        </div>
+      )}
     </div>
   )
 }

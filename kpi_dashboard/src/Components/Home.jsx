@@ -1,5 +1,6 @@
 import React from 'react';
-import { useMsal } from '@azure/msal-react';  // For real MSAL logout and auth
+import { useMsal } from '@azure/msal-react';
+
 import NavBar from './NavBar.jsx';
 import Sidebar from './Sidebar.jsx';
 import Logo from './Logo.jsx';
@@ -7,12 +8,12 @@ import User from './User.jsx';
 import Dashboard from './Dashboard.jsx';
 import ChatBot from './ChatBot.jsx';
 
-const Home = () => {
-  const { instance } = useMsal();  // Get MSAL instance for logout
+const Home = ({ role = 'viewer' }) => {
+  const { instance } = useMsal();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");  // Clear any local token if used
-    instance.logoutRedirect({  // Real MSAL logout (clears Microsoft session)
+    localStorage.removeItem('token'); 
+    instance.logoutRedirect({
       postLogoutRedirectUri: window.location.origin,
     });
   };
@@ -22,18 +23,20 @@ const Home = () => {
       <div className="col-span-1 flex flex-col gap-2">
         <Logo />
         <div className="flex flex-col gap-2">
-          <Sidebar />
+          <Sidebar role={role} />
           <ChatBot />
         </div>
       </div>
+
       <div className="col-span-6 flex flex-col gap-0 h-full">
         <div className="flex items-center w-full gap-2">
           <div className="flex-1 pl-[6px]">
-            <NavBar />
+            <NavBar role={role} />
           </div>
-          <User handleLogout={handleLogout} />  {/* Pass real logout handler */}
+          <User handleLogout={handleLogout} />
         </div>
-        <Dashboard className="flex-1 overflow-auto" />
+
+        <Dashboard role={role} />
       </div>
     </div>
   );

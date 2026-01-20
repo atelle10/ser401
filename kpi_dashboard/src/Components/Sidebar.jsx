@@ -1,14 +1,14 @@
 import React from 'react'
-<<<<<<< HEAD
 import dashboardIcon from './assets/dashboard_icon.png'
 import whiteFireIcon from './assets/white fire icon.png'
 import whiteMedicalIcon from './assets/white medical icon.png'
 import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
+const Sidebar = ({ currentView, setCurrentView, onAccountClick, role }) => {
   const getItemClass = (view) => {
-    const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
+    const baseClass =
+      "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view
       ? `${baseClass} text-white`
       : `${baseClass} hover:bg-white`
@@ -21,51 +21,59 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
       setCurrentView('account')
     }
   }
- 
+
   return (
     <div className='w-fit lg:w-full text-xs text-white justify-center text-left font-bold shadow-blue-500/30 shadow-md rounded-2xl bg-blue-500/40 p-2'>
-      {/* Desktop: Vertical list, Mobile: Horizontal scrollable */}
       <div className='flex lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-x-visible'>
-        <div 
+        
+        {/* Dashboard */}
+        <div
           className={getItemClass('dashboard')}
           onClick={() => setCurrentView('dashboard')}
         >
-            <img src={dashboardIcon} alt="Dashboard Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2'/>
-            <p className="hidden lg:inline whitespace-nowrap">Dashboard</p>
+          <img src={dashboardIcon} alt="Dashboard Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2'/>
+          <p className="hidden lg:inline whitespace-nowrap">Dashboard</p>
         </div>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-white transition-all hover:text-blue-800 duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
-            <img src={whiteFireIcon} alt="White Fire Icon" className='inline w-5 h-5 lg:mr-2'/>
-            <p className="hidden lg:inline whitespace-nowrap">Fire Department</p>
-        </div>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-white transition-all hover:text-blue-800 duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
-            <img src={whiteMedicalIcon} alt="Medical Icon" className='inline w-5 h-5 lg:mr-2 center'/>
-            <p className="hidden lg:inline whitespace-nowrap">Medical (EMS)</p>
-=======
 
-const Sidebar = () => {
-  return (
-    <div className='text-xs justify-center text-left font-bold shadow-blue-500/20 bg-white w-full shadow-md rounded-2xl p-2'>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
-            <img src="./src/Components/assets/dashboard_icon.png" alt="Dashboard Icon" className='inline w-6 h-6 mr-2'/>
-            <p>Dashboard</p>
+        {/* Fire Department */}
+        <div
+          className={getItemClass('fire')}
+          onClick={() => setCurrentView('fire')}
+        >
+          <img src={whiteFireIcon} alt="White Fire Icon" className='inline w-5 h-5 lg:mr-2'/>
+          <p className="hidden lg:inline whitespace-nowrap">Fire Department</p>
         </div>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
-            <img src="./src/Components/assets/white fire icon.png" alt="White Fire Icon" className='inline w-5 h-5 mr-2'/>
-            <p>Fire Department</p>
+
+        {/* Medical */}
+        <div
+          className={getItemClass('medical')}
+          onClick={() => setCurrentView('medical')}
+        >
+          <img src={whiteMedicalIcon} alt="Medical Icon" className='inline w-5 h-5 lg:mr-2'/>
+          <p className="hidden lg:inline whitespace-nowrap">Medical (EMS)</p>
         </div>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
-            <img src="./src/Components/assets/white medical icon.png" alt="Medical Icon" className='inline w-5 h-5 mr-2 center'/>
-            <p>Medical (EMS)</p>
->>>>>>> 41fbf86 (feat(task-504): cherry-pick real Microsoft Entra ID SSO implementation with MSAL and backend validationfeat(task-504): implement real Microsoft Entra ID SSO with MSAL and backend token validation; cleanup duplicates; update README)
+
+        {/* Account */}
+        <div
+          className={getItemClass('account')}
+          onClick={handleAccountClick}
+        >
+          <img src={accountIcon} alt="Account Icon" className='inline w-5 h-5 lg:mr-2'/>
+          <p className="hidden lg:inline whitespace-nowrap">Account</p>
         </div>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
-            <img src="./src/Components/assets/account_icon.png" alt="Account Icon" className='inline w-5 h-5 mr-2'/>
-            <p>Account</p>
-        </div>
-        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-blue-400 transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
-            <img src="./src/Components/assets/settings_icon.png" alt="Settings Icon" className='inline w-5 h-5 mr-2'/>
-            <p>Settings</p>
-        </div>
+
+        {/* Settings — admin only */}
+        {role === "admin" && (
+          <div
+            className={getItemClass('settings')}
+            onClick={() => setCurrentView('settings')}
+          >
+            <img src={settingsIcon} alt="Settings Icon" className='inline w-5 h-5 lg:mr-2'/>
+            <p className="hidden lg:inline whitespace-nowrap">Settings</p>
+          </div>
+        )}
+
+      </div>
     </div>
   )
 }
