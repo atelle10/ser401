@@ -62,7 +62,7 @@ const Home = () => {
   };
 
   return (
-    <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start" style={{ backgroundImage: `url(${backgroundImage2})` }}>
+    <div className="w-screen min-h-screen m-0 p-0 bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 overflow-x-hidden" style={{ backgroundImage: `url(${backgroundImage2})` }}>
       <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
         <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
           <Logo />

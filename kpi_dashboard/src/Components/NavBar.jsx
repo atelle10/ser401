@@ -32,7 +32,7 @@ const NavBar = ({ role, currentView, setCurrentView }) => {
         <p className="hidden sm:inline text-sm md:text-base">Medical</p>
       </div>
 
-      {/* Upload — only for admin/analyst, opens popup (560 style) */}
+      {/* Upload — only for admin/analyst, opens popup */}
       {(role === 'admin' || role === 'analyst') && (
         <Popup
           trigger={
