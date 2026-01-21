@@ -10,11 +10,14 @@ import { useMemo, useState } from 'react';
 const CallVolumeLinearChart = ({ data, region = 'south'}) => {
   const [granularity, setGranularity] = useState('daily'); // daily, weekly, monthly
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
   console.log('CallVolumeLinearChart data:', data);
 
 >>>>>>> 3356bc1 (Configuring charts KPIs)
+=======
+>>>>>>> b201eeb (Corrected mock incident data, chart now displays)
   // Aggregate data by time period
   
   const chartData = useMemo(() => {
@@ -27,22 +30,38 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
 
     data.forEach(incident => {
       const incidentDate = new Date(incident.timestamp);
+<<<<<<< HEAD
       // Time filter commented out for debugging/testing 
       // if (incidentDate < cutoff) return;
 
+=======
+      console.log('Incident date:', incidentDate);
+      console.log('Cutoff date:', cutoff);
+
+      // Time filter commented out for debugging/testing 
+      // if (incidentDate < cutoff) return;
+>>>>>>> b201eeb (Corrected mock incident data, chart now displays)
 
       // Regional filter
       const isTargetRegion = region === 'south' 
         ? incident.postal_code < 85260 
         : incident.postal_code >= 85260;
 
+<<<<<<< HEAD
         if (!isTargetRegion) return;
 
+=======
+        console.log('Incident postal code:', incident.postal_code);
+        console.log('Is target region:', isTargetRegion);
+        if (!isTargetRegion) return;
+        console.log('Checkpoint');
+>>>>>>> b201eeb (Corrected mock incident data, chart now displays)
 
       // Bucket by granularity
       let key;
       if (granularity === 'daily') {
         key = incidentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        console.log('Daily key:', key);
       } else if (granularity === 'weekly') {
         const weekStart = new Date(incidentDate);
         weekStart.setDate(incidentDate.getDate() - incidentDate.getDay());
@@ -54,6 +73,7 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
       buckets.set(key, (buckets.get(key) || 0) + 1);
     });
 
+    console.log('Buckets formed:', buckets);
     // Convert to array and sort
     const points = Array.from(buckets.entries())
       .map(([date, count]) => ({ date, count }))
@@ -66,8 +86,6 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
 
     return { points, maxCount, avgCount };
   }, [data, region, granularity]);
-
-  console.log('CallVolumeLinearChart chartData:', chartData);
 
   if (!chartData) {
     return (
