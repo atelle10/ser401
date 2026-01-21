@@ -6,11 +6,11 @@ import Chart from './Dashboard/Chart'
 
 // Mock data for development
 const mockIncidentData = [
-  { timestamp: '2025-11-20T08:00:00', unit: 'E101', incident_type: 'EMS', duration: 45 },
-  { timestamp: '2025-11-20T09:30:00', unit: 'R202', incident_type: 'Fire', duration: 120 },
-  { timestamp: '2025-11-20T14:15:00', unit: 'E101', incident_type: 'EMS', duration: 30 },
-  { timestamp: '2025-11-21T10:00:00', unit: 'LA301', incident_type: 'EMS', duration: 60 },
-  { timestamp: '2025-11-21T16:45:00', unit: 'E101', incident_type: 'Fire', duration: 90 },
+  { timestamp: '2025-11-20T08:00:00', unit: 'E101', incident_type: 'EMS', duration: 45, postal_code: 85250 },
+  { timestamp: '2025-11-20T09:30:00', unit: 'R202', incident_type: 'Fire', duration: 120, postal_code: 85280 },
+  { timestamp: '2025-11-20T14:15:00', unit: 'E101', incident_type: 'EMS', duration: 30, postal_code: 85250 },
+  { timestamp: '2025-11-21T10:00:00', unit: 'LA301', incident_type: 'EMS', duration: 60, postal_code: 85270 },
+  { timestamp: '2025-11-21T16:45:00', unit: 'E101', incident_type: 'Fire', duration: 90, postal_code: 85250 },
 ]
 
 const Dashboard = () => {
