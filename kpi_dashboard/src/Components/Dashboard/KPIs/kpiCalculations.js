@@ -39,3 +39,51 @@ export const filterByRegion = (incidents, region) => {
     return true;
   });
 };
+
+export const calculateIncidentVolume = (incidents, timeWindow = null) => {
+  const now = new Date();
+  const windowStart = timeWindow ? new Date(now - timeWindow) : null;
+  
+  let currentIncidents = incidents;
+  if (windowStart) {
+    currentIncidents = incidents.filter(inc => 
+      new Date(inc.timestamp) >= windowStart
+    );
+  }
+  
+  return {
+    count: currentIncidents.length,
+    trend: 0
+  };
+};
+
+export const calculateActiveUnits = (incidents, timeWindow = null) => {
+  const now = new Date();
+  const windowStart = timeWindow ? new Date(now - timeWindow) : null;
+  
+  let filteredIncidents = incidents;
+  if (windowStart) {
+    filteredIncidents = incidents.filter(inc => 
+      new Date(inc.timestamp) >= windowStart
+    );
+  }
+  
+  const units = new Set();
+  const breakdown = { engine: 0, rescue: 0, ladder: 0 };
+  
+  filteredIncidents.forEach(inc => {
+    if (inc.unit_id) {
+      units.add(inc.unit_id);
+      const type = inc.unit_id.charAt(0);
+      if (type === 'E') breakdown.engine++;
+      else if (type === 'R') breakdown.rescue++;
+      else if (type === 'L') breakdown.ladder++;
+    }
+  });
+  
+  return {
+    total: units.size,
+    breakdown,
+    trend: 0
+  };
+};
