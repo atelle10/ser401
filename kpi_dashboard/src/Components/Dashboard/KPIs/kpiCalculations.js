@@ -101,7 +101,7 @@ export const calculatePeakLoadFactor = (incidents, timeWindow = null) => {
   
   const hourCounts = {};
   filteredIncidents.forEach(inc => {
-    const hour = new Date(inc.timestamp).getHours();
+    const hour = new Date(inc.dispatch_time || inc.timestamp).getHours();
     hourCounts[hour] = (hourCounts[hour] || 0) + 1;
   });
   
