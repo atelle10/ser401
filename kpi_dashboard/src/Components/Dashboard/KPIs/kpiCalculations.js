@@ -1,0 +1,41 @@
+export const calculateAvgResponseTime = (incidents, timeWindow = null) => {
+  const now = new Date();
+  const windowStart = timeWindow ? new Date(now - timeWindow) : null;
+  
+  let filteredIncidents = incidents;
+  if (windowStart) {
+    filteredIncidents = incidents.filter(inc => 
+      new Date(inc.timestamp || inc.dispatch_time) >= windowStart
+    );
+  }
+  
+  const validIncidents = filteredIncidents.filter(inc => 
+    inc.dispatch_time && inc.arrival_time
+  );
+  
+  const responseTimes = validIncidents.map(inc => {
+    const dispatch = new Date(inc.dispatch_time);
+    const arrival = new Date(inc.arrival_time);
+    return (arrival - dispatch) / 1000 / 60;
+  }).filter(time => time > 0 && time < 60);
+  
+  if (responseTimes.length === 0) {
+    return { value: null, trend: 0 };
+  }
+  
+  const avgTime = responseTimes.reduce((sum, t) => sum + t, 0) / responseTimes.length;
+  
+  return { value: avgTime, trend: 0 };
+};
+
+export const filterByRegion = (incidents, region) => {
+  if (!region || region === 'all') return incidents;
+  
+  return incidents.filter(inc => {
+    if (!inc.postal_code) return false;
+    const code = parseInt(inc.postal_code);
+    if (region === 'south') return code < 85260;
+    if (region === 'north') return code >= 85260;
+    return true;
+  });
+};
