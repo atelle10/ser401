@@ -30,16 +30,13 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
         ? incident.postal_code < 85260 
         : incident.postal_code >= 85260;
 
-        console.log('Incident postal code:', incident.postal_code);
-        console.log('Is target region:', isTargetRegion);
         if (!isTargetRegion) return;
-        console.log('Checkpoint');
+
 
       // Bucket by granularity
       let key;
       if (granularity === 'daily') {
         key = incidentDate.toISOString().split('T')[0]; // YYYY-MM-DD
-        console.log('Daily key:', key);
       } else if (granularity === 'weekly') {
         const weekStart = new Date(incidentDate);
         weekStart.setDate(incidentDate.getDate() - incidentDate.getDay());
@@ -51,7 +48,6 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
       buckets.set(key, (buckets.get(key) || 0) + 1);
     });
 
-    console.log('Buckets formed:', buckets);
     // Convert to array and sort
     const points = Array.from(buckets.entries())
       .map(([date, count]) => ({ date, count }))
