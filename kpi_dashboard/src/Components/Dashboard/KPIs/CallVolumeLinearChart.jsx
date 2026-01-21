@@ -60,6 +60,8 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
     return { points, maxCount, avgCount };
   }, [data, region, granularity]);
 
+  console.log('CallVolumeLinearChart chartData:', chartData);
+
   if (!chartData) {
     return (
       <div className="border rounded-lg p-4 bg-white">
