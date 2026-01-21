@@ -7,10 +7,13 @@ import { useMemo, useState } from 'react';
  * Leadership wants to see if volumes are increasing (need more staff)
  * or decreasing (budget cuts justified).
  */
-const CallVolumeLinearChart = ({ data, region = 'south' }) => {
+const CallVolumeLinearChart = ({ data, region = 'south'}) => {
   const [granularity, setGranularity] = useState('daily'); // daily, weekly, monthly
 
+  console.log('CallVolumeLinearChart data:', data);
+
   // Aggregate data by time period
+  
   const chartData = useMemo(() => {
     if (!data?.length) return null;
 
@@ -57,6 +60,8 @@ const CallVolumeLinearChart = ({ data, region = 'south' }) => {
 
     return { points, maxCount, avgCount };
   }, [data, region, granularity]);
+
+  console.log('CallVolumeLinearChart chartData:', chartData);
 
   if (!chartData) {
     return (
