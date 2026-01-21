@@ -86,7 +86,7 @@ const Home = () => {
             </div>
             
             {/* Mobile Bottom Navigation (Sidebar items) */}
-            <div className="lg:hidden mt-auto">
+            <div className="lg:hidden mt-auto self-center">
               <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
             </div>
           </div>
