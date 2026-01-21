@@ -36,7 +36,6 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
       let key;
       if (granularity === 'daily') {
         key = incidentDate.toISOString().split('T')[0]; // YYYY-MM-DD
-        console.log('Daily key:', key);
       } else if (granularity === 'weekly') {
         const weekStart = new Date(incidentDate);
         weekStart.setDate(incidentDate.getDate() - incidentDate.getDay());
@@ -48,7 +47,6 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
       buckets.set(key, (buckets.get(key) || 0) + 1);
     });
 
-    console.log('Buckets formed:', buckets);
     // Convert to array and sort
     const points = Array.from(buckets.entries())
       .map(([date, count]) => ({ date, count }))
