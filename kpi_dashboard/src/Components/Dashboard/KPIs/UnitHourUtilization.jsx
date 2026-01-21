@@ -58,7 +58,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
 
   if (!uhuByUnit?.length) {
     return (
-      <div className="border rounded-lg p-4 bg-white">
+      <div className="border rounded-lg p-4 bg-blue-500/70 backdrop-blur-md">
         <h3 className="text-lg font-semibold mb-2">Unit Hour Utilization (UHU)</h3>
         <p className="text-gray-500">No unit data available</p>
       </div>
@@ -74,10 +74,10 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-white">
+    <div className="rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Unit Hour Utilization (UHU)</h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-300">
           Time period: {timePeriodHours}h • Higher = more resource demand
         </p>
       </div>
@@ -89,16 +89,16 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
           return (
             <div 
               key={unit}
-              className="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-3 p-3 border rounded hover:bg-blue-900/80 transition-colors"
             >
               <span className="text-2xl">{unitType.icon}</span>
               
               <div className="flex-1">
                 <div className="flex items-baseline gap-2">
                   <span className="font-semibold">{unit}</span>
-                  <span className="text-xs text-gray-500">{unitType.name}</span>
+                  <span className="text-xs text-gray-200">{unitType.name}</span>
                 </div>
-                <div className="text-xs text-gray-600 mt-0.5">
+                <div className="text-xs text-gray-300 mt-0.5">
                   {busyHours}h busy • {incidents} incidents
                 </div>
               </div>
@@ -114,20 +114,20 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       <div className="mt-4 pt-4 border-t">
         <div className="grid grid-cols-4 gap-2 text-xs">
           <div className="text-center">
-            <div className="font-semibold text-gray-600">&lt; 30%</div>
-            <div className="text-gray-500">Underutilized</div>
+            <div className="font-bold text-gray-300">&lt; 30%</div>
+            <div className="text-gray-200">Underutilized</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-green-600">30-60%</div>
-            <div className="text-gray-500">Optimal</div>
+            <div className="font-bold text-green-600">30-60%</div>
+            <div className="text-gray-200">Optimal</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-orange-600">60-80%</div>
-            <div className="text-gray-500">Busy</div>
+            <div className="font-bold text-orange-600">60-80%</div>
+            <div className="text-gray-200">Busy</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-red-600">&gt; 80%</div>
-            <div className="text-gray-500">Overworked</div>
+            <div className="font-bold text-red-600">&gt; 80%</div>
+            <div className="text-gray-200">Overworked</div>
           </div>
         </div>
       </div>
