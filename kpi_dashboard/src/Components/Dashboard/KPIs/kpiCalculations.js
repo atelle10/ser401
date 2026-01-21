@@ -87,3 +87,38 @@ export const calculateActiveUnits = (incidents, timeWindow = null) => {
     trend: 0
   };
 };
+
+export const calculatePeakLoadFactor = (incidents, timeWindow = null) => {
+  const now = new Date();
+  const windowStart = timeWindow ? new Date(now - timeWindow) : null;
+  
+  let filteredIncidents = incidents;
+  if (windowStart) {
+    filteredIncidents = incidents.filter(inc => 
+      new Date(inc.timestamp) >= windowStart
+    );
+  }
+  
+  const hourCounts = {};
+  filteredIncidents.forEach(inc => {
+    const hour = new Date(inc.timestamp).getHours();
+    hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+  });
+  
+  const counts = Object.values(hourCounts);
+  if (counts.length === 0) {
+    return { factor: 0, peakHour: 0, peakCount: 0, avgCount: 0, trend: 0 };
+  }
+  
+  const maxCount = Math.max(...counts);
+  const avgCount = counts.reduce((sum, c) => sum + c, 0) / counts.length;
+  const peakHour = Object.keys(hourCounts).find(h => hourCounts[h] === maxCount);
+  
+  return {
+    factor: avgCount > 0 ? maxCount / avgCount : 0,
+    peakHour: parseInt(peakHour),
+    peakCount: maxCount,
+    avgCount,
+    trend: 0
+  };
+};
