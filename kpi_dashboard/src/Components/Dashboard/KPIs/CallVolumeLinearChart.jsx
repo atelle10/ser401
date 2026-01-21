@@ -9,6 +9,12 @@ import { useMemo, useState } from 'react';
  */
 const CallVolumeLinearChart = ({ data, region = 'south'}) => {
   const [granularity, setGranularity] = useState('daily'); // daily, weekly, monthly
+<<<<<<< HEAD
+=======
+
+  console.log('CallVolumeLinearChart data:', data);
+
+>>>>>>> 3356bc1 (Configuring charts KPIs)
   // Aggregate data by time period
   
   const chartData = useMemo(() => {
@@ -60,6 +66,8 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
 
     return { points, maxCount, avgCount };
   }, [data, region, granularity]);
+
+  console.log('CallVolumeLinearChart chartData:', chartData);
 
   if (!chartData) {
     return (
