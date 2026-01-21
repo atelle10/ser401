@@ -61,7 +61,7 @@ const Dashboard = () => {
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
           <CallVolumeLinearChart 
-            incidents={mockIncidentData} 
+            data={mockIncidentData} 
             region={region}
             granularity="daily"
           />
