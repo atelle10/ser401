@@ -6,11 +6,11 @@ import Chart from './Dashboard/Chart'
 
 // Mock data for development
 const mockIncidentData = [
-  { timestamp: '2025-11-20T08:00:00', unit: 'E101', incident_type: 'EMS', duration: 45, postal_code: 85250 },
-  { timestamp: '2025-11-20T09:30:00', unit: 'R202', incident_type: 'Fire', duration: 120, postal_code: 85280 },
-  { timestamp: '2025-11-20T14:15:00', unit: 'E101', incident_type: 'EMS', duration: 30, postal_code: 85250 },
-  { timestamp: '2025-11-21T10:00:00', unit: 'LA301', incident_type: 'EMS', duration: 60, postal_code: 85270 },
-  { timestamp: '2025-11-21T16:45:00', unit: 'E101', incident_type: 'Fire', duration: 90, postal_code: 85250 },
+  { timestamp: '2025-11-20T08:00:00', unit: 'E101', incident_type: 'EMS', duration: 45, postal_code: 85250, en_route_time: '2025-11-20T08:05:00', clear_time: '2025-11-20T08:50:00', unit_id: 'E101' },
+  { timestamp: '2025-11-20T09:30:00', unit: 'R202', incident_type: 'Fire', duration: 120, postal_code: 85280, en_route_time: '2025-11-20T09:35:00', clear_time: '2025-11-20T11:35:00', unit_id: 'R202' },
+  { timestamp: '2025-11-20T14:15:00', unit: 'E101', incident_type: 'EMS', duration: 30, postal_code: 85250, en_route_time: '2025-11-20T14:20:00', clear_time: '2025-11-20T14:50:00', unit_id: 'E101' },
+  { timestamp: '2025-11-21T10:00:00', unit: 'LA301', incident_type: 'EMS', duration: 60, postal_code: 85270, en_route_time: '2025-11-21T10:05:00', clear_time: '2025-11-21T11:35:00', unit_id: 'LA301' },
+  { timestamp: '2025-11-21T16:45:00', unit: 'E101', incident_type: 'Fire', duration: 90, postal_code: 85250, en_route_time: '2025-11-21T16:55:00', clear_time:' 2025-11-21T18:35:00', unit_id:' E101' },
 ]
 
 const Dashboard = () => {
@@ -55,7 +55,7 @@ const Dashboard = () => {
 
         <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg ">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization incidents={mockIncidentData} />
+          <UnitHourUtilization data={mockIncidentData} />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
