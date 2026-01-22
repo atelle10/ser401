@@ -57,17 +57,17 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
     if (count === 0) return 'bg-gray-50';
     const intensity = Math.ceil((count / heatData.maxCount) * 5);
     const colors = [
-      'bg-blue-100',
-      'bg-blue-200', 
-      'bg-blue-400',
-      'bg-blue-600',
-      'bg-blue-800'
+      'bg-blue-100 text-blue-800',
+      'bg-blue-200 text-blue-800', 
+      'bg-blue-400 text-blue-800',
+      'bg-blue-600 text-blue-800',
+      'bg-blue-800 text-white'
     ];
     return colors[Math.min(intensity - 1, 4)];
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-white">
+    <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
@@ -79,7 +79,7 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
         <select 
           value={selectedWeeks}
           onChange={(e) => setSelectedWeeks(Number(e.target.value))}
-          className="border rounded px-3 py-1 text-sm"
+          className="border rounded px-3 py-1 text-sm text-blue-800/80"
         >
           <option value={1}>Last week</option>
           <option value={5}>Last 5 weeks</option>
@@ -87,7 +87,7 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
         </select>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto text-blue-800/80">
         <table className="w-full border-collapse">
           <thead>
             <tr>
@@ -110,7 +110,7 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
                   return (
                     <td
                       key={dayIdx}
-                      className={`border p-3 ${getColor(count)} transition-colors cursor-pointer hover:opacity-80`}
+                      className={`border p-3 ${getColor(count)} transition-colors cursor-pointer hover:opacity-60`}
                       title={`${DAYS[dayIdx]} ${hour}:00 - ${count} incidents`}
                     >
                       <span className="text-xs font-medium">{count || ''}</span>
@@ -123,7 +123,7 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center gap-4 text-xs text-gray-600">
+      <div className="mt-4 flex items-center gap-4 text-xs text-">
         <span>Low</span>
         <div className="flex gap-1">
           {['bg-gray-50', 'bg-blue-100', 'bg-blue-200', 'bg-blue-400', 'bg-blue-600', 'bg-blue-800'].map((color, i) => (
