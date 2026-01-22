@@ -26,7 +26,7 @@ const Dashboard = () => {
           <select
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           >
             <option value="south">South Scottsdale</option>
             <option value="north">North Scottsdale</option>
