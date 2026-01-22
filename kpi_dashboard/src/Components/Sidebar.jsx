@@ -27,52 +27,36 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick, role }) => {
       <div className="flex lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-x-visible">
         
         {/* Dashboard */}
-        <div
-          className={getItemClass('dashboard')}
-          onClick={() => setCurrentView('dashboard')}
-        >
+        <div className={getItemClass('dashboard')} onClick={() => setCurrentView('dashboard')}>
           <img src={dashboardIcon} alt="Dashboard Icon" className="inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2" />
           <p className="hidden lg:inline whitespace-nowrap">Dashboard</p>
         </div>
 
         {/* Fire Department */}
-        <div
-          className={getItemClass('fire')}
-          onClick={() => setCurrentView('fire')}
-        >
-          <img src={whiteFireIcon} alt="White Fire Icon" className="inline w-5 h-5 lg:mr-2" />
+        <div className={getItemClass('fire')} onClick={() => setCurrentView('fire')}>
+          <img src={whiteFireIcon} alt="Fire Icon" className="inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2" />
           <p className="hidden lg:inline whitespace-nowrap">Fire Department</p>
         </div>
 
         {/* Medical */}
-        <div
-          className={getItemClass('medical')}
-          onClick={() => setCurrentView('medical')}
-        >
-          <img src={whiteMedicalIcon} alt="Medical Icon" className="inline w-5 h-5 lg:mr-2" />
+        <div className={getItemClass('medical')} onClick={() => setCurrentView('medical')}>
+          <img src={whiteMedicalIcon} alt="Medical Icon" className="inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2" />
           <p className="hidden lg:inline whitespace-nowrap">Medical (EMS)</p>
         </div>
 
         {/* Account */}
-        <div
-          className={getItemClass('account')}
-          onClick={handleAccountClick}
-        >
-          <img src={accountIcon} alt="Account Icon" className="inline w-5 h-5 lg:mr-2" />
+        <div className={getItemClass('account')} onClick={handleAccountClick}>
+          <img src={accountIcon} alt="Account Icon" className="inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2" />
           <p className="hidden lg:inline whitespace-nowrap">Account</p>
         </div>
 
         {/* Settings — admin only */}
         {role === 'admin' && (
-          <div
-            className={getItemClass('settings')}
-            onClick={() => setCurrentView('settings')}
-          >
+          <div className={getItemClass('settings')} onClick={() => setCurrentView('settings')}>
             <img src={settingsIcon} alt="Settings Icon" className="inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2" />
             <p className="hidden lg:inline whitespace-nowrap">Settings</p>
           </div>
         )}
-
       </div>
     </div>
   );
