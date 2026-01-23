@@ -55,3 +55,10 @@ Notes:
 The auth server reads env vars from the shell or .env (loaded via dotenv).
 BETTER_AUTH_TRUSTED_ORIGINS must include the Vite dev URL to avoid invalid origin errors.
 Dev-only: email changes bypass verification; TODO in auth_server/src/auth.ts to enable email verification before production.
+Microsoft SSO: Enabled via provider in auth.ts (signIn("microsoft")).
+
+Run the SPA (Vite)
+In another terminal:
+Bashcd kpi_dashboard
+npm install
+npm run dev
