@@ -1,23 +1,51 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 export const fetchKPIData = async ({ startDate, endDate, region = 'all' }) => {
-  const params = new URLSearchParams({
-    start_date: startDate,
-    end_date: endDate,
-    region: region
-  });
+  try {
+    const params = new URLSearchParams({
+      start_date: startDate,
+      end_date: endDate,
+      region: region
+    });
 
-  const response = await fetch(`${API_BASE_URL}/incidents/kpi-data?${params}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
+    const response = await fetch(`${API_BASE_URL}/incidents/kpi-data?${params}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
 
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return { success: true, data: transformAPIData(data), error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
   }
+};
 
-  const data = await response.json();
-  return transformAPIData(data);
+export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const params = new URLSearchParams({
+      start_date: startDate,
+      end_date: endDate,
+      region: region
+    });
+
+    const response = await fetch(`${API_BASE_URL}/incidents/summary?${params}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return { success: true, data: data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
 };
 
 const transformAPIData = (apiData) => {
@@ -37,6 +65,8 @@ const transformAPIData = (apiData) => {
       unit_id: unit.unit_id,
       dispatch_time: unit.dispatch_time,
       arrival_time: unit.arrival_time,
+      en_route_time: unit.en_route_time,
+      clear_time: unit.clear_time,
     }));
   });
 };
