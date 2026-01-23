@@ -1,14 +1,32 @@
 import React, { useMemo } from 'react'
 import { calculateAvgResponseTime, filterByRegion } from './kpiCalculations'
 import TrendIndicator from './TrendIndicator'
+import LoadingSpinner from './LoadingSpinner'
+import ErrorMessage from './ErrorMessage'
 
-const KPI_1 = ({ data = [], timeWindow = 7 * 24 * 60 * 60 * 1000, region = null }) => {
+const KPI_1 = ({ data = [], timeWindow = 7 * 24 * 60 * 60 * 1000, region = null, loading = false, error = null, onRetry }) => {
   const stats = useMemo(() => {
     const filtered = region ? filterByRegion(data, region) : data;
     return calculateAvgResponseTime(filtered, timeWindow);
   }, [data, timeWindow, region]);
 
   const displayValue = stats.value !== null ? `${stats.value.toFixed(2)} min` : 'N/A';
+
+  if (loading) {
+    return (
+      <div className="p-2 rounded-2xl justify-center bg-red-50 shadow-red-500/20 shadow-md h-32 flex flex-col items-center">
+        <LoadingSpinner color="red" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-2 rounded-2xl justify-center bg-red-50 shadow-red-500/20 shadow-md h-32 flex flex-col items-center">
+        <ErrorMessage message={error} onRetry={onRetry} color="red" />
+      </div>
+    );
+  }
 
   return (
     <div>

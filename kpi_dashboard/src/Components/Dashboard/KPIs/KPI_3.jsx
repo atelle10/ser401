@@ -1,14 +1,32 @@
 import React, { useMemo } from 'react'
 import { calculateActiveUnits, filterByRegion } from './kpiCalculations'
 import TrendIndicator from './TrendIndicator'
+import LoadingSpinner from './LoadingSpinner'
+import ErrorMessage from './ErrorMessage'
 
-const KPI_3 = ({ data = [], timeWindow = 7 * 24 * 60 * 60 * 1000, region = null }) => {
+const KPI_3 = ({ data = [], timeWindow = 7 * 24 * 60 * 60 * 1000, region = null, loading = false, error = null, onRetry }) => {
   const stats = useMemo(() => {
     const filtered = region ? filterByRegion(data, region) : data;
     return calculateActiveUnits(filtered, timeWindow);
   }, [data, timeWindow, region]);
 
   const breakdownText = `E:${stats.breakdown.engine} R:${stats.breakdown.rescue} L:${stats.breakdown.ladder}`;
+
+  if (loading) {
+    return (
+      <div className="p-2 rounded-2xl justify-center bg-green-50 shadow-green-500/20 shadow-md h-32 flex flex-col items-center">
+        <LoadingSpinner color="green" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-2 rounded-2xl justify-center bg-green-50 shadow-green-500/20 shadow-md h-32 flex flex-col items-center">
+        <ErrorMessage message={error} onRetry={onRetry} color="green" />
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react'
 import { calculatePeakLoadFactor, filterByRegion } from './kpiCalculations'
 import TrendIndicator from './TrendIndicator'
+import LoadingSpinner from './LoadingSpinner'
+import ErrorMessage from './ErrorMessage'
 
-const KPI_4 = ({ data = [], timeWindow = 7 * 24 * 60 * 60 * 1000, region = null }) => {
+const KPI_4 = ({ data = [], timeWindow = 7 * 24 * 60 * 60 * 1000, region = null, loading = false, error = null, onRetry }) => {
   const stats = useMemo(() => {
     const filtered = region ? filterByRegion(data, region) : data;
     return calculatePeakLoadFactor(filtered, timeWindow);
@@ -10,6 +12,22 @@ const KPI_4 = ({ data = [], timeWindow = 7 * 24 * 60 * 60 * 1000, region = null 
 
   const displayValue = stats.factor > 0 ? `${stats.factor.toFixed(2)}×` : 'N/A';
   const tooltipText = `Peak hour: ${stats.peakHour}:00 (${stats.peakCount} incidents vs ${stats.avgCount.toFixed(1)} avg)`;
+
+  if (loading) {
+    return (
+      <div className="p-2 rounded-2xl justify-center shadow-purple-500/20 bg-purple-50 shadow-md h-32 flex flex-col items-center">
+        <LoadingSpinner color="purple" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-2 rounded-2xl justify-center shadow-purple-500/20 bg-purple-50 shadow-md h-32 flex flex-col items-center">
+        <ErrorMessage message={error} onRetry={onRetry} color="purple" />
+      </div>
+    );
+  }
 
   return (
     <div>
