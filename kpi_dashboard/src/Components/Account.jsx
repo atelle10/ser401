@@ -15,18 +15,22 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
   const [hasChanges, setHasChanges] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [saveNotice, setSaveNotice] = useState('')
   // TODO: Wire save to backend profile endpoint (and avatar upload) in a later sprint.
 
   useEffect(() => {
     setFormData(profile || fallbackProfile)
     setEditing(false)
     setHasChanges(false)
+    setSaveError('')
+    setSaveNotice('')
   }, [profile])
 
   const isDirty = (data) => {
     const base = profile || fallbackProfile
     return (
-      data?.name !== base?.name
+      data?.name !== base?.name ||
+      data?.email !== base?.email
     )
   }
 
@@ -40,25 +44,54 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
   }
 
   const handleSave = async () => {
-    if (!editing || !hasChanges) return
+    if (!editing || !hasChanges || isSaving) return
     setSaveError('')
+    setSaveNotice('')
     setIsSaving(true)
 
-    const name = formData?.name?.trim()
-    const result = await authClient.updateUser({ name })
-    setIsSaving(false)
+    const base = profile || fallbackProfile
+    const name = formData?.name?.trim() || ''
+    const email = formData?.email?.trim() || ''
+    const nameChanged = name !== (base?.name || '')
+    const emailChanged = email !== (base?.email || '')
 
-    if (result?.error) {
-      const fallback = result.error.status
-        ? `Update failed (${result.error.status} ${result.error.statusText})`
-        : 'Update failed. Please try again.'
-      setSaveError(result.error.message || fallback)
+    if (emailChanged && !email) {
+      setSaveError('Please enter a valid email address.')
+      setIsSaving(false)
       return
     }
 
-    if (onUpdateProfile) {
-      onUpdateProfile({ ...formData, name })
+    if (nameChanged) {
+      const result = await authClient.updateUser({ name })
+      if (result?.error) {
+        const fallback = result.error.status
+          ? `Update failed (${result.error.status} ${result.error.statusText})`
+          : 'Update failed. Please try again.'
+        setSaveError(result.error.message || fallback)
+        setIsSaving(false)
+        return
+      }
     }
+
+    if (emailChanged) {
+      const callbackURL = `${window.location.origin}/home`
+      const result = await authClient.changeEmail({ newEmail: email, callbackURL })
+      if (result?.error) {
+        const fallback = result.error.status
+          ? `Email update failed (${result.error.status} ${result.error.statusText})`
+          : 'Email update failed. Please try again.'
+        setSaveError(result.error.message || fallback)
+        setIsSaving(false)
+        return
+      }
+      setSaveNotice('Email update requested. Check your inbox to verify the new address.')
+    }
+
+    if (onUpdateProfile) {
+      onUpdateProfile({ ...formData, name, email })
+    }
+
+    setIsSaving(false)
     setEditing(false)
     setHasChanges(false)
   }
@@ -68,6 +101,7 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
     setHasChanges(false)
     setFormData(profile || fallbackProfile)
     setSaveError('')
+    setSaveNotice('')
   }
 
   const handleCancel = () => {
@@ -75,6 +109,7 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
     setHasChanges(false)
     setFormData(profile || fallbackProfile)
     setSaveError('')
+    setSaveNotice('')
   }
 
   return (
@@ -126,10 +161,10 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
               value={formData?.email || ''}
               onChange={handleInputChange('email')}
               className="border p-2 rounded-md mt-1 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:bg-gray-100"
-              disabled
+              disabled={!editing}
             />
             <p className="text-xs text-gray-500 mt-1">
-              Email updates are not available yet.
+              Changing your email will send a verification link to the new address.
             </p>
           </div>
 
@@ -143,6 +178,12 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
           {saveError && (
             <div className="p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
               {saveError}
+            </div>
+          )}
+
+          {saveNotice && (
+            <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-600">
+              {saveNotice}
             </div>
           )}
 

@@ -53,6 +53,7 @@ npm run dev
 Notes:
 - The auth server reads env vars from the shell (no automatic .env loading).
 - `BETTER_AUTH_TRUSTED_ORIGINS` must include the Vite dev URL to avoid invalid origin errors.
+- Dev-only: email changes bypass verification; TODO in `auth_server/src/auth.ts` to enable email verification before production.
 
 ## Run the SPA (Vite)
 In another terminal:
