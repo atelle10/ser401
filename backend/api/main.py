@@ -39,6 +39,12 @@ async def get_kpi_data(
         db = RelationalDataStore(DATABASE_URL)
         db.connect()
         
+        region_filter = ""
+        if region == "south":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+        elif region == "north":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+        
         query = f"""
         SELECT 
             i.incident_id,
@@ -51,6 +57,7 @@ async def get_kpi_data(
         FROM fire_ems.incident i
         LEFT JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
         WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+        {region_filter}
         ORDER BY i.incident_id
         """
         
