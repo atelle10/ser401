@@ -40,3 +40,31 @@ const transformAPIData = (apiData) => {
     }));
   });
 };
+
+export const generateMockKPIData = (timeWindow = 7 * 24 * 60 * 60 * 1000) => {
+  const now = new Date();
+  const startTime = now.getTime() - timeWindow;
+  const mockData = [];
+
+  const units = ['E101', 'E102', 'R201', 'R202', 'L301', 'L302'];
+  const postalCodes = ['85250', '85251', '85254', '85260', '85262', '85266'];
+
+  for (let i = 0; i < 100; i++) {
+    const timestamp = new Date(startTime + Math.random() * timeWindow);
+    const dispatchDelay = Math.random() * 5;
+    const responseTime = 5 + Math.random() * 15;
+
+    const dispatch = new Date(timestamp.getTime() + dispatchDelay * 60000);
+    const arrival = new Date(dispatch.getTime() + responseTime * 60000);
+
+    mockData.push({
+      timestamp: timestamp.toISOString(),
+      unit_id: units[Math.floor(Math.random() * units.length)],
+      postal_code: postalCodes[Math.floor(Math.random() * postalCodes.length)],
+      dispatch_time: dispatch.toISOString(),
+      arrival_time: arrival.toISOString(),
+    });
+  }
+
+  return mockData;
+};
