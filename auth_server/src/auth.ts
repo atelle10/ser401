@@ -22,6 +22,10 @@ export const auth = betterAuth({
   }),
   emailAndPassword: { enabled: true },
   user: {
+    changeEmail: {
+      enabled: true,
+      updateEmailWithoutVerification: true, // TODO: remove for production and enable email verification flow.
+    },
     additionalFields: {
       username: { type: "string", required: true },
       phone: { type: "string", required: true },
