@@ -10,13 +10,14 @@ const fallbackProfile = {
 }
 
 const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
+  const { refetch: refetchSession } = authClient.useSession()
   const [formData, setFormData] = useState(profile)
   const [editing, setEditing] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveNotice, setSaveNotice] = useState('')
-  // TODO: Wire save to backend profile endpoint (and avatar upload) in a later sprint.
+  const maxAvatarBytes = 2 * 1024 * 1024
 
   useEffect(() => {
     setFormData(profile || fallbackProfile)
@@ -26,11 +27,16 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
     setSaveNotice('')
   }, [profile])
 
+  const normalizeAvatar = (value) => value || ''
+
   const isDirty = (data) => {
     const base = profile || fallbackProfile
+    const baseAvatar = normalizeAvatar(base?.avatar)
+    const currentAvatar = normalizeAvatar(data?.avatar)
     return (
       data?.name !== base?.name ||
-      data?.email !== base?.email
+      data?.email !== base?.email ||
+      currentAvatar !== baseAvatar
     )
   }
 
@@ -43,6 +49,48 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
     })
   }
 
+  const handleAvatarChange = (e) => {
+    if (!editing) return
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSaveError('')
+
+    if (!file.type.startsWith('image/')) {
+      setSaveError('Please choose a valid image file.')
+      return
+    }
+
+    if (file.size > maxAvatarBytes) {
+      setSaveError('Image too large. Please use a file under 2MB.')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const imageUrl = typeof reader.result === 'string' ? reader.result : ''
+      if (!imageUrl) {
+        setSaveError('Unable to read image file.')
+        return
+      }
+      setFormData((prev) => {
+        const updated = { ...prev, avatar: imageUrl }
+        setHasChanges(isDirty(updated))
+        return updated
+      })
+    }
+    reader.onerror = () => setSaveError('Unable to read image file.')
+    reader.readAsDataURL(file)
+  }
+
+  const handleRemoveAvatar = () => {
+    if (!editing) return
+    setFormData((prev) => {
+      const updated = { ...prev, avatar: '' }
+      setHasChanges(isDirty(updated))
+      return updated
+    })
+  }
+
   const handleSave = async () => {
     if (!editing || !hasChanges || isSaving) return
     setSaveError('')
@@ -50,10 +98,13 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
     setIsSaving(true)
 
     const base = profile || fallbackProfile
+    const baseAvatar = normalizeAvatar(base?.avatar)
     const name = formData?.name?.trim() || ''
     const email = formData?.email?.trim() || ''
+    const avatar = normalizeAvatar(formData?.avatar)
     const nameChanged = name !== (base?.name || '')
     const emailChanged = email !== (base?.email || '')
+    const avatarChanged = avatar !== baseAvatar
 
     if (emailChanged && !email) {
       setSaveError('Please enter a valid email address.')
@@ -61,8 +112,13 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
       return
     }
 
-    if (nameChanged) {
-      const result = await authClient.updateUser({ name })
+    const updatePayload = {}
+    if (nameChanged) updatePayload.name = name
+    if (avatarChanged) updatePayload.image = avatar ? avatar : null
+
+    let shouldRefetch = false
+    if (Object.keys(updatePayload).length > 0) {
+      const result = await authClient.updateUser(updatePayload)
       if (result?.error) {
         const fallback = result.error.status
           ? `Update failed (${result.error.status} ${result.error.statusText})`
@@ -71,6 +127,7 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
         setIsSaving(false)
         return
       }
+      shouldRefetch = true
     }
 
     if (emailChanged) {
@@ -87,8 +144,12 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
       setSaveNotice('Email update requested. Check your inbox to verify the new address.')
     }
 
+    if (shouldRefetch) {
+      await refetchSession?.()
+    }
+
     if (onUpdateProfile) {
-      onUpdateProfile({ ...formData, name, email })
+      onUpdateProfile({ ...formData, name, email, avatar: avatar || '' })
     }
 
     setIsSaving(false)
@@ -134,9 +195,27 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
             className="w-20 h-20 rounded-full shadow mb-3 object-cover"
           />
           {editing && (
-            <p className="text-xs text-gray-500">
-              Profile photo updates aren&apos;t supported yet.
-            </p>
+            <div className="flex items-center gap-3 text-sm">
+              <label className="font-medium cursor-pointer text-blue-600 hover:underline">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                  disabled={!editing}
+                />
+                Change photo
+              </label>
+              {formData?.avatar && (
+                <button
+                  type="button"
+                  onClick={handleRemoveAvatar}
+                  className="text-red-600 hover:underline"
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
           )}
           <h2 className="text-lg font-medium mt-2">{formData?.name}</h2>
           <p className="text-gray-600 text-sm">{formData?.email}</p>
