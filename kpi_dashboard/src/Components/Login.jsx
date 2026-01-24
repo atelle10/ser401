@@ -134,7 +134,6 @@ const Login = () => {
           </form>
         </div>
       </div>
-      {loggedIn && <Navigate to="/home" replace />}
     </div>
   );
 };
