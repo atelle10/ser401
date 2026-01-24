@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import FileDropZone from './FileDropZone'
 
 export default function Upload() {
+  const [dataType, setDataType] = useState('fire')
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -42,8 +43,34 @@ export default function Upload() {
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Upload Data</h1>
-      
+
       <div className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div>
+          <h2 className="font-medium mb-2">Select Data Type</h2>
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setDataType('fire')}
+              className={`flex-1 px-4 py-2 rounded ${
+                dataType === 'fire'
+                  ? 'bg-blue-600 text-white'
+                  : 'border hover:bg-gray-50'
+              }`}
+            >
+              Fire
+            </button>
+            <button
+              onClick={() => setDataType('ems')}
+              className={`flex-1 px-4 py-2 rounded ${
+                dataType === 'ems'
+                  ? 'bg-blue-600 text-white'
+                  : 'border hover:bg-gray-50'
+              }`}
+            >
+              EMS
+            </button>
+          </div>
+        </div>
+
         <div>
           <h2 className="font-medium mb-2">Select CSV File</h2>
           <p className="text-sm text-gray-600 mb-4">
