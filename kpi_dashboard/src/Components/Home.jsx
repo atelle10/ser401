@@ -62,7 +62,7 @@ const Home = () => {
   }
 
   return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-center justify-center">
+      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
         {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
           {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
