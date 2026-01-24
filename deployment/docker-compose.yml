@@ -1,0 +1,13 @@
+name: famar-system
+
+services:
+  frontend:
+    build:
+      context: ..
+      dockerfile: deployment/frontend/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
