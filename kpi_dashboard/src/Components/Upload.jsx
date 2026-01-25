@@ -95,7 +95,7 @@ export default function Upload() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">{file.name}</p>
-                <p className="text-sm text-white/70">{(file.size / 1024).toFixed(2)} KB</p>
+                <p className="text-sm text-gray-300">{(file.size / 1024).toFixed(2)} KB</p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -118,8 +118,8 @@ export default function Upload() {
         {uploading && (
           <div className="border-t pt-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-              <span>Uploading {file?.name}...</span>
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full bg-white animate-spin " />
+              <span className='text-white'>Uploading {file?.name}...</span>
             </div>
           </div>
         )}
