@@ -38,7 +38,7 @@ const User = ({ onViewAccount, profile }) => {
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 animate-fade-in">
             <button
               onClick={handleViewAccount}
-              className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+              className="block w-full text-left px-4 py-2 hover:bg-blue-500/40 hover:rounded-xl"
               >
                 View Account Details
               </button>
@@ -48,7 +48,7 @@ const User = ({ onViewAccount, profile }) => {
                   setOpen(false);
                   await authClient.signOut();
                 }}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                className="block w-full text-left px-4 py-2 hover:bg-blue-500/40 hover:rounded-xl"
                 >
                   Logout
                 </button>
