@@ -25,6 +25,7 @@
  - `/api/incidents/kpi-data`
  - `/api/incidents/summary`
  - `/api/incidents/heatmap`
+ - `/api/incidents/call-volume`
 
 1. Navigate to the 'kpi_dashboard' in a command line terminal 
 2. Run 'npm install' .This will ensure you have all dependencies needed to run the program
