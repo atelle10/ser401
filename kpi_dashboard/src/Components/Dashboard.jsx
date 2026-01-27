@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react';
 import KPI_1 from './Dashboard/KPIs/KPI_1';
 import KPI_2 from './Dashboard/KPIs/KPI_2';
@@ -16,6 +17,14 @@ const mockIncidentData = [
   { timestamp: '2025-11-21T10:00:00', unit: 'LA301', incident_type: 'EMS', duration: 60, postal_code: 85270, en_route_time: '2025-11-21T10:05:00', clear_time: '2025-11-21T11:35:00', unit_id: 'LA301' },
   { timestamp: '2025-11-21T16:45:00', unit: 'E101', incident_type: 'Fire', duration: 90, postal_code: 85250, en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00', unit_id: 'E101' },
 ];
+=======
+import React from 'react'
+import KPI_1 from './Dashboard/KPIs/KPI_1'
+import KPI_2 from './Dashboard/KPIs/KPI_2'
+import KPI_3 from './Dashboard/KPIs/KPI_3'
+import KPI_4 from './Dashboard/KPIs/KPI_4'
+import Chart from './Dashboard/Chart'
+>>>>>>> d0a342e (Removed obsolute mock Register.jsx.)
 
 const Dashboard = ({ role }) => {
   const canViewAdvanced = role === "admin" || role === "analyst";
