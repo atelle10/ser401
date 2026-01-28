@@ -71,7 +71,7 @@ Notes:
 - `BETTER_AUTH_TRUSTED_ORIGINS` must include the Vite dev URL to avoid invalid origin errors.
 - Dev-only: email changes bypass verification; TODO in `auth_server/src/auth.ts` to enable email verification before production.
 
-## Production TODO (amend this later)
+## Production TODO
 - Use separate secrets for database credentials and Microsoft OAuth.
 - Update README with production deployment steps and required env vars per environment.
 
@@ -83,9 +83,3 @@ cd kpi_dashboard
 npm install
 npm run dev
 ```
-
-Notes:
-- Vite proxies `/api/auth` to `http://localhost:3001` by default.
-- If you want a full URL client config, set these in `kpi_dashboard/.env`:
-  - `VITE_BETTER_AUTH_URL=http://localhost:3001`
-  - `VITE_BETTER_AUTH_BASE_PATH=/api/auth`
