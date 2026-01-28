@@ -9,14 +9,14 @@ const trustedOrigins = (
   .filter(Boolean);
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001",
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5173",
   basePath: process.env.BETTER_AUTH_BASE_PATH || "/api/auth",
   trustedOrigins,
   database: new Pool({
-    host: "localhost",
+    host: (process.env.DB_HOST as string) || "localhost",
     port: 5432,
-    user: "postgres",
-    password: "wuvzak-Nihmi7-gohdoh", // TODO: change from hardcoded password
+    user: (process.env.DB_USER as string) || "postgres",
+    password: (process.env.DB_PASSWORD as string) || "password",
     database: "famar_db",
     options: "-c search_path=auth",
   }),
@@ -36,4 +36,13 @@ export const auth = betterAuth({
     expiresIn: 300,
     refreshCache: true,
   },
+  socialProviders: {
+    microsoft: {
+      clientId: process.env.MICROSOFT_CLIENT_ID as string,
+      clientSecret: process.env.MICROSOFT_CLIENT_SECRET as string, 
+      tenantId: 'common', 
+      authority: "https://login.microsoftonline.com", // Authentication authority URL
+      prompt: "select_account", // Forces account selection
+    }
+  }
 });
