@@ -4,7 +4,15 @@ import Login from './Components/Login.jsx'
 import Home from './Components/Home.jsx'
 import Register from './Components/Register.jsx'
 import RequestSent from './Components/RequestSent.jsx'
+import CompleteProfile from './Components/CompleteProfile.jsx'
 import { authClient } from './utils/authClient.js'
+
+const needsProfileCompletion = (user) =>
+  !user?.username ||
+  !user?.phone ||
+  !user?.accountType ||
+  user.username.startsWith('pending_') ||
+  user.phone === '__pending__'
 
 const RequireAuth = ({ children }) => {
   const location = useLocation()
@@ -22,6 +30,10 @@ const RequireAuth = ({ children }) => {
     return <Navigate to="/" replace state={{ from: location }} />
   }
 
+  if (needsProfileCompletion(session.user) && location.pathname !== '/complete-profile') {
+    return <Navigate to="/complete-profile" replace />
+  }
+
   return children
 }
 
@@ -37,6 +49,9 @@ const RequireGuest = ({ children }) => {
   }
 
   if (session?.user) {
+    if (needsProfileCompletion(session.user)) {
+      return <Navigate to="/complete-profile" replace />
+    }
     return <Navigate to="/home" replace />
   }
 
@@ -60,6 +75,14 @@ function App() {
               element={
                 <RequireAuth>
                   <Home />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/complete-profile"
+              element={
+                <RequireAuth>
+                  <CompleteProfile />
                 </RequireAuth>
               }
             />
