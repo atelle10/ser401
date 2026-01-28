@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import crypto from "node:crypto";
 
 const trustedOrigins = (
   process.env.BETTER_AUTH_TRUSTED_ORIGINS || "http://localhost:5173" //TODO: change from hardcoded origin
@@ -20,6 +21,31 @@ export const auth = betterAuth({
     database: "famar_db",
     options: "-c search_path=auth",
   }),
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          const pendingSuffix = crypto.randomUUID().slice(0, 8);
+          const fallbackUsername = `pending_${pendingSuffix}`;
+          return {
+            data: {
+              ...user,
+              username:
+                user.username && user.username.trim()
+                  ? user.username
+                  : fallbackUsername,
+              phone:
+                user.phone && user.phone.trim() ? user.phone : "__pending__",
+              accountType:
+                user.accountType && user.accountType.trim()
+                  ? user.accountType
+                  : "monitoring",
+            },
+          };
+        },
+      },
+    },
+  },
   emailAndPassword: { enabled: true },
   user: {
     changeEmail: {
@@ -27,9 +53,9 @@ export const auth = betterAuth({
       updateEmailWithoutVerification: true, // TODO: remove for production and enable email verification flow.
     },
     additionalFields: {
-      username: { type: "string", required: true },
-      phone: { type: "string", required: true },
-      accountType: { type: "string", required: true },
+      username: { type: "string", required: false },
+      phone: { type: "string", required: false },
+      accountType: { type: "string", required: false },
     },
   },
   session: {
