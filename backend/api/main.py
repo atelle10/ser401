@@ -1,17 +1,20 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+import tempfile
 import sys
 import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from backend.db_ops.relational_data_store import RelationalDataStore
+from backend.ingestion.ingestion_service import IngestionService
+from backend.ingestion.data_classes import DQPolicy, DQRule, DataSet
 
 app = FastAPI(title="FAMAR KPI Dashboard API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -19,9 +22,26 @@ app.add_middleware(
 
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://michael@localhost/famar_db')
 
+UPLOAD_POLICY = DQPolicy(
+    policy_id="dq_001",
+    name="BASIC_POLICY",
+    rules=[DQRule.NAN, DQRule.NON_NUMERIC]
+)
+
+UPLOAD_INGESTION_SERVICE = IngestionService(
+    accepted_file_types=['.csv', '.xlsx'],
+    max_col_count=100,
+    max_row_count=100000,
+    dq_policy=UPLOAD_POLICY
+)
+
 @app.get("/")
 async def root():
     return {"status": "healthy", "service": "FAMAR KPI Dashboard API"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 @app.get("/api/incidents/kpi-data")
 async def get_kpi_data(
@@ -93,6 +113,49 @@ async def get_kpi_data(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+@app.post("/api/upload")
+async def upload_csv(
+    file: UploadFile = File(...),
+    data_type: str = Query(..., pattern="^(fire|ems)$")
+):
+    is_fire = data_type == "fire"
+
+    suffix = os.path.splitext(file.filename or "")[1]
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(await file.read())
+        temp_path = tmp.name
+
+    try:
+        uploaded = UPLOAD_INGESTION_SERVICE.ingest_data(temp_path, is_fire=is_fire)
+
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+        try:
+            dataset = DataSet(id=file.filename or "uploaded", name=file.filename or "uploaded", data=uploaded.dataframe)
+            ok = db.write_data(dataset, is_fire=is_fire)
+        finally:
+            db.disconnect()
+
+        if not ok:
+            raise HTTPException(status_code=500, detail="Failed to write to database")
+
+        return {
+            "success": True,
+            "message": f"Uploaded {file.filename}",
+            "rows": int(uploaded.dataframe.shape[0])
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        try:
+            os.unlink(temp_path)
+        except Exception:
+            pass
 
 @app.get("/api/incidents/summary")
 async def get_kpi_summary(
