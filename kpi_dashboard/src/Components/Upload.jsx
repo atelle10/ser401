@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import FileDropZone from './FileDropZone'
+import { API_URL } from '../config'
 
 export default function Upload() {
+  const [dataType, setDataType] = useState('fire')
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
-  const [progress, setProgress] = useState(0)
   const [result, setResult] = useState(null)
 
   const handleFileSelect = (selectedFile) => {
@@ -14,27 +15,36 @@ export default function Upload() {
 
   const handleUpload = async () => {
     if (!file) return
-    
+
     setUploading(true)
-    setProgress(0)
-    
-    // Mock upload simulation
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setUploading(false)
-          setResult({ success: true, message: 'File uploaded successfully' })
-          return 100
-        }
-        return prev + 10
-      })
-    }, 200)
+    setResult(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch(
+        `${API_URL}/api/upload?data_type=${dataType}`,
+        { method: 'POST', body: formData }
+      )
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setResult({ success: true, message: `${data.message} (${data.rows} rows)` })
+        setTimeout(() => window.location.reload(), 1500)
+      } else {
+        setResult({ success: false, message: data.detail || 'Upload failed' })
+      }
+    } catch (error) {
+      setResult({ success: false, message: 'Failed to connect to server' })
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleCancel = () => {
     setUploading(false)
-    setProgress(0)
     setFile(null)
     setResult(null)
   }
@@ -42,8 +52,34 @@ export default function Upload() {
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Upload Data</h1>
-      
+
       <div className="bg-white rounded-lg shadow p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div>
+          <h2 className="font-medium mb-2">Select Data Type</h2>
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setDataType('fire')}
+              className={`flex-1 px-4 py-2 rounded ${
+                dataType === 'fire'
+                  ? 'bg-blue-600 text-white'
+                  : 'border hover:bg-gray-50'
+              }`}
+            >
+              Fire
+            </button>
+            <button
+              onClick={() => setDataType('ems')}
+              className={`flex-1 px-4 py-2 rounded ${
+                dataType === 'ems'
+                  ? 'bg-blue-600 text-white'
+                  : 'border hover:bg-gray-50'
+              }`}
+            >
+              EMS
+            </button>
+          </div>
+        </div>
+
         <div>
           <h2 className="font-medium mb-2">Select CSV File</h2>
           <p className="text-sm text-gray-600 mb-4">
@@ -79,24 +115,10 @@ export default function Upload() {
 
         {uploading && (
           <div className="border-t pt-4">
-            <div className="mb-2">
-              <div className="flex justify-between text-sm mb-1">
-                <span>Uploading...</span>
-                <span>{progress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <span>Uploading {file?.name}...</span>
             </div>
-            <button
-              onClick={handleCancel}
-              className="text-sm text-red-600 hover:text-red-700"
-            >
-              Cancel Upload
-            </button>
           </div>
         )}
 
