@@ -53,9 +53,9 @@ services:
       - "3001:3001"
     environment:
       AUTH_PORT: "3001"
-      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://localhost:3002
       BETTER_AUTH_BASE_PATH: /api/auth
-      BETTER_AUTH_TRUSTED_ORIGINS: http://localhost:3000
+      BETTER_AUTH_TRUSTED_ORIGINS: http://localhost:3002
       MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
       MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
       DB_HOST: db
