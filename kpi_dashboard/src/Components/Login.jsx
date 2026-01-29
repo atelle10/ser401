@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useNavigate, Link } from 'react-router-dom';
+import { authClient } from '../utils/authClient';
 import famarLogo from './assets/famar_logo.png';
-import backgroundImage from './assets/sfd_bg.jpg';
+import backgroundImage from './assets/sfd_bg.png';
 import backgroundImage2 from './assets/sfd_bg_2.jpg';
 import sfdlogo from './assets/sfd_bg_2_transparentbg.png';
 
