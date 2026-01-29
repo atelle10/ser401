@@ -13,6 +13,7 @@ services:
       - NODE_ENV=production
     depends_on:
       - backend
+      - auth-server
 
   backend:
     build:
@@ -43,6 +44,26 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  auth-server:
+    build:
+      context: ..
+      dockerfile: deployment/auth_server/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      AUTH_PORT: "3001"
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_BASE_PATH: /api/auth
+      BETTER_AUTH_TRUSTED_ORIGINS: http://localhost:3000
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+      DB_HOST: db
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
 
   db-init:
     build:
