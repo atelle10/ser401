@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { authClient } from '../utils/authClient';
 import NavBar from './NavBar.jsx'
 import Sidebar from './Sidebar.jsx'
 import Logo from './Logo.jsx'
@@ -10,15 +11,34 @@ import ChatBot from './ChatBot.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx';
 import accountIcon from './assets/account.png'
+import backgroundImage2 from './assets/background_img.png';
+
+const fallbackProfile = {
+  name: 'User',
+  email: '',
+  role: 'User',
+  avatar: accountIcon,
+}
+
+const buildProfile = (user) => {
+  if (!user) return fallbackProfile
+  const name = user.name || user.username || user.email || fallbackProfile.name
+  return {
+    name,
+    email: user.email || '',
+    role: user.role || user.accountType || fallbackProfile.role,
+    avatar: user.image || user.avatar || fallbackProfile.avatar,
+  }
+}
 
 const Home = () => {
+  const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
-  const [userProfile, setUserProfile] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    role: 'Administrator',
-    avatar: accountIcon,
-  })
+  const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
+
+  useEffect(() => {
+    setUserProfile(buildProfile(session?.user))
+  }, [session?.user])
 
   const renderContent = () => {
     switch(currentView) {
@@ -42,7 +62,7 @@ const Home = () => {
   }
 
   return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-gradient-to-r to-blue-400 via-slate-300 from-red-400 overflow-x-hidden">
+      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-center justify-center">
         {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
           {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
@@ -85,7 +105,7 @@ const Home = () => {
             </div>
             
             {/* Mobile Bottom Navigation (Sidebar items) */}
-            <div className="lg:hidden mt-auto">
+            <div className="lg:hidden mt-auto self-center">
               <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
             </div>
           </div>

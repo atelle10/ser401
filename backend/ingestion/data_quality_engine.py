@@ -2,7 +2,7 @@ import pandas as pd
 import yaml
 import os
 from typing import List
-from .data_classes import DQPolicy, DQRule
+from backend.ingestion.data_classes import DQPolicy, DQRule
 
 
 class DQEngine():
