@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate, Link, useNavigate } from 'react-router-dom';
+import { authClient } from '../utils/authClient';
 import loginLogo from './assets/login_logo.png'
 import backgroundImage from './assets/sfd_bg.png';
 
