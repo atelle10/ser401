@@ -144,4 +144,53 @@ COMMENT ON COLUMN ems_run.scene_gps_longitude IS 'CSV: Scene GPS Longitude (eSce
 
 CREATE INDEX idx_ems_run_incident_id ON ems_run (incident_id);
 
+CREATE TABLE IF NOT EXISTS fire_raw (
+    id SERIAL PRIMARY KEY,
+    "Basic Incident Number (FD1)" TEXT,
+    "Basic Incident City Name (FD1.16)" TEXT,
+    "Basic Primary Station Name (FD1.4)" TEXT,
+    "Basic Incident Type Code (FD1.21)" TEXT,
+    "Basic Incident Type Code And Description (FD1.21)" TEXT,
+    "Basic Secondary Station Names List (FD1.4.1)" TEXT,
+    "Basic Incident PSAP Date Time (FD1.51)" TEXT,
+    "Basic Shift Or Platoon (FD1.30)" TEXT,
+    "Apparatus Resource Dispatch Date Time (FD18.3)" TEXT,
+    "Apparatus Resource En Route Date Time (FD18.10)" TEXT,
+    "Apparatus Resource Arrival Date Time (FD18.4)" TEXT,
+    "Apparatus Resource Arrival At Hospital Date Time (FD1.73)" TEXT,
+    "Apparatus Resource Clear Date Time (FD18.5)" TEXT,
+    "Apparatus Resource ID (FD18.1)" TEXT,
+    "Basic Incident Year (FD1.3)" TEXT,
+    "Basic Incident Month (FD1.3)" TEXT,
+    "Basic Incident Day Of Month (FD1.3)" TEXT,
+    "Basic Incident Day Of Week (FD1.3)" TEXT,
+    "Basic Incident Week (FD1.3)" TEXT,
+    "Basic Incident Day Name (FD1.3)" TEXT,
+    "Basic Incident Type (FD1.21)" TEXT,
+    "Apparatus Resource Type Category (FD18.2)" TEXT,
+    "Apparatus Resource Type Code (FD18.2)" TEXT,
+    "Basic Incident Postal Code (FD1.19)" TEXT,
+    "Basic Arrival At Hospital Date Time (FD1.76)" TEXT,
+    "Apparatus Resource In Quarters Date Time (FD1.74)" TEXT,
+    "Apparatus Resource In Service Date Time (FD18.5.1)" TEXT,
+    "Apparatus Resource Leave Scene Date Time (FD1.72)" TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS ems_raw (
+    id SERIAL PRIMARY KEY,
+    "Response Incident Number (eResponse.03)" TEXT,
+    "Response EMS Response Number (eResponse.04)" TEXT,
+    "Response EMS Unit Call Sign (eResponse.14)" TEXT,
+    "Response EMS Vehicle Unit Number (eResponse.13)" TEXT,
+    "Response Level Of Care Of This Unit (3.4=eResponse.15/3.5=itResponse.115)" TEXT,
+    "Incident Unit Left Scene Date Time (eTimes.09)" TEXT,
+    "Incident Unit Left Scene Date Time With Not Values (eTimes.09)" TEXT,
+    "Incident Patient Arrived At Destination Date Time (eTimes.11)" TEXT,
+    "Incident Patient Arrived At Destination Date Time With Not Values (eTimes.11)" TEXT,
+    "Incident Dispatch Priority Patient Acuity (eDispatch.05)" TEXT,
+    "Disposition Destination Name Delivered Transferred To (eDisposition.01)" TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 COMMIT;

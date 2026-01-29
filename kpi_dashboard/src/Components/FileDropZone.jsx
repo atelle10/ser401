@@ -41,7 +41,7 @@ const FileDropZone = ({ onFileSelect, acceptedFormats = ['.csv', '.xlsx'] }) => 
 
   return (
     <div 
-      className={`border-2 border-dashed p-8 rounded bg-white ${dragging ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}
+      className={`border-2 border-dashed p-8 rounded bg-blue-700/50 ${dragging ? 'border-blue-600 bg-blue-50' : 'border-gray-300'}`}
       onDragEnter={() => setDragging(true)}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
@@ -55,19 +55,19 @@ const FileDropZone = ({ onFileSelect, acceptedFormats = ['.csv', '.xlsx'] }) => 
         id="file-input"
       />
       <label htmlFor="file-input" className="cursor-pointer">
-        <p className="text-lg mb-2">
+        <p className="text-lg mb-2 rounded-xl p-2 bg-green-500/30 hover:bg-green-500/50 text-center transition-colors">
           {dragging ? 'Drop incident data file' : 'Upload Fire/Medical Data'}
         </p>
-        <p className="text-sm text-gray-600">CSV or Excel format</p>
+        <p className="text-sm text-gray-300">CSV or Excel format</p>
       </label>
       
       {selectedFile && (
-        <div className="mt-4 p-2 bg-green-100 rounded">
-          <p className="text-sm">{selectedFile.name} ({Math.round(selectedFile.size / 1024)}KB)</p>
+        <div className="mt-4 p-2 bg-green-100 rounded text-black">
+          <p className="text-sm text-black">{selectedFile.name} ({Math.round(selectedFile.size / 1024)}KB)</p>
         </div>
       )}
       
-      {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
+      {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
     </div>
   );
 };

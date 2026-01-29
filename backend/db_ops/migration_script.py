@@ -1,10 +1,9 @@
 import sys
+import os
 import pandas as pd
 from sqlalchemy import create_engine, text
 
-# dont forget to replace this url with the local db you spin up. we will paramterize into an env once
-# containerized
-DATABASE_URL = "postgresql://michael@localhost/famar_db"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://michael@localhost/famar_db")
 
 INCIDENT_COLUMNS = {
     "Basic Incident Number (FD1)": "basic_incident_number",
