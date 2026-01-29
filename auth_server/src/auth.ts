@@ -27,13 +27,17 @@ export const auth = betterAuth({
         before: async (user) => {
           const pendingSuffix = crypto.randomUUID().slice(0, 8);
           const fallbackUsername = `pending_${pendingSuffix}`;
+<<<<<<< HEAD
           const username = user.username as string | undefined;
           const phone = user.phone as string | undefined;
           const accountType = user.accountType as string | undefined;
+=======
+>>>>>>> fbffc7a1d399e16ad325584eceb192b1e7aefd63
           return {
             data: {
               ...user,
               username:
+<<<<<<< HEAD
                 username && username.trim()
                   ? username
                   : fallbackUsername,
@@ -42,6 +46,16 @@ export const auth = betterAuth({
               accountType:
                 accountType && accountType.trim()
                   ? accountType
+=======
+                user.username && user.username.trim()
+                  ? user.username
+                  : fallbackUsername,
+              phone:
+                user.phone && user.phone.trim() ? user.phone : "__pending__",
+              accountType:
+                user.accountType && user.accountType.trim()
+                  ? user.accountType
+>>>>>>> fbffc7a1d399e16ad325584eceb192b1e7aefd63
                   : "monitoring",
             },
           };

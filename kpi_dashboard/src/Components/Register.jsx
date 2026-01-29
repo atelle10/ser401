@@ -85,7 +85,7 @@ const Register = () => {
   };
 
   return (
-    <div className="w-screen h-fit flex items-center justify-center bg-no-repeat bg-black py-4 sm:py-8 px-4" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+    <div className="w-screen min-h-screen flex items-center justify-center bg-no-repeat bg-black py-4 sm:py-8 px-4 overflow-y-auto" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {/* Main Registration Card - matching dashboard style - Mobile Responsive */}
       <div className="h-fit relative bg-white/30 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-lg">
         {/* Title */}

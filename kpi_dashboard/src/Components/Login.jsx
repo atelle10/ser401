@@ -1,13 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Navigate, useNavigate, Link } from 'react-router-dom';
-import { authClient } from '../utils/authClient';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import famarLogo from './assets/famar_logo.png';
 import backgroundImage from './assets/sfd_bg.png';
-import backgroundImage2 from './assets/sfd_bg_2.jpg';
-import sfdlogo from './assets/sfd_bg_2_transparentbg.png';
-
-
-let loggedIn = false;
+import { authClient } from '../utils/authClient.js';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -90,55 +85,63 @@ const Login = () => {
               className="w-24 h-24 sm:w-32 sm:h-32 object-contain" 
             />
           </div>
+          {/* Title */}
+          <div className="text-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-black">Welcome Back</h1>
+            <p className="text-xs sm:text-sm text-gray-800 mt-1">Sign in to continue to dashboard</p>
+          </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email Input */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              type="email"
-              placeholder="Enter your email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+            {/* Email Input */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
+                Email
+              </label>
+              <input
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
             />
-          </div>
-
-          {/* Password Input */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              type="password"
-              placeholder="Enter your password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="text-red-600 text-sm text-center">
-              {error}
             </div>
-          )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
+            {/* Password Input */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-black mb-1">
+                Password
+              </label>
+              <input
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                type="password"
+                placeholder="Enter your password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+            />
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            {/* Login Button */}
+            <button 
+              type="submit" 
+              className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
             disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
-          </button>
+            >
+              {isSubmitting ? 'Signing in...' : 'Login'}
+            </button>
 
             {/* Sign in with Microsoft Button */}
             <button 

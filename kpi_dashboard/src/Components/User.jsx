@@ -44,7 +44,14 @@ const User = ({ onViewAccount, profile }) => {
               </button>
 
               <button
+<<<<<<< HEAD
                 onClick={() => console.log("Logging out.")}
+=======
+                onClick={async () => {
+                  setOpen(false);
+                  await authClient.signOut();
+                }}
+>>>>>>> fbffc7a1d399e16ad325584eceb192b1e7aefd63
                 className="block w-full text-left px-4 py-2 hover:bg-blue-500/40 hover:rounded-xl"
                 >
                   Logout
