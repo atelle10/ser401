@@ -48,17 +48,17 @@ const Dashboard = () => {
 
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
+        <div draggable={true} className="cursor-grab active:cursor-grabbing  bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
           <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
         </div>
 
-        <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div draggable={true} className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
           <UnitHourUtilization data={mockIncidentData} />
         </div>
 
-        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div draggable={true} className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
           <CallVolumeLinearChart 
             data={mockIncidentData} 

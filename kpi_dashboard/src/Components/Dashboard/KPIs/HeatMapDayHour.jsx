@@ -67,7 +67,7 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
+    <div className="cursor-default border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
