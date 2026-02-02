@@ -15,7 +15,9 @@ const AdminMenu = () => {
   const [actionError, setActionError] = useState('')
   const [actionSuccess, setActionSuccess] = useState('')
   const [updatingUserIds, setUpdatingUserIds] = useState(new Set())
+  const [deletingUserIds, setDeletingUserIds] = useState(new Set())
   const [confirmSelfDemotion, setConfirmSelfDemotion] = useState(null)
+  const [confirmDeleteUser, setConfirmDeleteUser] = useState(null)
   const { data: session } = authClient.useSession()
 
   useEffect(() => {
@@ -181,7 +183,46 @@ const AdminMenu = () => {
   }
 
   const handleRemoveUser = (userId) => {
-    setUsers((prev) => prev.filter((user) => user.id !== userId))
+    const isSelf = session?.user?.id && session.user.id === userId
+    if (isSelf) {
+      setActionError('You cannot delete your own account from the admin console.')
+      setActionSuccess('')
+      return
+    }
+
+    const targetUser = users.find((user) => user.id === userId)
+    setConfirmDeleteUser({
+      userId,
+      name: targetUser?.name || targetUser?.email || 'this user',
+    })
+  }
+
+  const handleConfirmDeleteUser = async () => {
+    if (!confirmDeleteUser) return
+    const { userId } = confirmDeleteUser
+    setConfirmDeleteUser(null)
+
+    setActionError('')
+    setActionSuccess('')
+    setDeletingUserIds((prev) => new Set(prev).add(userId))
+
+    const result = await authClient.admin.removeUser({ userId })
+
+    if (result?.error) {
+      const fallback = result.error.status
+        ? `Failed to remove user (${result.error.status} ${result.error.statusText})`
+        : 'Failed to remove user.'
+      setActionError(result.error.message || fallback)
+    } else {
+      setUsers((prev) => prev.filter((user) => user.id !== userId))
+      setActionSuccess('User removed successfully.')
+    }
+
+    setDeletingUserIds((prev) => {
+      const next = new Set(prev)
+      next.delete(userId)
+      return next
+    })
   }
 
   return (
@@ -300,8 +341,9 @@ const AdminMenu = () => {
                   className="rounded-md px-3 py-1 bg-red-500 text-white font-semibold hover:bg-red-600 transition"
                   type="button"
                   onClick={() => handleRemoveUser(user.id)}
+                  disabled={deletingUserIds.has(user.id)}
                 >
-                  Remove
+                  {deletingUserIds.has(user.id) ? 'Removing...' : 'Remove'}
                 </button>
               </div>
             </div>
@@ -337,6 +379,30 @@ const AdminMenu = () => {
               onClick={handleConfirmSelfDemotion}
             >
               Yes, remove admin
+            </button>
+          </div>
+        </div>
+      )}
+      {confirmDeleteUser && (
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg px-4 py-4 text-center space-y-3">
+          <p>
+            Remove access for <span className="font-semibold">{confirmDeleteUser.name}</span>?
+            This action cannot be undone.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-2">
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
+              onClick={() => setConfirmDeleteUser(null)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+              onClick={handleConfirmDeleteUser}
+            >
+              Yes, remove user
             </button>
           </div>
         </div>
