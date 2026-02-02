@@ -28,9 +28,12 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
       if (incidentDate < cutoff) return;
       
       // Regional filter - postal codes define urban vs rural
+      const postalCode = incident.postal_code;
+      if (typeof postalCode !== 'number') return;
+
       const isTargetRegion = region === 'south' 
-        ? incident.postal_code < 85260  // South Scottsdale urban codes
-        : incident.postal_code >= 85260; // North Scottsdale rural codes
+        ? postalCode < 85260  // South Scottsdale urban codes
+        : postalCode >= 85260; // North Scottsdale rural codes
       
       if (!isTargetRegion) return;
 

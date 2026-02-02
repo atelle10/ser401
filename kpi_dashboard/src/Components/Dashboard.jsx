@@ -1,21 +1,49 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import Chart from './Dashboard/Chart'
-
-// Mock data for development
-const mockIncidentData = [
-  { timestamp: '2025-11-20T08:00:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T08:05:00', clear_time: '2025-11-20T08:50:00' },
-  { timestamp: '2025-11-20T09:30:00', postal_code: 85280, unit_id: 'R202', en_route_time: '2025-11-20T09:35:00', clear_time: '2025-11-20T11:35:00' },
-  { timestamp: '2025-11-20T14:15:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T14:20:00', clear_time: '2025-11-20T14:50:00' },
-  { timestamp: '2025-11-21T10:00:00', postal_code: 85270, unit_id: 'LA301', en_route_time: '2025-11-21T10:05:00', clear_time: '2025-11-21T11:35:00' },
-  { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
-]
+import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
+import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
+import { fetchKPIData } from '../services/incidentDataService'
 
 const Dashboard = () => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
+  const [incidentData, setIncidentData] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const dateRange = useMemo(() => {
+    const end = new Date()
+    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+    return { startDate: start.toISOString(), endDate: end.toISOString() }
+  }, [timeWindow])
+
+  const loadIncidentData = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    const result = await fetchKPIData({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      region,
+    })
+
+    if (!result.success) {
+      setIncidentData([])
+      setError(result.error || 'Failed to load incident data')
+      setIsLoading(false)
+      return
+    }
+
+    setIncidentData(result.data || [])
+    setIsLoading(false)
+  }, [dateRange.endDate, dateRange.startDate, region])
+
+  useEffect(() => {
+    loadIncidentData()
+  }, [loadIncidentData])
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
@@ -46,22 +74,32 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {error && (
+        <ErrorMessage message={error} onRetry={loadIncidentData} color="blue" />
+      )}
+
+      {isLoading && (
+        <div className="py-6">
+          <LoadingSpinner color="blue" />
+        </div>
+      )}
+
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
+          <HeatMapDayHour data={incidentData} region={region} weeks={1} />
         </div>
 
         <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={mockIncidentData} />
+          <UnitHourUtilization data={incidentData} />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
           <CallVolumeLinearChart 
-            data={mockIncidentData} 
+            data={incidentData} 
             region={region}
             granularity="daily"
           />
