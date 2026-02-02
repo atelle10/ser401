@@ -33,7 +33,7 @@ psql "postgresql://postgres:YOUR_PASSWORD@localhost:5432/famar_db" \
   -v ON_ERROR_STOP=1 \
   -c "CREATE SCHEMA IF NOT EXISTS auth;" \
   -c "SET search_path TO auth;" \
-  -f auth_server/better-auth_migrations/2026-01-18T00-43-36.982Z.sql
+  -f auth_server/better-auth_migrations/2026-02-02T01-10-37.738Z.sql
 ```
 
 Note: once Better Auth is installed with npm, you can also run the CLI migrator from the `auth_server` directory:
