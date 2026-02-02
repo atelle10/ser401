@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+import { API_URL } from '../config.js';
+
+const API_BASE_URL = `${API_URL}/api`;
 
 export const fetchKPIData = async ({ startDate, endDate, region = 'all' }) => {
   try {
@@ -52,9 +54,10 @@ const transformAPIData = (apiData) => {
   if (!apiData || !apiData.incidents) return [];
   
   return apiData.incidents.flatMap(incident => {
+    const postalCode = incident.postal_code != null ? Number.parseInt(String(incident.postal_code), 10) : null;
     const base = {
       timestamp: incident.timestamp,
-      postal_code: incident.postal_code,
+      postal_code: Number.isNaN(postalCode) ? null : postalCode,
       incident_type: incident.incident_type,
     };
 
@@ -65,8 +68,8 @@ const transformAPIData = (apiData) => {
       unit_id: unit.unit_id,
       dispatch_time: unit.dispatch_time,
       arrival_time: unit.arrival_time,
-      en_route_time: unit.en_route_time,
-      clear_time: unit.clear_time,
+      en_route_time: unit.en_route_time || unit.dispatch_time,
+      clear_time: unit.clear_time || unit.arrival_time,
     }));
   });
 };
