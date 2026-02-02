@@ -1,10 +1,69 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { authClient } from '../utils/authClient'
 
-const roleOptions = ['User', 'Manager', 'Admin']
+const roleOptions = [
+  { value: 'viewer', label: 'Viewer' },
+  { value: 'analyst', label: 'Analyst' },
+  { value: 'admin', label: 'Admin' },
+]
 
 const AdminMenu = () => {
   const [users, setUsers] = useState([])
   const [roleEdits, setRoleEdits] = useState({})
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [actionSuccess, setActionSuccess] = useState('')
+  const [updatingUserIds, setUpdatingUserIds] = useState(new Set())
+  const [confirmSelfDemotion, setConfirmSelfDemotion] = useState(null)
+  const { data: session } = authClient.useSession()
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadUsers = async () => {
+      setIsLoading(true)
+      setLoadError('')
+      const result = await authClient.admin.listUsers()
+
+      if (!isMounted) return
+
+      if (result?.error) {
+        const fallback = result.error.status
+          ? `Failed to load users (${result.error.status} ${result.error.statusText})`
+          : 'Failed to load users.'
+        setLoadError(result.error.message || fallback)
+        setUsers([])
+        setIsLoading(false)
+        return
+      }
+
+      const normalizedUsers = (result?.data?.users || []).map((user) => {
+        const rawRole = user.role || ''
+        const primaryRole = rawRole
+          .split(',')
+          .map((value) => value.trim())
+          .filter(Boolean)[0] || 'viewer'
+
+        return {
+          id: user.id,
+          name: user.name || user.email || 'Unknown user',
+          email: user.email || '',
+          role: primaryRole,
+          status: user.banned ? 'Banned' : 'Active',
+        }
+      })
+
+      setUsers(normalizedUsers)
+      setIsLoading(false)
+    }
+
+    loadUsers()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const editableUsers = useMemo(
     () =>
@@ -22,17 +81,101 @@ const AdminMenu = () => {
     }))
   }
 
-  const handleApplyRole = (userId) => {
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.id === userId
-          ? { ...user, role: roleEdits[userId] || user.role }
-          : user
+  const handleApplyRole = async (userId) => {
+    const nextRole = roleEdits[userId]
+    const currentRole = users.find((user) => user.id === userId)?.role
+
+    if (!nextRole || nextRole === currentRole) {
+      setRoleEdits((prev) => {
+        const next = { ...prev }
+        delete next[userId]
+        return next
+      })
+      return
+    }
+
+    setActionError('')
+    setActionSuccess('')
+
+    const isSelf = session?.user?.id && session.user.id === userId
+    if (isSelf && currentRole === 'admin' && nextRole !== 'admin') {
+      setConfirmSelfDemotion({ userId, nextRole })
+      return
+    }
+
+    setUpdatingUserIds((prev) => new Set(prev).add(userId))
+
+    const result = await authClient.admin.setRole({
+      userId,
+      role: nextRole,
+    })
+
+    if (result?.error) {
+      const fallback = result.error.status
+        ? `Failed to update role (${result.error.status} ${result.error.statusText})`
+        : 'Failed to update role.'
+      setActionError(result.error.message || fallback)
+    } else {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId
+            ? { ...user, role: nextRole }
+            : user
+        )
       )
-    )
-    setRoleEdits((prev) => {
-      const next = { ...prev }
-      delete next[userId]
+      setRoleEdits((prev) => {
+        const next = { ...prev }
+        delete next[userId]
+        return next
+      })
+      setActionSuccess('Role updated successfully.')
+    }
+
+    setUpdatingUserIds((prev) => {
+      const next = new Set(prev)
+      next.delete(userId)
+      return next
+    })
+  }
+
+  const handleConfirmSelfDemotion = async () => {
+    if (!confirmSelfDemotion) return
+    const { userId, nextRole } = confirmSelfDemotion
+    setConfirmSelfDemotion(null)
+
+    setUpdatingUserIds((prev) => new Set(prev).add(userId))
+    setActionError('')
+    setActionSuccess('')
+
+    const result = await authClient.admin.setRole({
+      userId,
+      role: nextRole,
+    })
+
+    if (result?.error) {
+      const fallback = result.error.status
+        ? `Failed to update role (${result.error.status} ${result.error.statusText})`
+        : 'Failed to update role.'
+      setActionError(result.error.message || fallback)
+    } else {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId
+            ? { ...user, role: nextRole }
+            : user
+        )
+      )
+      setRoleEdits((prev) => {
+        const next = { ...prev }
+        delete next[userId]
+        return next
+      })
+      setActionSuccess('Role updated successfully.')
+    }
+
+    setUpdatingUserIds((prev) => {
+      const next = new Set(prev)
+      next.delete(userId)
       return next
     })
   }
@@ -81,9 +224,39 @@ const AdminMenu = () => {
           <div className="col-span-4 sm:col-span-2 text-right">Actions</div>
         </div>
 
-        {editableUsers.length === 0 ? (
+        {isLoading ? (
           <div className="px-4 py-10 text-center text-white/70">
-            No users loaded yet. Connect to the auth service to populate this list.
+            Loading users...
+          </div>
+        ) : loadError ? (
+          <div className="px-4 py-10 text-center text-red-100">
+            {loadError}
+          </div>
+        ) : actionSuccess ? (
+          <div className="px-4 py-4 text-center text-green-100 space-y-3">
+            <p>{actionSuccess}</p>
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
+              onClick={() => setActionSuccess('')}
+            >
+              OK
+            </button>
+          </div>
+        ) : actionError ? (
+          <div className="px-4 py-4 text-center text-red-100 space-y-3">
+            <p>{actionError}</p>
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
+              onClick={() => setActionError('')}
+            >
+              OK
+            </button>
+          </div>
+        ) : editableUsers.length === 0 ? (
+          <div className="px-4 py-10 text-center text-white/70">
+            No users found.
           </div>
         ) : (
           editableUsers.map((user) => (
@@ -107,11 +280,11 @@ const AdminMenu = () => {
                     handleRoleChange(user.id, event.target.value)
                   }
                 >
-                  {roleOptions.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
+                {roleOptions.map((role) => (
+                  <option key={role.value} value={role.value}>
+                    {role.label}
+                  </option>
+                ))}
                 </select>
               </div>
               <div className="col-span-4 sm:col-span-2 flex flex-col sm:flex-row justify-end gap-2 text-sm">
@@ -119,8 +292,9 @@ const AdminMenu = () => {
                   className="rounded-md px-3 py-1 bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
                   type="button"
                   onClick={() => handleApplyRole(user.id)}
+                  disabled={updatingUserIds.has(user.id)}
                 >
-                  Update role
+                  {updatingUserIds.has(user.id) ? 'Updating...' : 'Update role'}
                 </button>
                 <button
                   className="rounded-md px-3 py-1 bg-red-500 text-white font-semibold hover:bg-red-600 transition"
@@ -134,6 +308,39 @@ const AdminMenu = () => {
           ))
         )}
       </div>
+      {confirmSelfDemotion && (
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg px-4 py-4 text-center space-y-3">
+          <p>
+            You are removing your own admin access. This may lock you out of admin features.
+            Continue?
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-2">
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
+              onClick={() => {
+                if (confirmSelfDemotion) {
+                  setRoleEdits((prev) => {
+                    const next = { ...prev }
+                    delete next[confirmSelfDemotion.userId]
+                    return next
+                  })
+                }
+                setConfirmSelfDemotion(null)
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+              onClick={handleConfirmSelfDemotion}
+            >
+              Yes, remove admin
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
