@@ -70,6 +70,8 @@ Notes:
 - The auth server reads env vars from the shell or `.env` (loaded via `dotenv`).
 - `BETTER_AUTH_TRUSTED_ORIGINS` must include the Vite dev URL to avoid invalid origin errors.
 - Dev-only: email changes bypass verification; TODO in `auth_server/src/auth.ts` to enable email verification before production.
+- Admin bootstrap (dev): If you need an admin user, you can set it directly in the DB, e.g.
+  `UPDATE auth."user" SET role='admin' WHERE email='you@example.com';`
 
 ## Production TODO
 - Use separate secrets for database credentials and Microsoft OAuth.

@@ -4,8 +4,6 @@ import backgroundImage from './assets/sfd_bg.png';
 import famarLogo from './assets/famar_logo.png';
 import { authClient } from '../utils/authClient.js';
 
-const DEFAULT_ACCOUNT_TYPE = 'monitoring';
-
 const CompleteProfile = () => {
   const navigate = useNavigate();
   const { data: session, refetch: refetchSession } = authClient.useSession();
@@ -46,7 +44,6 @@ const CompleteProfile = () => {
     const result = await authClient.updateUser({
       username: username.trim(),
       phone: phone.trim(),
-      accountType: DEFAULT_ACCOUNT_TYPE,
     });
     setIsSubmitting(false);
 

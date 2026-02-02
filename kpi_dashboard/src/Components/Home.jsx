@@ -27,13 +27,13 @@ const buildProfile = (user) => {
   return {
     name,
     email: user.email || '',
-    role: user.role || user.accountType || fallbackProfile.role,
+    role: user.role || fallbackProfile.role,
     avatar: user.image || user.avatar || fallbackProfile.avatar,
   }
 }
 
 const isAdminUser = (user) => {
-  const role = (user?.role || user?.accountType || '').toString().toLowerCase()
+  const role = (user?.role || '').toString().toLowerCase()
   return role === 'admin' || role === 'administrator'
 }
 
