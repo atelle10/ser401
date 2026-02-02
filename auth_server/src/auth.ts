@@ -73,7 +73,6 @@ export const auth = betterAuth({
     admin({
       defaultRole: "viewer",
       adminRoles: ["admin"],
-      roles: ["admin", "analyst", "viewer"],
     }),
   ]
 });
