@@ -7,8 +7,9 @@ import { useMemo, useState } from 'react';
  * dramatically different call patterns. South peaks during rush hour, North
  * peaks on weekends due to outdoor activities.
  */
-const HeatMapDayHour = ({ data, region = 'south' }) => {
+const HeatMapDayHour = ({ data , region}) => {
   const [selectedWeeks, setSelectedWeeks] = useState(5);
+  const regionState = region.region;
 
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -28,7 +29,7 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
       if (incidentDate < cutoff) return;
       
       // Regional filter - postal codes define urban vs rural
-      const isTargetRegion = region === 'south' 
+      const isTargetRegion = regionState === 'south' 
         ? incident.postal_code < 85260  // South Scottsdale urban codes
         : incident.postal_code >= 85260; // North Scottsdale rural codes
       
@@ -65,13 +66,13 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
     ];
     return colors[Math.min(intensity - 1, 4)];
   };
-
+;
   return (
     <div className="cursor-default border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
-            Incident Volume Heat Map - {region === 'south' ? 'South (Urban)' : 'North (Rural)'}
+            Incident Volume Heat Map - {regionState === 'south' ? 'South Scottsdale' : 'North Scottsdale'}
           </h3>
           <p className="text-sm text-gray-600">Day of Week × Hour of Day</p>
         </div>

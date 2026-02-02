@@ -7,8 +7,9 @@ import { useMemo, useState } from 'react';
  * Leadership wants to see if volumes are increasing (need more staff)
  * or decreasing (budget cuts justified).
  */
-const CallVolumeLinearChart = ({ data, region = 'south'}) => {
+const CallVolumeLinearChart = ({ data, region}) => {
   const [granularity, setGranularity] = useState('daily'); // daily, weekly, monthly
+  const regionState = region.region;
   // Aggregate data by time period
   
   const chartData = useMemo(() => {
@@ -25,20 +26,16 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
       // if (incidentDate < cutoff) return;
 
       // Regional filter
-      const isTargetRegion = region === 'south' 
+      const isTargetRegion = regionState === 'south' 
         ? incident.postal_code < 85260 
         : incident.postal_code >= 85260;
 
-        console.log('Incident postal code:', incident.postal_code);
-        console.log('Is target region:', isTargetRegion);
         if (!isTargetRegion) return;
-        console.log('Checkpoint');
 
       // Bucket by granularity
       let key;
       if (granularity === 'daily') {
         key = incidentDate.toISOString().split('T')[0]; // YYYY-MM-DD
-        console.log('Daily key:', key);
       } else if (granularity === 'weekly') {
         const weekStart = new Date(incidentDate);
         weekStart.setDate(incidentDate.getDate() - incidentDate.getDay());
@@ -49,8 +46,6 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
 
       buckets.set(key, (buckets.get(key) || 0) + 1);
     });
-
-    console.log('Buckets formed:', buckets);
     // Convert to array and sort
     const points = Array.from(buckets.entries())
       .map(([date, count]) => ({ date, count }))
@@ -102,8 +97,8 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
     <div className="border rounded-lg p-4 bg-white">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h3 className="text-lg font-semibold">
-            Call Volume Trend - {region === 'south' ? 'South (Urban)' : 'North (Rural)'}
+          <h3 className="text-lg font-semibold text-black">
+            Call Volume Trend - {regionState === 'south' ? 'South (Urban)' : 'North (Rural)'}
           </h3>
           <p className="text-sm text-gray-600">
             Average: {chartData.avgCount.toFixed(1)} calls/{granularity === 'daily' ? 'day' : granularity === 'weekly' ? 'week' : 'month'}

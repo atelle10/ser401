@@ -3,6 +3,7 @@ import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import Chart from './Dashboard/Chart'
+import { DndContext } from '@dnd-kit/core'
 
 // Mock data for development
 const mockIncidentData = [
@@ -13,11 +14,48 @@ const mockIncidentData = [
   { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
 ]
 
+function handleDragEnd(){
+  // Logic to handle the end of a drag event
+  console.log("Drag ended")
+}
+
+function DraggableHeatMap(region){
+  return (
+    <div className="cursor-grab active:cursor-grabbing  bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+      <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
+      <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
+    </div>
+  )
+}
+
+function DraggleUHU(){
+  return (
+    <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+          <UnitHourUtilization data={mockIncidentData} />
+        </div>
+  )
+}
+
+function DraggableCVLC(region){
+  return (
+    <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Call Volume Trend</h3>
+          <CallVolumeLinearChart 
+            data={mockIncidentData} 
+            region={region}
+            granularity="daily"
+          />
+        </div>
+  )
+}
+
 const Dashboard = () => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
 
   return (
+    <DndContext onDragEnd={handleDragEnd}>
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
       {/* Filters - Stack on mobile, side-by-side on larger screens */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
@@ -25,7 +63,9 @@ const Dashboard = () => {
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
             value={region}
-            onChange={(e) => setRegion(e.target.value)}
+            onChange={(e) => 
+              setRegion(e.target.value)
+            }
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           >
             <option value="south">South Scottsdale</option>
@@ -48,31 +88,16 @@ const Dashboard = () => {
 
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div draggable={true} className="cursor-grab active:cursor-grabbing  bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
-        </div>
-
-        <div draggable={true} className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={mockIncidentData} />
-        </div>
-
-        <div draggable={true} className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Call Volume Trend</h3>
-          <CallVolumeLinearChart 
-            data={mockIncidentData} 
-            region={region}
-            granularity="daily"
-          />
-        </div>
-
         {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
         <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <Chart />
         </div>
       </div>
+      <DraggableHeatMap region={region} />
+      <DraggleUHU />
+      <DraggableCVLC region={region} />
     </div>
+    </DndContext>
   )
 }
 
