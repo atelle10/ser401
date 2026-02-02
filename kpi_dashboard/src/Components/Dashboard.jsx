@@ -146,13 +146,16 @@ const Dashboard = ({ role = "viewer" }) => {
   const isAdmin = role === "admin"
 
   return (
+    <DndContext onDragEnd={handleDragEnd}>
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
             value={region}
-            onChange={(e) => setRegion(e.target.value)}
+            onChange={(e) => 
+              setRegion(e.target.value)
+            }
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           >
             <option value="all">All</option>
@@ -289,6 +292,7 @@ const Dashboard = ({ role = "viewer" }) => {
         </div>
       )}
     </div>
+    </DndContext>
   )
 }
 
