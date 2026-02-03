@@ -12,7 +12,6 @@ import AdminMenu from './AdminMenu.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
-import backgroundImage2 from './assets/background_img.png'
 
 const fallbackProfile = {
   name: 'User',
