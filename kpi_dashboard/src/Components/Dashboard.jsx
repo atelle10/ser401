@@ -5,12 +5,13 @@ import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary } from '../services/incidentDataService'
 
 const Dashboard = () => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [incidentData, setIncidentData] = useState([])
+  const [kpiSummary, setKpiSummary] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -25,20 +26,32 @@ const Dashboard = () => {
     setIsLoading(true)
     setError(null)
 
-    const result = await fetchKPIData({
-      startDate: dateRange.startDate,
-      endDate: dateRange.endDate,
-      region,
-    })
+    const [incidentResult, summaryResult] = await Promise.all([
+      fetchKPIData({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchKPISummary({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+    ])
 
-    if (!result.success) {
-      setError(result.error || 'Failed to load incident data')
-      setIsLoading(false)
-      return
+    if (!incidentResult.success) {
+      setError(incidentResult.error || 'Failed to load incident data')
+    } else {
+      setIncidentData(incidentResult.data || [])
+      setHasLoadedOnce(true)
     }
 
-    setIncidentData(result.data || [])
-    setHasLoadedOnce(true)
+    if (!summaryResult.success) {
+      setError((prev) => prev || summaryResult.error || 'Failed to load KPI summary')
+    } else {
+      setKpiSummary(summaryResult.data || null)
+    }
+
     setIsLoading(false)
   }, [dateRange.endDate, dateRange.startDate, region])
 
@@ -82,6 +95,39 @@ const Dashboard = () => {
       {isLoading && !hasLoadedOnce && (
         <div className="py-6">
           <LoadingSpinner color="blue" />
+        </div>
+      )}
+
+      {hasLoadedOnce && kpiSummary && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Total Incidents</h3>
+            <div className="text-2xl font-semibold">{kpiSummary.total_incidents ?? '-'}</div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Avg Response (min)</h3>
+            <div className="text-2xl font-semibold">
+              {kpiSummary.avg_response_time_minutes != null
+                ? Number(kpiSummary.avg_response_time_minutes).toFixed(1)
+                : '-'}
+            </div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Active Units</h3>
+            <div className="text-2xl font-semibold">{kpiSummary.active_units ?? '-'}</div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Peak Load Factor</h3>
+            <div className="text-2xl font-semibold">
+              {kpiSummary.peak_load_factor != null
+                ? Number(kpiSummary.peak_load_factor).toFixed(2)
+                : '-'}
+            </div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Peak Hour</h3>
+            <div className="text-2xl font-semibold">{kpiSummary.peak_hour ?? '-'}</div>
+          </div>
         </div>
       )}
 
