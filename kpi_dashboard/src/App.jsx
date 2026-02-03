@@ -77,7 +77,9 @@ function App() {
               <Home />
             </RequireAuth>
           }
-        />
+        />code src/Components/Logo.jsx
+code src/Components/Register.jsx
+code src/App.jsx
         <Route
           path="/complete-profile"
           element={

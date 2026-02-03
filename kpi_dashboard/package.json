@@ -10,21 +10,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@azure/msal-browser": "^4.26.2",
-    "@azure/msal-react": "^3.0.22",
+    "@azure/msal-browser": "^4.28.1",
+    "@azure/msal-react": "^3.0.25",
     "@tailwindcss/vite": "^4.1.16",
     "better-auth": "^1.4.14",
     "jwt-decode": "^4.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^6.30.2",
+    "react-router-dom": "^7.9.6",
     "reactjs-popup": "^2.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.21",
     "baseline-browser-mapping": "^2.9.17",
     "eslint": "^9.36.0",
@@ -33,6 +33,6 @@
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.1",
-    "vite": "^4.5.3"
+    "vite": "^7.2.4"
   }
 }
