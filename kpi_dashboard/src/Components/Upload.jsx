@@ -37,7 +37,7 @@ export default function Upload() {
       } else {
         setResult({ success: false, message: data.detail || 'Upload failed' })
       }
-    } catch (error) {
+    } catch {
       setResult({ success: false, message: 'Failed to connect to server' })
     } finally {
       setUploading(false)

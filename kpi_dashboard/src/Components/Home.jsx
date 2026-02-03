@@ -10,8 +10,7 @@ import Settings from './Settings.jsx'
 import ChatBot from './ChatBot.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx';
-import accountIcon from './assets/account.png'
-import backgroundImage2 from './assets/background_img.png';
+import accountIcon from './assets/account.png';
 
 const fallbackProfile = {
   name: 'User',
