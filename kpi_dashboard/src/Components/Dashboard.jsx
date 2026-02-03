@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [incidentData, setIncidentData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
   const dateRange = useMemo(() => {
     const end = new Date()
@@ -31,13 +32,13 @@ const Dashboard = () => {
     })
 
     if (!result.success) {
-      setIncidentData([])
       setError(result.error || 'Failed to load incident data')
       setIsLoading(false)
       return
     }
 
     setIncidentData(result.data || [])
+    setHasLoadedOnce(true)
     setIsLoading(false)
   }, [dateRange.endDate, dateRange.startDate, region])
 
@@ -78,7 +79,7 @@ const Dashboard = () => {
         <ErrorMessage message={error} onRetry={loadIncidentData} color="blue" />
       )}
 
-      {isLoading && (
+      {isLoading && !hasLoadedOnce && (
         <div className="py-6">
           <LoadingSpinner color="blue" />
         </div>
