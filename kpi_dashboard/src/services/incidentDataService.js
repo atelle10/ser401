@@ -2,24 +2,37 @@ import { API_URL } from '../config.js';
 
 const API_BASE_URL = `${API_URL}/api`;
 
+const buildUrl = (path, params) => {
+  const url = new URL(`${API_BASE_URL}${path}`);
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value == null) return;
+    url.searchParams.set(key, String(value));
+  });
+  return url.toString();
+};
+
+const fetchJson = async (url) => {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+};
+
 export const fetchKPIData = async ({ startDate, endDate, region = 'all' }) => {
   try {
-    const params = new URLSearchParams({
+    const url = buildUrl('/incidents/kpi-data', {
       start_date: startDate,
       end_date: endDate,
-      region: region
+      region,
     });
 
-    const response = await fetch(`${API_BASE_URL}/incidents/kpi-data?${params}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await fetchJson(url);
     return { success: true, data: transformAPIData(data), error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
@@ -28,23 +41,14 @@ export const fetchKPIData = async ({ startDate, endDate, region = 'all' }) => {
 
 export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) => {
   try {
-    const params = new URLSearchParams({
+    const url = buildUrl('/incidents/summary', {
       start_date: startDate,
       end_date: endDate,
-      region: region
+      region,
     });
 
-    const response = await fetch(`${API_BASE_URL}/incidents/summary?${params}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return { success: true, data: data, error: null };
+    const data = await fetchJson(url);
+    return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
   }
@@ -52,7 +56,7 @@ export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) =>
 
 const transformAPIData = (apiData) => {
   if (!apiData || !apiData.incidents) return [];
-  
+
   return apiData.incidents.flatMap(incident => {
     const postalCode = incident.postal_code != null ? Number.parseInt(String(incident.postal_code), 10) : null;
     const base = {
