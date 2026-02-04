@@ -3,7 +3,7 @@ import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import Chart from './Dashboard/Chart'
-import { DndContext } from '@dnd-kit/core'
+import { DndContext, useDraggable } from '@dnd-kit/core'
 
 // Mock data for development
 const mockIncidentData = [
@@ -20,8 +20,14 @@ function handleDragEnd(){
 }
 
 function DraggableHeatMap(region){
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'heat-map' });
+  
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
+  };
+
   return (
-    <div className="cursor-grab active:cursor-grabbing  bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="cursor-grab active:cursor-grabbing  bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
       <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
       <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
     </div>
@@ -29,8 +35,13 @@ function DraggableHeatMap(region){
 }
 
 function DraggleUHU(){
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'uahu' });
+  
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
+  };
   return (
-    <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
           <UnitHourUtilization data={mockIncidentData} />
         </div>
@@ -38,8 +49,13 @@ function DraggleUHU(){
 }
 
 function DraggableCVLC(region){
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'cvlc' });
+  
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
+  };
   return (
-    <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
           <CallVolumeLinearChart 
             data={mockIncidentData} 
