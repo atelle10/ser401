@@ -26,9 +26,21 @@ function DraggableHeatMap(region){
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
   };
 
+  const [expand, setExpand] = useState(() => {
+    const initialExpand = true;
+    console.log("Expand state set to " + initialExpand);
+    return initialExpand;
+  });
+
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="cursor-grab active:cursor-grabbing  bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-      <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
+    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+      <div className="flex items-center">
+        <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
+        <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
+          <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+            '< >'}</button>
+        </span>
+      </div>
       <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
     </div>
   )
@@ -40,11 +52,24 @@ function DraggleUHU(){
   const style = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
   };
+
+  const [expand, setExpand] = useState(() => {
+    const initialExpand = true;
+    console.log("Expand state set to " + initialExpand);
+    return initialExpand;
+  });
+
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={mockIncidentData} />
-        </div>
+    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+      <div className="flex items-center">
+        <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+        <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
+          <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+            '< >'}</button>
+        </span>
+      </div>
+        <UnitHourUtilization data={mockIncidentData} />
+    </div>
   )
 }
 
@@ -54,9 +79,22 @@ function DraggableCVLC(region){
   const style = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
   };
+
+  const [expand, setExpand] = useState(() => {
+    const initialExpand = true;
+    console.log("Expand state set to " + initialExpand);
+    return initialExpand;
+  });
+
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Call Volume Trend</h3>
+    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+          <div className="flex items-center">
+            <h3 className="font-semibold mb-3">Call Volume Trend </h3>
+            <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
+              <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+                '< >'}</button>
+            </span>
+          </div>
           <CallVolumeLinearChart 
             data={mockIncidentData} 
             region={region}
@@ -104,14 +142,14 @@ const Dashboard = () => {
 
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <DraggleUHU />
+        <DraggableCVLC region={region} />
+        <DraggableHeatMap region={region} />
         {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
         <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <Chart />
         </div>
       </div>
-      <DraggableHeatMap region={region} />
-      <DraggleUHU />
-      <DraggableCVLC region={region} />
     </div>
     </DndContext>
   )
