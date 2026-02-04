@@ -1,4 +1,3 @@
-# backend/main.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -36,8 +35,6 @@ async def exchange_microsoft_token(req: TokenExchange):
         jwks = await get_jwks()
         header = jwt.get_unverified_header(req.token)
         rsa_key = next(k for k in jwks["keys"] if k["kid"] == header["kid"])
-
-        # CRITICAL: Hardcode exact tenant in issuer
         payload = jwt.decode(
             req.token,
             rsa_key,
@@ -49,12 +46,9 @@ async def exchange_microsoft_token(req: TokenExchange):
         print("Token validation failed:", e)
         raise HTTPException(status_code=401, detail="Invalid Microsoft token")
 
-    # Extract and map role from Microsoft "roles" claim (array of strings)
     roles_claim = payload.get("roles", [])
-    role = "viewer"  # Safe default
-
+    role = "viewer"
     if isinstance(roles_claim, list):
-        # Priority: admin > analyst > viewer
         if any(r == "admin" for r in roles_claim if isinstance(r, str)):
             role = "admin"
         elif any(r == "analyst" for r in roles_claim if isinstance(r, str)):
@@ -62,7 +56,6 @@ async def exchange_microsoft_token(req: TokenExchange):
         elif any(r == "viewer" for r in roles_claim if isinstance(r, str)):
             role = "viewer"
 
-    # Optional debug (remove in production)
     print(f"User {payload.get('name')}: Microsoft roles {roles_claim} → Assigned role: {role}")
 
     our_payload = {
@@ -74,6 +67,31 @@ async def exchange_microsoft_token(req: TokenExchange):
     our_token = jwt.encode(our_payload, "super-secret-key", algorithm="HS256")
     return {"access_token": our_token}
 
+# Email/password login (mock for dev — replace with DB later)
+class EmailLogin(BaseModel):
+    email: str
+    password: str
+
+MOCK_USERS = {
+    "admin@example.com": {"password": "admin123", "role": "admin"},
+    "analyst@example.com": {"password": "analyst123", "role": "analyst"},
+    "viewer@example.com": {"password": "viewer123", "role": "viewer"},
+}
+
+@app.post("/auth/email")
+async def email_login(req: EmailLogin):
+    user = MOCK_USERS.get(req.email)
+    if not user or user["password"] != req.password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    our_payload = {
+        "role": user["role"],
+        "sub": req.email,
+        "name": req.email.split("@")[0],
+        "exp": datetime.utcnow() + timedelta(minutes=30)
+    }
+    our_token = jwt.encode(our_payload, "super-secret-key", algorithm="HS256")
+    return {"access_token": our_token}
+
 @app.get("/api/test")
 async def test():
-    return {"message": "Backend ready!"}
+    return {"message": "Backend ready with dual login!"}
