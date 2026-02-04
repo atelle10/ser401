@@ -7,9 +7,30 @@ import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
 import { fetchKPIData, fetchKPISummary } from '../services/incidentDataService'
 
+const formatDateInputValue = (date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const buildIsoRangeFromDateInputs = ({ start, end }) => {
+  if (!start || !end) return { startDate: null, endDate: null }
+
+  const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
+  const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
+  return { startDate, endDate }
+}
+
 const Dashboard = () => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
+  const [isCustomRange, setIsCustomRange] = useState(false)
+  const [dateInputs, setDateInputs] = useState(() => {
+    const end = new Date()
+    const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
+    return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
+  })
   const [incidentData, setIncidentData] = useState([])
   const [kpiSummary, setKpiSummary] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -17,14 +38,38 @@ const Dashboard = () => {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
 
   const dateRange = useMemo(() => {
+    if (isCustomRange) {
+      return buildIsoRangeFromDateInputs(dateInputs)
+    }
+
     const end = new Date()
     const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
     return { startDate: start.toISOString(), endDate: end.toISOString() }
-  }, [timeWindow])
+  }, [dateInputs, isCustomRange, timeWindow])
+
+  useEffect(() => {
+    if (isCustomRange) return
+
+    const end = new Date()
+    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+    setDateInputs({ start: formatDateInputValue(start), end: formatDateInputValue(end) })
+  }, [isCustomRange, timeWindow])
 
   const loadIncidentData = useCallback(async () => {
     setIsLoading(true)
     setError(null)
+
+    if (!dateRange.startDate || !dateRange.endDate) {
+      setError('Please select a start and end date')
+      setIsLoading(false)
+      return
+    }
+
+    if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
+      setError('Start date must be on or before end date')
+      setIsLoading(false)
+      return
+    }
 
     const [incidentResult, summaryResult] = await Promise.all([
       fetchKPIData({
@@ -70,6 +115,7 @@ const Dashboard = () => {
             onChange={(e) => setRegion(e.target.value)}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           >
+            <option value="all">All</option>
             <option value="south">South Scottsdale</option>
             <option value="north">North Scottsdale</option>
           </select>
@@ -78,13 +124,42 @@ const Dashboard = () => {
           <label className="text-xs sm:text-sm font-medium">Time Window:</label>
           <select
             value={timeWindow}
-            onChange={(e) => setTimeWindow(Number(e.target.value))}
+            onChange={(e) => {
+              setIsCustomRange(false)
+              setTimeWindow(Number(e.target.value))
+            }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           >
             <option value={7}>Last 7 Days</option>
             <option value={14}>Last 14 Days</option>
             <option value={30}>Last 30 Days</option>
           </select>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Start:</label>
+          <input
+            type="date"
+            value={dateInputs.start}
+            onChange={(e) => {
+              setIsCustomRange(true)
+              setDateInputs((prev) => ({ ...prev, start: e.target.value }))
+            }}
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">End:</label>
+          <input
+            type="date"
+            value={dateInputs.end}
+            onChange={(e) => {
+              setIsCustomRange(true)
+              setDateInputs((prev) => ({ ...prev, end: e.target.value }))
+            }}
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
+          />
         </div>
       </div>
 
