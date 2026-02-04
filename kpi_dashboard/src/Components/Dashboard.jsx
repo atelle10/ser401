@@ -3,7 +3,7 @@ import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import Chart from './Dashboard/Chart'
-import { DndContext, useDraggable } from '@dnd-kit/core'
+import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core'
 
 // Mock data for development
 const mockIncidentData = [
@@ -14,9 +14,29 @@ const mockIncidentData = [
   { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
 ]
 
-function handleDragEnd(){
+const [isDropped, setIsDropped] = useState(false); 
+
+function handleDragEnd(event){
   // Logic to handle the end of a drag event
   console.log("Drag ended")
+  if (event.over && event.over.id === 'droppable-1') {
+    setIsDropped(true);
+    console.log("Item dropped in droppable area 1");
+  } else {
+    setIsDropped(false); 
+  }
+
+}
+
+function DroppableArea_1(){
+  const { isOver, setNodeRef } = useDroppable({ id: 'droppable-1' });
+
+  return (
+    <div ref={setNodeRef} className={"flex items-center justify-center border-2 border-dashed border-gray-400 rounded-lg " + (isOver ? "border-blue-500 bg-white/30" : "bg-white/10")}>
+      <h3 className="font-semibold mb-3">Droppable Area 1</h3>
+      </div>
+  )
+
 }
 
 function DraggableHeatMap(region){
@@ -37,7 +57,7 @@ function DraggableHeatMap(region){
       <div className="flex items-center">
         <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
-          <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+          <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/15 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
             '< >'}</button>
         </span>
       </div>
@@ -64,7 +84,7 @@ function DraggleUHU(){
       <div className="flex items-center">
         <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
-          <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+          <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/15 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
             '< >'}</button>
         </span>
       </div>
@@ -91,7 +111,7 @@ function DraggableCVLC(region){
           <div className="flex items-center">
             <h3 className="font-semibold mb-3">Call Volume Trend </h3>
             <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
-              <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+              <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/15 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
                 '< >'}</button>
             </span>
           </div>
@@ -107,6 +127,7 @@ function DraggableCVLC(region){
 const Dashboard = () => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
+
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
@@ -142,6 +163,7 @@ const Dashboard = () => {
 
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <DroppableArea_1 />
         <DraggleUHU />
         <DraggableCVLC region={region} />
         <DraggableHeatMap region={region} />
