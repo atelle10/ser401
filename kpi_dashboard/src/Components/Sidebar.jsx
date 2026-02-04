@@ -4,8 +4,9 @@ import whiteFireIcon from './assets/white fire icon.png'
 import whiteMedicalIcon from './assets/white medical icon.png'
 import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
+import adminIcon from './assets/admin icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
+const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin }) => {
   const getItemClass = (view) => {
     const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view
@@ -44,6 +45,15 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
             <img src={accountIcon} alt="Account Icon" className='inline w-5 h-5 lg:mr-2'/>
             <p className="hidden lg:inline whitespace-nowrap">Account</p>
         </div>
+        {isAdmin && (
+          <div 
+            className={getItemClass('admin')}
+            onClick={() => setCurrentView('admin')}
+          >
+              <img src={adminIcon} alt="Admin Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2 -ml-0.5'/>
+              <p className="hidden lg:inline whitespace-nowrap">Admin</p>
+          </div>
+        )}
         <div 
           className={getItemClass('settings')}
           onClick={() => setCurrentView('settings')}

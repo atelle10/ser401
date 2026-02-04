@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { authClient } from '../utils/authClient';
+import React, { useEffect, useMemo, useState } from 'react'
+import { authClient } from '../utils/authClient'
 import NavBar from './NavBar.jsx'
 import Sidebar from './Sidebar.jsx'
 import Logo from './Logo.jsx'
@@ -8,10 +8,11 @@ import Dashboard from './Dashboard.jsx'
 import Upload from './Upload.jsx'
 import Settings from './Settings.jsx'
 import ChatBot from './ChatBot.jsx'
+import AdminMenu from './AdminMenu.jsx'
 import famarLogo from './assets/famar_logo.png'
-import Account from './Account.jsx';
+import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
-import backgroundImage2 from './assets/background_img.png';
+import backgroundImage2 from './assets/background_img.png'
 
 const fallbackProfile = {
   name: 'User',
@@ -26,19 +27,31 @@ const buildProfile = (user) => {
   return {
     name,
     email: user.email || '',
-    role: user.role || user.accountType || fallbackProfile.role,
+    role: user.role || fallbackProfile.role,
     avatar: user.image || user.avatar || fallbackProfile.avatar,
   }
+}
+
+const isAdminUser = (user) => {
+  const role = (user?.role || '').toString().toLowerCase()
+  return role === 'admin' || role === 'administrator'
 }
 
 const Home = () => {
   const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
   const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
+  const isAdmin = useMemo(() => isAdminUser(session?.user), [session?.user])
 
   useEffect(() => {
     setUserProfile(buildProfile(session?.user))
   }, [session?.user])
+
+  useEffect(() => {
+    if (!isAdmin && currentView === 'admin') {
+      setCurrentView('dashboard')
+    }
+  }, [currentView, isAdmin])
 
   const renderContent = () => {
     switch(currentView) {
@@ -53,23 +66,30 @@ const Home = () => {
             onUpdateProfile={setUserProfile}
             onBack={() => setCurrentView('dashboard')}
           />
-        );
+        )
       case 'settings':
         return <Settings />
+      case 'admin':
+        return isAdmin ? <AdminMenu /> : <Dashboard className="flex-1 overflow-auto" />
       default:
         return <Dashboard className="flex-1 overflow-auto" />
     }
   }
 
   return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-center justify-center">
+      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
         {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
-        <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-2 sm:p-3 md:p-4">
+        <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-0 sm:p-3 md:p-4">
           {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
           <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
             <Logo />
             <div className="flex flex-col gap-2">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
+              <Sidebar
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+                onAccountClick={() => setCurrentView('account')}
+                isAdmin={isAdmin}
+              />
               <ChatBot />
             </div>
           </div>
@@ -106,12 +126,17 @@ const Home = () => {
             
             {/* Mobile Bottom Navigation (Sidebar items) */}
             <div className="lg:hidden mt-auto self-center">
-              <Sidebar currentView={currentView} setCurrentView={setCurrentView} onAccountClick={() => setCurrentView('account')} />
+              <Sidebar
+                currentView={currentView}
+                setCurrentView={setCurrentView}
+                onAccountClick={() => setCurrentView('account')}
+                isAdmin={isAdmin}
+              />
             </div>
           </div>
         </div>
       </div>
   )
-};
+}
 
-  export default Home;
+export default Home

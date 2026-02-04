@@ -33,7 +33,7 @@ psql "postgresql://postgres:YOUR_PASSWORD@localhost:5432/famar_db" \
   -v ON_ERROR_STOP=1 \
   -c "CREATE SCHEMA IF NOT EXISTS auth;" \
   -c "SET search_path TO auth;" \
-  -f auth_server/better-auth_migrations/2026-01-18T00-43-36.982Z.sql
+  -f auth_server/better-auth_migrations/2026-02-02T01-10-37.738Z.sql
 ```
 
 Note: once Better Auth is installed with npm, you can also run the CLI migrator from the `auth_server` directory:
@@ -70,6 +70,8 @@ Notes:
 - The auth server reads env vars from the shell or `.env` (loaded via `dotenv`).
 - `BETTER_AUTH_TRUSTED_ORIGINS` must include the Vite dev URL to avoid invalid origin errors.
 - Dev-only: email changes bypass verification; TODO in `auth_server/src/auth.ts` to enable email verification before production.
+- Admin bootstrap (dev): If you need an admin user, you can set it directly in the DB, e.g.
+  `UPDATE auth."user" SET role='admin' WHERE email='you@example.com';`
 
 ## Production TODO
 - Use separate secrets for database credentials and Microsoft OAuth.

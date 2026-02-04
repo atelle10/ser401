@@ -10,7 +10,7 @@ import { authClient } from './utils/authClient.js'
 const needsProfileCompletion = (user) =>
   !user?.username ||
   !user?.phone ||
-  !user?.accountType ||
+  !user?.role ||
   user.username.startsWith('pending_') ||
   user.phone === '__pending__'
 

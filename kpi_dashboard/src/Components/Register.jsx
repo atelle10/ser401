@@ -15,7 +15,6 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [accountType, setAccountType] = useState('');
   const [error, setError] = useState('');
   const [passwordMatch, setPasswordMatch] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,11 +31,6 @@ const Register = () => {
     setError('');
     
     // Validation
-    if (!accountType) {
-      setError('Please select an account type');
-      return;
-    }
-    
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -55,7 +49,6 @@ const Register = () => {
       password,
       username,
       phone,
-      accountType,
     });
     setIsSubmitting(false);
 
@@ -75,7 +68,6 @@ const Register = () => {
     setLastName('');
     setEmail('');
     setPhone('');
-    setAccountType('');
     if (result?.data?.token === null) {
       setRegistered(true);
       return;
@@ -216,25 +208,6 @@ const Register = () => {
           {!passwordMatch && confirmPassword && (
             <p className="text-xs text-red-600">Passwords do not match</p>
           )}
-
-          {/* Account Type */}
-          <div>
-            <label htmlFor="accountType" className="block text-sm font-semibold text-black mb-1">
-              Account Type
-            </label>
-            <select
-              className="w-full px-4 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              id="accountType"
-              value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
-              required
-            >
-              <option value="">Select Account Type</option>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-              <option value="monitoring">Monitor Only</option>
-            </select>
-          </div>
 
           {/* Error Message */}
           {error && (
