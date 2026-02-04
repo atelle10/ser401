@@ -1,176 +1,85 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import famarLogo from './assets/famar_logo.png';
-import backgroundImage from './assets/sfd_bg.png';
-import { authClient } from '../utils/authClient.js';
-
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authClient } from '../utils/authClient';  
+import { useMsal } from '@azure/msal-react';  
 const Login = () => {
   const navigate = useNavigate();
-  const { data: session } = authClient.useSession();
+  const { instance } = useMsal();  // MSAL instance from provider in main.jsx/App.jsx
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (session?.user) {
-      navigate('/home', { replace: true });
-    }
-  }, [session, navigate]);
-
-  const handleSubmit = async (e) => {
+  const handleEmailLogin = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
-    }
-
     setIsSubmitting(true);
     const result = await authClient.signIn.email({ email, password });
     setIsSubmitting(false);
 
     if (result?.error) {
-      const fallback = result.error.status
-        ? `Sign in failed (${result.error.status} ${result.error.statusText})`
-        : 'Sign in failed. Please try again.';
-      setError(result.error.message || fallback);
+      setError(result.error.message || 'Login failed');
       return;
     }
 
-    if (result?.data?.redirect && result.data.url) {
-      window.location.assign(result.data.url);
-      return;
-    }
-
-    setEmail('');
-    setPassword('');
     navigate('/home', { replace: true });
   };
 
-  const handleMicrosoftSignIn = async () => {
-    setError('');
-    setIsSubmitting(true);
-    const result = await authClient.signIn.social({
-      provider: 'microsoft',
-      callbackURL: '/home',
-    });
-    setIsSubmitting(false);
-
-    if (result?.error) {
-      const fallback = result.error.status
-        ? `Microsoft sign in failed (${result.error.status} ${result.error.statusText})`
-        : 'Microsoft sign in failed. Please try again.';
-      setError(result.error.message || fallback);
-      return;
-    }
-
-    if (result?.data?.redirect && result.data.url) {
-      window.location.assign(result.data.url);
-      return;
-    }
+  const handleMicrosoftLogin = () => {
+    instance.loginRedirect({ prompt: 'login' });  // Force fresh login, real MSAL redirect
   };
 
   return (
-    <div className="w-screen h-screen flex items-center justify-center bg-no-repeat bg-black p-1" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      <div className="flex items-center md:flex-row bg-gray-100 rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2 bg-transparent">
-        {/* Main Login Card - matching dashboard style - Mobile Responsive */}
-        <div className="backdrop-blur-md bg-white/30 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-1/2 w-auto max-w-md space-y-4 sm:space-y-6">
-          {/* Logo */}
-          <div className="flex justify-center">
-            <img 
-              src={famarLogo} 
-              alt="Famar Logo" 
-              className="w-24 h-24 sm:w-32 sm:h-32 object-contain" 
+    <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-r to-blue-400 via-slate-300 from-red-400">
+      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center mb-8">FAMAR Login</h1>
+
+        {/* Microsoft SSO Button  */}
+        <button
+          onClick={handleMicrosoftLogin}
+          disabled={isSubmitting}
+          className="w-full py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 mb-6 flex items-center justify-center gap-3"
+        >
+          <svg className="h-6 w-6" viewBox="0 0 23 23">
+            <rect x="1" y="1" width="10" height="10" fill="#F25022" />
+            <rect x="12" y="1" width="10" height="10" fill="#7FBA00" />
+            <rect x="1" y="12" width="10" height="10" fill="#00A4EF" />
+            <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
+          </svg>
+          Sign in with Microsoft
+        </button>
+
+        <div className="text-center text-gray-600 mb-6">or sign in with email</div>
+
+        {/* Email Form (better-auth) */}
+        <form onSubmit={handleEmailLogin} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              required
+              autoComplete="email"
             />
           </div>
-          {/* Title */}
-          <div className="text-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-black">Welcome Back</h1>
-            <p className="text-xs sm:text-sm text-gray-800 mt-1">Sign in to continue to dashboard</p>
+          <div>
+            <label className="block text-sm font-medium mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              required
+              autoComplete="current-password"
+            />
           </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email Input */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
-                Email
-              </label>
-              <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-
-            {/* Password Input */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-black mb-1">
-                Password
-              </label>
-              <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                type="password"
-                placeholder="Enter your password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
-
-            {/* Login Button (better-auth email) */}
-            <button 
-              type="submit" 
-              className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Signing in...' : 'Login with Email'}
-            </button>
-
-            {/* Sign in with Microsoft Button (better-auth social) */}
-            <button 
-              type="button" 
-              className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              onClick={handleMicrosoftSignIn}
-              disabled={isSubmitting}
-            >
-              <svg className="h-4 w-4" viewBox="0 0 23 23" aria-hidden="true" focusable="false">
-                <rect x="1" y="1" width="10" height="10" fill="#F25022" />
-                <rect x="12" y="1" width="10" height="10" fill="#7FBA00" />
-                <rect x="1" y="12" width="10" height="10" fill="#00A4EF" />
-                <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
-              </svg>
-              {isSubmitting ? 'Sending to Microsoft...' : 'Sign in with Microsoft'}
-            </button>
-
-            {/* Register Link */}
-            <div className="text-center text-sm text-black">
-              Don't have an account?{' '}
-              <Link 
-                className="text-blue-600 font-semibold hover:text-blue-700 hover:underline" 
-                to="/register"
-              >
-                Register Here
-              </Link>
-            </div>
-          </form>
-        </div>
+          {error && <div className="p-4 bg-red-50 text-red-700 rounded-lg text-center">{error}</div>}
+          <button type="submit" disabled={isSubmitting} className="w-full py-4 bg-gray-600 text-white font-bold rounded-lg hover:bg-gray-700">
+            Sign in with Email
+          </button>
+        </form>
       </div>
     </div>
   );

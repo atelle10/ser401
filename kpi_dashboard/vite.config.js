@@ -1,18 +1,24 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   css: {
     postcss: './postcss.config.js',
   },
   server: {
-    proxy: {
-      '/api/auth': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
+  port: 5173,
+  proxy: {
+    '/api': {
+      target: 'http://127.0.0.1:8000',
+      changeOrigin: true,
+      secure: false,
+    },
+    '/auth': {  // <-- Add this for /auth/exchange
+      target: 'http://127.0.0.1:8000',
+      changeOrigin: true,
+      secure: false,
     },
   },
-})
+},
+});
