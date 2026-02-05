@@ -5,6 +5,7 @@ import Home from './Components/Home.jsx'
 import Register from './Components/Register.jsx'
 import RequestSent from './Components/RequestSent.jsx'
 import CompleteProfile from './Components/CompleteProfile.jsx'
+import UnverifiedSplash from './Components/UnverifiedSplash.jsx'
 import { authClient } from './utils/authClient.js'
 
 const needsProfileCompletion = (user) =>
@@ -95,6 +96,7 @@ function App() {
               }
             />
             <Route path="/request-sent" element={<RequestSent />} />
+            <Route path="/awaiting-access" element={<UnverifiedSplash />} />
         </Routes>
     </div>
   )
