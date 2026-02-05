@@ -63,8 +63,9 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
 
   if (!chartData) {
     return (
-      <div className="border rounded-lg p-4 bg-white">
-        <p className="text-gray-500">No call volume data available</p>
+      <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
+        <h3 className="text-lg font-semibold mb-2">Call Volume Trend</h3>
+        <p className="text-gray-300">No call volume data available for the selected period</p>
       </div>
     );
   }
