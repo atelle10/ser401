@@ -58,9 +58,9 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
 
   if (!uhuByUnit?.length) {
     return (
-      <div className="border rounded-lg p-4 bg-blue-500/70 backdrop-blur-md">
+      <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
         <h3 className="text-lg font-semibold mb-2">Unit Hour Utilization (UHU)</h3>
-        <p className="text-gray-500">No unit data available</p>
+        <p className="text-gray-300">No unit data available for the selected period</p>
       </div>
     );
   }
