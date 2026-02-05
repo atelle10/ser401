@@ -236,6 +236,70 @@ async def get_kpi_summary(
             'peak_hour': int(row['peak_hour']) if row['peak_hour'] is not None else None,
             'time_window': {'start': start_date, 'end': end_date}
         }
-    
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+@app.get("/api/incidents/heatmap")
+async def get_incident_heatmap(
+    start_date: str = Query(...),
+    end_date: str = Query(...),
+    region: str = Query("all")
+):
+    try:
+        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date: {str(e)}")
+
+    try:
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+
+        region_filter = ""
+        if region == "south":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+        elif region == "north":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+
+        query = f"""
+        SELECT
+            CAST(EXTRACT(DOW FROM i.basic_incident_psap_date_time) AS INTEGER) AS day_index,
+            CAST(EXTRACT(HOUR FROM i.basic_incident_psap_date_time) AS INTEGER) AS hour,
+            COUNT(*) AS incident_count
+        FROM fire_ems.incident i
+        WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+        {region_filter}
+        GROUP BY
+            EXTRACT(DOW FROM i.basic_incident_psap_date_time),
+            EXTRACT(HOUR FROM i.basic_incident_psap_date_time)
+        ORDER BY day_index, hour
+        """
+        df = db.read_table(f"({query}) as subquery")
+        db.disconnect()
+        heatmap_data = []
+        max_count = 0
+        total = 0
+
+
+        for _, row in df.iterrows():
+            count = int(row['incident_count'])
+            max_count = max(max_count, count)
+            total += count
+            heatmap_data.append({
+                'day_index': int(row['day_index']),
+                'hour': int(row['hour']),
+                'count': count
+            })
+
+        return {
+            'heatmap_data': heatmap_data,
+            'total_incidents': total,
+            'max_count': max_count,
+            'region': region,
+            'time_window': {'start': start_date, 'end': end_date}
+        }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
