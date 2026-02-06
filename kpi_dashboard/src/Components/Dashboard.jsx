@@ -5,7 +5,7 @@ import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData, fetchKPISummary } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap } from '../services/incidentDataService'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -33,6 +33,7 @@ const Dashboard = () => {
   })
   const [incidentData, setIncidentData] = useState([])
   const [kpiSummary, setKpiSummary] = useState(null)
+  const [heatmapData, setHeatmapData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -71,13 +72,18 @@ const Dashboard = () => {
       return
     }
 
-    const [incidentResult, summaryResult] = await Promise.all([
+    const [incidentResult, summaryResult, heatmapResult] = await Promise.all([
       fetchKPIData({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
       }),
       fetchKPISummary({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchIncidentHeatmap({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
@@ -95,6 +101,12 @@ const Dashboard = () => {
       setError((prev) => prev || summaryResult.error || 'Failed to load KPI summary')
     } else {
       setKpiSummary(summaryResult.data || null)
+    }
+
+    if (!heatmapResult.success) {
+      setError((prev) => prev || heatmapResult.error || 'Failed to load heatmap data')
+    } else {
+      setHeatmapData(heatmapResult.data?.heatmap_data || [])
     }
 
     setIsLoading(false)
@@ -210,7 +222,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour data={incidentData} region={region} weeks={1} />
+          <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
         </div>
 
         <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
