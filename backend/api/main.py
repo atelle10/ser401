@@ -303,3 +303,63 @@ async def get_incident_heatmap(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+@app.get("/api/incidents/call-volume")
+async def get_call_volume(
+    start_date: str = Query(...),
+    end_date: str = Query(...),
+    region: str = Query("all"),
+    granularity: str = Query("daily", pattern="^(daily|weekly|monthly)$")
+):
+    try:
+        start_dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+        end_dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date: {str(e)}")
+
+    trunc = {"daily": "day", "weekly": "week", "monthly": "month"}[granularity]
+
+    try:
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+
+        region_filter = ""
+        if region == "south":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+        elif region == "north":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+
+        query = f"""
+        SELECT
+            DATE_TRUNC('{trunc}', i.basic_incident_psap_date_time) AS period,
+            COUNT(*) AS incident_count
+        FROM fire_ems.incident i
+        WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+        {region_filter}
+        GROUP BY DATE_TRUNC('{trunc}', i.basic_incident_psap_date_time)
+        ORDER BY period
+        """
+        df = db.read_table(f"({query}) as subquery")
+        db.disconnect()
+        trend_data = []
+        total = 0
+
+        for _, row in df.iterrows():
+            count = int(row['incident_count'])
+            total += count
+            trend_data.append({
+                'date': row['period'].isoformat() if row['period'] else None,
+                'count': count
+            })
+
+        return {
+            'trend_data': trend_data,
+            'total_incidents': total,
+            'granularity': granularity,
+            'region': region,
+            'time_window': {'start': start_date, 'end': end_date}
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
