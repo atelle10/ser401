@@ -54,6 +54,21 @@ export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) =>
   }
 };
 
+export const fetchIncidentHeatmap = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/heatmap', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+
+    const data = await fetchJson(url);
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
 const transformAPIData = (apiData) => {
   if (!apiData || !apiData.incidents) return [];
 
