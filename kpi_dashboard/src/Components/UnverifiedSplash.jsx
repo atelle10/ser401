@@ -1,6 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { authClient } from '../utils/authClient.js'
 
 const UnverifiedSplash = () => {
+  const navigate = useNavigate()
+  const [isSigningOut, setIsSigningOut] = useState(false)
+
+  const handleSignOut = async () => {
+    if (isSigningOut) return
+    setIsSigningOut(true)
+    await authClient.signOut()
+    navigate('/', { replace: true })
+  }
+
   return (
     <div className="w-screen min-h-screen flex items-center justify-center bg-blue-950 p-4">
       <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 sm:p-6 md:p-8 w-full max-w-md text-center space-y-4 sm:space-y-6 rounded-lg">
@@ -36,7 +48,15 @@ const UnverifiedSplash = () => {
             <strong>Status:</strong> Pending admin approval
           </p>
         </div>
-        {/* TODO: Add action buttons, support links, and any status polling once logic is implemented. */}
+        <button
+          type="button"
+          onClick={handleSignOut}
+          disabled={isSigningOut}
+          className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+        </button>
+        {/* TODO: Wire this up to the backend to check if the account is verified */}
       </div>
     </div>
   )
