@@ -66,7 +66,9 @@ const RequireAuth = ({ children }) => {
     return <Navigate to="/awaiting-access" replace />
   }
 
-  return children
+  const role = session.user.role || "viewer"
+
+  return React.cloneElement(children, { role })
 }
 
 const RequireGuest = ({ children }) => {
@@ -96,42 +98,42 @@ const RequireGuest = ({ children }) => {
 function App() {
   return (
     <div className="App">
-        <Routes>
-            <Route
-              path="/"
-              element={
-                <RequireGuest>
-                  <Login />
-                </RequireGuest>
-              }
-            />
-            <Route
-              path="/home"
-              element={
-                <RequireAuth>
-                  <Home />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/complete-profile"
-              element={
-                <RequireAuth>
-                  <CompleteProfile />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <RequireGuest>
-                  <Register />
-                </RequireGuest>
-              }
-            />
-            <Route path="/awaiting-access" element={<UnverifiedSplash />} />
-            <Route path="/session-expired" element={<SessionExpiredSplash />} />
-        </Routes>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <RequireGuest>
+              <Login />
+            </RequireGuest>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <RequireAuth>
+              <Home />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/complete-profile"
+          element={
+            <RequireAuth>
+              <CompleteProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RequireGuest>
+              <Register />
+            </RequireGuest>
+          }
+        />
+        <Route path="/awaiting-access" element={<UnverifiedSplash />} />
+        <Route path="/session-expired" element={<SessionExpiredSplash />} />
+      </Routes>
     </div>
   )
 }

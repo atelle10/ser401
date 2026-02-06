@@ -24,7 +24,7 @@ const buildIsoRangeFromDateInputs = ({ start, end }) => {
   return { startDate, endDate }
 }
 
-const Dashboard = () => {
+const Dashboard = ({ role = "viewer" }) => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
@@ -142,9 +142,11 @@ const Dashboard = () => {
     loadIncidentData()
   }, [loadIncidentData])
 
+  const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
+  const isAdmin = role === "admin"
+
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
-      {/* Filters - Stack on mobile, side-by-side on larger screens */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
@@ -212,7 +214,7 @@ const Dashboard = () => {
       )}
 
       {hasLoadedOnce && kpiSummary && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div data-testid="basic-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
           <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
             <h3 className="font-semibold mb-2">Total Incidents</h3>
             <div className="text-2xl font-semibold">{kpiSummary.total_incidents ?? '-'}</div>
@@ -244,42 +246,48 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
-        </div>
+      {isAnalystOrAdmin && (
+        <div data-testid="advanced-analytics" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
+            <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
+          </div>
 
-        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={incidentData} />
-        </div>
+          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+            <UnitHourUtilization data={incidentData} />
+          </div>
 
-        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Call Volume Trend</h3>
-          <CallVolumeLinearChart
-            startDate={dateRange.startDate}
-            endDate={dateRange.endDate}
-            region={region}
-          />
-        </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Call Volume Trend</h3>
+            <CallVolumeLinearChart
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+              region={region}
+            />
+          </div>
 
-        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
-          <IncidentTypeBreakdown data={typeBreakdownData} />
-        </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
+            <IncidentTypeBreakdown data={typeBreakdownData} />
+          </div>
 
-        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
-          <IncidentsByPostalCode data={postalData} />
-        </div>
+          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
+            <IncidentsByPostalCode data={postalData} />
+          </div>
 
-        {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
-        <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <Chart />
+          <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <Chart />
+          </div>
         </div>
-      </div>
+      )}
+
+      {role === "viewer" && (
+        <div data-testid="viewer-message" className="mt-8 text-center text-gray-600">
+          <p>Basic dashboard view. Contact admin for elevated access.</p>
+        </div>
+      )}
     </div>
   )
 }
