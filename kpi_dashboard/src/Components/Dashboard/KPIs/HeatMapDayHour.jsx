@@ -40,6 +40,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
 
     data.forEach(incident => {
       const incidentDate = new Date(incident.timestamp);
+      if (Number.isNaN(incidentDate.getTime())) return;
       if (incidentDate < cutoff) return;
       
       // Regional filter - postal codes define urban vs rural
@@ -56,6 +57,8 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
 
       const day = incidentDate.getDay();
       const hour = incidentDate.getHours();
+      if (typeof day !== 'number' || typeof hour !== 'number') return;
+      if (day < 0 || day > 6 || hour < 0 || hour > 23) return;
       
       grid[day][hour]++;
       maxCount = Math.max(maxCount, grid[day][hour]);
