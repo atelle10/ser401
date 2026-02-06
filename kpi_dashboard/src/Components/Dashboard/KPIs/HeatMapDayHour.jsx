@@ -7,14 +7,29 @@ import { useMemo, useState } from 'react';
  * dramatically different call patterns. South peaks during rush hour, North
  * peaks on weekends due to outdoor activities.
  */
-const HeatMapDayHour = ({ data, region = 'south' }) => {
-  const [selectedWeeks, setSelectedWeeks] = useState(5);
+const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
+  const [selectedWeeks, setSelectedWeeks] = useState(weeks);
 
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
   // Build heat map grid - O(n) single pass instead of nested loops per cell
   const heatData = useMemo(() => {
+    if (Array.isArray(heatmapData) && heatmapData.length > 0) {
+      const grid = Array(7).fill(null).map(() => Array(24).fill(0));
+      let maxCount = 0;
+
+      heatmapData.forEach(({ day_index, hour, count }) => {
+        if (typeof day_index !== 'number' || typeof hour !== 'number' || typeof count !== 'number') return;
+        if (day_index < 0 || day_index > 6 || hour < 0 || hour > 23) return;
+
+        grid[day_index][hour] = count;
+        maxCount = Math.max(maxCount, count);
+      });
+
+      return { grid, maxCount, source: 'api' };
+    }
+
     if (!data?.length) return null;
 
     const grid = Array(7).fill(null).map(() => Array(24).fill(0));
@@ -31,9 +46,11 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
       const postalCode = incident.postal_code;
       if (typeof postalCode !== 'number') return;
 
-      const isTargetRegion = region === 'south' 
-        ? postalCode < 85260  // South Scottsdale urban codes
-        : postalCode >= 85260; // North Scottsdale rural codes
+      const isTargetRegion = region === 'all'
+        ? true
+        : (region === 'south' 
+          ? postalCode < 85260  // South Scottsdale urban codes
+          : postalCode >= 85260); // North Scottsdale rural codes
       
       if (!isTargetRegion) return;
 
@@ -44,8 +61,8 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
       maxCount = Math.max(maxCount, grid[day][hour]);
     });
 
-    return { grid, maxCount };
-  }, [data, region, selectedWeeks]);
+    return { grid, maxCount, source: 'incidents' };
+  }, [data, heatmapData, region, selectedWeeks]);
 
   if (!heatData) {
     return (
@@ -69,25 +86,33 @@ const HeatMapDayHour = ({ data, region = 'south' }) => {
     return colors[Math.min(intensity - 1, 4)];
   };
 
+  const regionLabel = region === 'south'
+    ? 'South (Urban)'
+    : (region === 'north'
+      ? 'North (Rural)'
+      : 'All Regions');
+
   return (
     <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
-            Incident Volume Heat Map - {region === 'south' ? 'South (Urban)' : 'North (Rural)'}
+            Incident Volume Heat Map - {regionLabel}
           </h3>
           <p className="text-sm text-gray-600">Day of Week × Hour of Day</p>
         </div>
-        
-        <select 
-          value={selectedWeeks}
-          onChange={(e) => setSelectedWeeks(Number(e.target.value))}
-          className="border rounded px-3 py-1 text-sm text-blue-800/80"
-        >
-          <option value={1}>Last week</option>
-          <option value={5}>Last 5 weeks</option>
-          <option value={12}>Last 12 weeks</option>
-        </select>
+
+        {heatData.source === 'incidents' && (
+          <select 
+            value={selectedWeeks}
+            onChange={(e) => setSelectedWeeks(Number(e.target.value))}
+            className="border rounded px-3 py-1 text-sm text-blue-800/80"
+          >
+            <option value={1}>Last week</option>
+            <option value={5}>Last 5 weeks</option>
+            <option value={12}>Last 12 weeks</option>
+          </select>
+        )}
       </div>
 
       <div className="overflow-x-auto text-blue-800/80">
