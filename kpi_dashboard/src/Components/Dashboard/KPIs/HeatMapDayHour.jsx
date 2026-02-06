@@ -151,7 +151,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
         </table>
       </div>
 
-      <div className="mt-4 flex items-center gap-4 text-xs text-">
+      <div className="mt-4 flex items-center gap-4 text-xs">
         <span>Low</span>
         <div className="flex gap-1">
           {['bg-gray-50', 'bg-blue-100', 'bg-blue-200', 'bg-blue-400', 'bg-blue-600', 'bg-blue-800'].map((color, i) => (
