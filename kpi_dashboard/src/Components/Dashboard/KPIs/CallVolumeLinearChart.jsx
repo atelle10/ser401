@@ -21,15 +21,18 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
 
     data.forEach(incident => {
       const incidentDate = new Date(incident.timestamp);
+      if (Number.isNaN(incidentDate.getTime())) return;
       if (incidentDate < cutoff) return;
 
       // Regional filter
       const postalCode = incident.postal_code;
       if (typeof postalCode !== 'number') return;
 
-      const isTargetRegion = region === 'south' 
-        ? postalCode < 85260 
-        : postalCode >= 85260;
+      const isTargetRegion = region === 'all'
+        ? true
+        : (region === 'south'
+          ? postalCode < 85260
+          : postalCode >= 85260);
 
       if (!isTargetRegion) return;
 
@@ -77,7 +80,8 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
-  const xScale = (index) => (index / (chartData.points.length - 1)) * chartWidth;
+  const xDenom = Math.max(1, chartData.points.length - 1);
+  const xScale = (index) => (index / xDenom) * chartWidth;
   const yScale = (count) => chartHeight - (count / chartData.maxCount) * chartHeight;
 
   // Build SVG path - single string for performance
@@ -101,7 +105,7 @@ const CallVolumeLinearChart = ({ data, region = 'south'}) => {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
-            Call Volume Trend - {region === 'south' ? 'South (Urban)' : 'North (Rural)'}
+            Call Volume Trend - {region === 'south' ? 'South (Urban)' : region === 'north' ? 'North (Rural)' : 'All Regions'}
           </h3>
           <p className="text-sm text-gray-600">
             Average: {chartData.avgCount.toFixed(1)} calls/{granularity === 'daily' ? 'day' : granularity === 'weekly' ? 'week' : 'month'}
