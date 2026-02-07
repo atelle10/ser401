@@ -146,7 +146,6 @@ const Dashboard = ({ role = "viewer" }) => {
   const isAdmin = role === "admin"
 
   return (
-    <DndContext onDragEnd={handleDragEnd} collisionDetection={pointerWithin}>
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
@@ -292,7 +291,6 @@ const Dashboard = ({ role = "viewer" }) => {
         </div>
       )}
     </div>
-    </DndContext>
   )
 }
 

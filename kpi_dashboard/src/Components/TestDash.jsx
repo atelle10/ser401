@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import { createSwapy } from 'swapy'
+import { useEffect, useRef, useState } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
@@ -7,8 +8,6 @@ import KPI_1 from './Dashboard/KPIs/KPI_1'
 import KPI_2 from './Dashboard/KPIs/KPI_2'
 import KPI_3 from './Dashboard/KPIs/KPI_3'
 import KPI_4 from './Dashboard/KPIs/KPI_4'
-import { DndContext, useDraggable, useDroppable, pointerWithin } from '@dnd-kit/core'
-import GridLayout from 'react-grid-layout';
 
 // Mock data for development
 const mockIncidentData = [
@@ -19,13 +18,9 @@ const mockIncidentData = [
   { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
 ]
 
-function DraggableHeatMap(region){
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'heat-map' });
-  
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
-  };
 
+
+function DraggableHeatMap(region){
   const [expand, setExpand] = useState(() => {
     const initialExpand = true;
     console.log("Expand state set to " + initialExpand);
@@ -33,7 +28,7 @@ function DraggableHeatMap(region){
   });
 
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
       <div className="flex items-center">
         <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
@@ -47,11 +42,6 @@ function DraggableHeatMap(region){
 }
 
 function DraggableKPI_1(region){
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'kpi-1' });
-  
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
-  };
 
   const [expand, setExpand] = useState(() => {
     const initialExpand = true;
@@ -60,7 +50,7 @@ function DraggableKPI_1(region){
   });
 
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
       <div className="flex items-center">
         <h3 className="font-semibold cursor-default mb-3">KPI 1</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
@@ -74,11 +64,6 @@ function DraggableKPI_1(region){
 }
 
 function DraggableKPI_2(region){
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'kpi-2' });
-  
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
-  };
 
   const [expand, setExpand] = useState(() => {
     const initialExpand = true;
@@ -87,7 +72,7 @@ function DraggableKPI_2(region){
   });
 
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
       <div className="flex items-center">
         <h3 className="font-semibold cursor-default mb-3">KPI 2</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
@@ -101,12 +86,6 @@ function DraggableKPI_2(region){
 }
 
 function DraggableKPI_3(region){
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'kpi-3' });
-  
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
-  };
-
   const [expand, setExpand] = useState(() => {
     const initialExpand = true;
     console.log("Expand state set to " + initialExpand);
@@ -114,7 +93,7 @@ function DraggableKPI_3(region){
   });
 
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
       <div className="flex items-center">
         <h3 className="font-semibold cursor-default mb-3">KPI 3</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
@@ -128,11 +107,6 @@ function DraggableKPI_3(region){
 }
 
 function DraggableKPI_4(region){
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'kpi-4' });
-  
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
-  };
 
   const [expand, setExpand] = useState(() => {
     const initialExpand = true;
@@ -141,7 +115,7 @@ function DraggableKPI_4(region){
   });
 
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
       <div className="flex items-center">
         <h3 className="font-semibold cursor-default mb-3">KPI 4</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
@@ -156,12 +130,6 @@ function DraggableKPI_4(region){
 
 
 function DraggableUHU(){
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'uahu' });
-  
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
-  };
-
   const [expand, setExpand] = useState(() => {
     const initialExpand = true;
     console.log("Expand state set to " + initialExpand);
@@ -169,7 +137,7 @@ function DraggableUHU(){
   });
 
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
       <div className="flex items-center">
         <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
@@ -183,12 +151,6 @@ function DraggableUHU(){
 }
 
 function DraggableCVLC(region){
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: 'cvlc' });
-  
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined
-  };
-
   const [expand, setExpand] = useState(() => {
     const initialExpand = true;
     console.log("Expand state set to " + initialExpand);
@@ -196,7 +158,7 @@ function DraggableCVLC(region){
   });
 
   return (
-    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
           <div className="flex items-center">
             <h3 className="font-semibold mb-3">Call Volume Trend </h3>
             <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
@@ -213,23 +175,30 @@ function DraggableCVLC(region){
   )
 }
 
-const Dashboard = () => {
+function TestDash() {
+  const swapy = useRef(null)
+  const container = useRef(null)
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
-  const [isDropped, setIsDropped] = useState(false);
 
-  
-  function handleDragEnd(event){
-    setIsDropped(true);
-    // Logic to handle the end of a drag event
-    console.log("Drag ended")
-  }
+  container
 
-  const layout = [
-      { i: "uhu", x: 0, y: 0, w: 1, h: 2 },
-      { i: "cvlc", x: 2, y: 0, w: 1, h: 2},
-      { i: "heatmap", x: 4, y: 0, w: 1, h: 2 }
-    ];
+  useEffect(() => {
+    // If container element is loaded
+    if (container.current) {
+      swapy.current = createSwapy(container.current)
+
+      // Your event listeners
+      swapy.current.onSwap((event) => {
+        console.log('swap', event);
+      })
+    }
+
+    return () => {
+      // Destroy the swapy instance on component destroy
+      swapy.current?.destroy()
+    }
+  }, [])
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
@@ -261,34 +230,43 @@ const Dashboard = () => {
           </select>
         </div>
       </div>
+    
+    <div ref={container} className='m-5 grid-cols-2'>
 
-      {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
-      {/*<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-         <DraggableUHU />
-        <DraggableCVLC region={region} />
-        <DraggableHeatMap region={region} />
-        <DraggableKPI_1 region={region} />
-        <DraggableKPI_2 region={region} />
-        <DraggableKPI_3 region={region} />
-        <DraggableKPI_4 region={region} />
-
-        {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
-        <GridLayout
-        className="layout"
-        layout={layout}
-        cols={12}
-        rowHeight={30}
-        width={1200}
-      >
-        <div key="uhu"><DraggableUHU handleDragEnd={handleDragEnd} /></div>
-        <div key="cvlc"><DraggableCVLC region={region} /></div>
-        <div key="heatmap"><DraggableHeatMap region={region} /></div>
-      </GridLayout>
-        <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <Chart />
+      <div data-swapy-slot="a" className='col-span-1'>
+        <div data-swapy-item="a" >
+          <div>
+            <DraggableUHU />
+          </div>
+        </div>
       </div>
+
+      <div data-swapy-slot="b">
+        <div data-swapy-item="b" >
+          <div>
+            <DraggableCVLC region={region} />
+          </div>
+        </div>
+      </div>
+      <div data-swapy-slot="c">
+        <div data-swapy-item="c" >
+          <div>
+            <DraggableHeatMap region={region} />
+          </div>
+        </div>
+      </div>
+      <div data-swapy-slot="d">
+        <div data-swapy-item="d" >
+          <div>
+            <DraggableKPI_1 region={region} />
+          </div>
+        </div>
+      </div>
+
+
     </div>
+  </div>
   )
 }
 
-export default Dashboard
+export default TestDash
