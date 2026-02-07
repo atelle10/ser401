@@ -56,7 +56,6 @@ const UnverifiedSplash = () => {
         >
           {isSigningOut ? 'Signing Out...' : 'Sign Out'}
         </button>
-        {/* TODO: Wire this up to the backend to check if the account is verified */}
       </div>
     </div>
   )
