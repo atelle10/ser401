@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
+import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
@@ -237,6 +238,11 @@ const Dashboard = () => {
             region={region}
             granularity="daily"
           />
+        </div>
+
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
+          <IncidentsByPostalCode data={incidentData} />
         </div>
 
         {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
