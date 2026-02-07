@@ -33,6 +33,7 @@ export const auth = betterAuth({
           return {
             data: {
               ...user,
+              verified: user.verified ?? false,
               username:
                 username && username.trim()
                   ? username
@@ -54,7 +55,12 @@ export const auth = betterAuth({
     additionalFields: {
       username: { type: "string", required: false },
       phone: { type: "string", required: false },
-      verified: { type: "boolean", required: false },
+      verified: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: false,
+      },
     },
   },
   session: {

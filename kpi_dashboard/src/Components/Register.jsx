@@ -238,7 +238,7 @@ const Register = () => {
         </form>
       </div>
       
-      {registered && <Navigate to="/request-sent" replace />}
+      {registered && <Navigate to="/awaiting-access" replace />}
     </div>
   )
 }
