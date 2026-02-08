@@ -6,37 +6,11 @@ const IncidentsByPostalCode = ({ data }) => {
   const stats = useMemo(() => {
     if (!data?.length) return null;
 
-    const byZip = new Map();
-
-    data.forEach(row => {
-      if (typeof row.postal_code !== 'number') return;
-      const zip = String(row.postal_code);
-
-      if (!byZip.has(zip)) {
-        byZip.set(zip, { count: 0, responseTimes: [] });
-      }
-
-      const entry = byZip.get(zip);
-      entry.count++;
-
-      if (row.dispatch_time && row.arrival_time) {
-        const dispatch = new Date(row.dispatch_time);
-        const arrival = new Date(row.arrival_time);
-        if (!Number.isNaN(dispatch.getTime()) && !Number.isNaN(arrival.getTime())) {
-          const minutes = (arrival - dispatch) / 60000;
-          if (minutes > 0 && minutes < 120) {
-            entry.responseTimes.push(minutes);
-          }
-        }
-      }
-    });
-
-    const rows = Array.from(byZip.entries()).map(([zip, entry]) => {
-      const avg = entry.responseTimes.length > 0
-        ? entry.responseTimes.reduce((s, v) => s + v, 0) / entry.responseTimes.length
-        : null;
-      return { zip, count: entry.count, avgResponse: avg };
-    });
+    const rows = data.map(row => ({
+      zip: row.zip,
+      count: row.count,
+      avgResponse: row.avg_response_minutes,
+    }));
 
     const byCount = [...rows].sort((a, b) => b.count - a.count).slice(0, TOP_N);
     const byResponse = rows
