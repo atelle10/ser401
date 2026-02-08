@@ -194,6 +194,17 @@ const CallVolumeLinearChart = ({ startDate, endDate, region = 'south' }) => {
         >
           Call Volume
         </text>
+
+        <text
+          x={padding.left + chartWidth / 2}
+          y={height - 2}
+          textAnchor="middle"
+          fontSize="12"
+          fill="#374151"
+          fontWeight="500"
+        >
+          Date
+        </text>
       </svg>
     </div>
   );
