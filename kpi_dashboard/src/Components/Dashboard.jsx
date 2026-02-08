@@ -3,6 +3,7 @@ import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
+import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
@@ -233,23 +234,28 @@ const Dashboard = () => {
 
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
           <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
         </div>
 
-        <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
           <UnitHourUtilization data={incidentData} />
         </div>
 
-        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
           <CallVolumeLinearChart
             startDate={dateRange.startDate}
             endDate={dateRange.endDate}
             region={region}
           />
+        </div>
+
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
+          <IncidentTypeBreakdown data={incidentData} />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
