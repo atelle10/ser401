@@ -6,7 +6,7 @@ import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown } from '../services/incidentDataService'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -35,6 +35,7 @@ const Dashboard = () => {
   const [incidentData, setIncidentData] = useState([])
   const [kpiSummary, setKpiSummary] = useState(null)
   const [heatmapData, setHeatmapData] = useState(null)
+  const [postalData, setPostalData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -73,7 +74,7 @@ const Dashboard = () => {
       return
     }
 
-    const [incidentResult, summaryResult, heatmapResult] = await Promise.all([
+    const [incidentResult, summaryResult, heatmapResult, postalResult] = await Promise.all([
       fetchKPIData({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
@@ -85,6 +86,11 @@ const Dashboard = () => {
         region,
       }),
       fetchIncidentHeatmap({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchPostalBreakdown({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
@@ -108,6 +114,12 @@ const Dashboard = () => {
       setError((prev) => prev || heatmapResult.error || 'Failed to load heatmap data')
     } else {
       setHeatmapData(heatmapResult.data?.heatmap_data || [])
+    }
+
+    if (!postalResult.success) {
+      setError((prev) => prev || postalResult.error || 'Failed to load postal breakdown')
+    } else {
+      setPostalData(postalResult.data?.postal_data || [])
     }
 
     setIsLoading(false)
@@ -233,16 +245,16 @@ const Dashboard = () => {
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
-          <CallVolumeLinearChart 
-            data={incidentData} 
+          <CallVolumeLinearChart
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
             region={region}
-            granularity="daily"
           />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
-          <IncidentsByPostalCode data={incidentData} />
+          <IncidentsByPostalCode data={postalData} />
         </div>
 
         {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
