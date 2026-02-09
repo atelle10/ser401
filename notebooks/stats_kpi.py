@@ -411,4 +411,31 @@ avg_heatmap_df = (
   )                                                                                                                                                                                                                                                                                     
 avg_heatmap_df.columns = [f"{h}:00" for h in avg_heatmap_df.columns]                                                                                                                                                                                                                  
                                                                                                                                                                                                                                                                                         
-avg_heatmap_df.style.background_gradient(cmap="YlOrRd", axis=None).set_caption("Avg Incidents by Day of Week and Hour")  
+avg_heatmap_df.style.background_gradient(cmap="YlOrRd", axis=None).set_caption("Avg Incidents by Day of Week and Hour")
+
+
+
+fire_example_df["dispatch_dt"] = pd.to_datetime(                                                                                                                                                                                                        
+      fire_example_df["Apparatus Resource Dispatch Date Time (FD18.3)"], errors="coerce"
+)                                                                                                                                                                                                                                                       
+fire_example_df["clear_dt"] = pd.to_datetime(                                                                                                                                                                                                           
+      fire_example_df["Apparatus Resource Clear Date Time (FD18.5)"], errors="coerce"
+)
+
+fire_example_df["busy_hours"] = (
+      fire_example_df["clear_dt"] - fire_example_df["dispatch_dt"]
+).dt.total_seconds() / 3600
+
+valid = fire_example_df[
+      fire_example_df["busy_hours"].between(0, 24, inclusive="neither")
+]
+
+unit_hours = (
+    valid.groupby("Apparatus Resource ID (FD18.1)")["busy_hours"]
+    .sum()
+    .round(2)
+    .sort_values(ascending=False)
+    .reset_index()
+)
+unit_hours.columns = ["Unit", "Total Hours Utilized"]
+  
