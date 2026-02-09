@@ -3,8 +3,8 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Login from './Components/Login.jsx'
 import Home from './Components/Home.jsx'
 import Register from './Components/Register.jsx'
-import RequestSent from './Components/RequestSent.jsx'
 import CompleteProfile from './Components/CompleteProfile.jsx'
+import UnverifiedSplash from './Components/UnverifiedSplash.jsx'
 import { authClient } from './utils/authClient.js'
 
 const needsProfileCompletion = (user) =>
@@ -13,6 +13,8 @@ const needsProfileCompletion = (user) =>
   !user?.role ||
   user.username.startsWith('pending_') ||
   user.phone === '__pending__'
+
+const needsVerification = (user) => user?.verified === false
 
 const RequireAuth = ({ children }) => {
   const location = useLocation()
@@ -34,6 +36,14 @@ const RequireAuth = ({ children }) => {
     return <Navigate to="/complete-profile" replace />
   }
 
+  if (
+    needsVerification(session.user) &&
+    location.pathname !== '/awaiting-access' &&
+    location.pathname !== '/complete-profile'
+  ) {
+    return <Navigate to="/awaiting-access" replace />
+  }
+
   return children
 }
 
@@ -51,6 +61,9 @@ const RequireGuest = ({ children }) => {
   if (session?.user) {
     if (needsProfileCompletion(session.user)) {
       return <Navigate to="/complete-profile" replace />
+    }
+    if (needsVerification(session.user)) {
+      return <Navigate to="/awaiting-access" replace />
     }
     return <Navigate to="/home" replace />
   }
@@ -94,7 +107,7 @@ function App() {
                 </RequireGuest>
               }
             />
-            <Route path="/request-sent" element={<RequestSent />} />
+            <Route path="/awaiting-access" element={<UnverifiedSplash />} />
         </Routes>
     </div>
   )
