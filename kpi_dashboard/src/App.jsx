@@ -5,6 +5,7 @@ import Home from './Components/Home.jsx'
 import Register from './Components/Register.jsx'
 import CompleteProfile from './Components/CompleteProfile.jsx'
 import UnverifiedSplash from './Components/UnverifiedSplash.jsx'
+import SessionExpiredSplash from './Components/SessionExpiredSplash.jsx'
 import { authClient } from './utils/authClient.js'
 
 const needsProfileCompletion = (user) =>
@@ -108,6 +109,7 @@ function App() {
               }
             />
             <Route path="/awaiting-access" element={<UnverifiedSplash />} />
+            <Route path="/session-expired" element={<SessionExpiredSplash />} />
         </Routes>
     </div>
   )
