@@ -7,8 +7,8 @@ import { useMemo, useState } from 'react';
  * Leadership wants to see if volumes are increasing (need more staff)
  * or decreasing (budget cuts justified).
  */
-const CallVolumeLinearChart = ({ data, region}) => {
-  const [granularity, setGranularity] = useState('daily'); // daily, weekly, monthly
+const CallVolumeLinearChart = ({ data, region, granularityImport}) => {
+  const [granularity, setGranularity] = useState(granularityImport ? granularityImport : "daily"); // daily, weekly, monthly
   const regionState = region.region;
   // Aggregate data by time period
   

@@ -13,7 +13,7 @@ import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
 import backgroundImage2 from './assets/background_img.png'
-import TestDash from './TestDash.jsx'
+import TestDash from './TestDash.tsx'
 import "../main.css"
 import "react-mosaic-component/react-mosaic-component.css";
 
