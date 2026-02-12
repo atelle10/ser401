@@ -1,0 +1,112 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 auto;
+}
+
+.slot.top {
+  width: fit-content;
+}
+
+.middle {
+  display: flex;
+  gap: 10px;
+  width: fit-content;
+
+}
+
+.slot.middle-left {
+  height: 100%;
+  width: fit-content;
+}
+
+.slot.middle-right {
+  flex:2;
+  width: fit-content;
+}
+
+.slot.bottom {
+  height: 150px;
+  width: fit-content;
+}
+
+.slot {
+  border-radius: 10px;
+}
+.slot[data-swapy-highlighted] {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.item {
+  border-radius: 10px;
+  width: 100%;
+  height: 100%;
+}
+
+.item-a {
+  background: rgba(255, 0, 0, 0.5);
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-a {
+  background: #10b981;
+}
+
+.item-b {
+  background: #be123c;
+}
+
+.item-c {
+  background: #4338ca;
+}
+
+.item-d {
+  background: #7e22ce;
+}
+
+.item:has(.handle) {
+  position: relative;
+}
+
+.handle {
+  cursor: grab;
+  width: 24px;
+  height: 24px;
+  background-image: url(./handle.svg);
+  opacity: 0.5;
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  border-radius: 3px;
+}
+
+.item[data-swapy-dragging] {
+  opacity: 0.5;
+} 
+
+.myButton {
+  width: 24px;
+  height: 24px;
+  background-color: blue;
+  color: rgb(255, 4, 201);
+  position: absolute;
+  top: 14px;
+  right: 10px;
+}
