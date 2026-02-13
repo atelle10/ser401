@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authClient } from '../utils/authClient.js'
+import { markManualLogout } from '../utils/manualLogoutFlag.js'
 
 const UnverifiedSplash = () => {
   const navigate = useNavigate()
@@ -9,6 +10,7 @@ const UnverifiedSplash = () => {
   const handleSignOut = async () => {
     if (isSigningOut) return
     setIsSigningOut(true)
+    markManualLogout()
     await authClient.signOut()
     navigate('/', { replace: true })
   }
