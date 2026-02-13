@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Login from './Components/Login.jsx'
 import Home from './Components/Home.jsx'
@@ -7,6 +7,12 @@ import CompleteProfile from './Components/CompleteProfile.jsx'
 import UnverifiedSplash from './Components/UnverifiedSplash.jsx'
 import SessionExpiredSplash from './Components/SessionExpiredSplash.jsx'
 import { authClient } from './utils/authClient.js'
+import { consumeManualLogout } from './utils/manualLogoutFlag.js'
+import {
+  clearAuthenticatedSession,
+  hasAuthenticatedSession,
+  markAuthenticatedSession,
+} from './utils/sessionPresenceFlag.js'
 
 const needsProfileCompletion = (user) =>
   !user?.username ||
@@ -21,6 +27,12 @@ const RequireAuth = ({ children }) => {
   const location = useLocation()
   const { data: session, isPending } = authClient.useSession()
 
+  useEffect(() => {
+    if (session?.user) {
+      markAuthenticatedSession()
+    }
+  }, [session?.user])
+
   if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
@@ -30,6 +42,15 @@ const RequireAuth = ({ children }) => {
   }
 
   if (!session?.user) {
+    if (consumeManualLogout()) {
+      clearAuthenticatedSession()
+      return <Navigate to="/" replace />
+    }
+
+    if (hasAuthenticatedSession()) {
+      return <Navigate to="/session-expired" replace />
+    }
+
     return <Navigate to="/" replace state={{ from: location }} />
   }
 
