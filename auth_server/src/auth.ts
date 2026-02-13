@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins"
 import { Pool } from "pg";
 import crypto from "node:crypto";
 
@@ -29,20 +30,16 @@ export const auth = betterAuth({
           const fallbackUsername = `pending_${pendingSuffix}`;
           const username = user.username as string | undefined;
           const phone = user.phone as string | undefined;
-          const accountType = user.accountType as string | undefined;
           return {
             data: {
               ...user,
+              verified: user.verified ?? false,
               username:
                 username && username.trim()
                   ? username
                   : fallbackUsername,
               phone:
                 phone && phone.trim() ? phone : "__pending__",
-              accountType:
-                accountType && accountType.trim()
-                  ? accountType
-                  : "monitoring",
             },
           };
         },
@@ -58,7 +55,12 @@ export const auth = betterAuth({
     additionalFields: {
       username: { type: "string", required: false },
       phone: { type: "string", required: false },
-      accountType: { type: "string", required: false },
+      verified: {
+        type: "boolean",
+        required: false,
+        defaultValue: false,
+        input: false,
+      },
     },
   },
   session: {
@@ -73,5 +75,11 @@ export const auth = betterAuth({
       authority: "https://login.microsoftonline.com", // Authentication authority URL
       prompt: "select_account", // Forces account selection
     }
-  }
+  },
+  plugins: [
+    admin({
+      defaultRole: "viewer",
+      adminRoles: ["admin"],
+    }),
+  ]
 });

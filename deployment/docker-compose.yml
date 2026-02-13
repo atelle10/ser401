@@ -61,6 +61,8 @@ services:
       DB_HOST: db
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DEV_ADMIN_EMAIL: ${DEV_ADMIN_EMAIL}
+      DEV_ADMIN_PASSWORD: ${DEV_ADMIN_PASSWORD}
     depends_on:
       db-init:
         condition: service_completed_successfully
