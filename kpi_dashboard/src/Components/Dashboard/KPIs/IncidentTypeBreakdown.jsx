@@ -20,21 +20,19 @@ const IncidentTypeBreakdown = ({ data }) => {
       <p className="text-sm text-gray-600 mb-3">
         {data.total_displayed} total incidents
       </p>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {data.types.map((row, i) => (
-          <div key={row.type} className="flex items-center gap-2">
-            <span className="text-xs w-20 text-right font-medium text-gray-700 truncate" title={row.type}>
-              {row.type}
-            </span>
-            <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
+          <div key={row.type}>
+            <div className="flex justify-between text-xs mb-1">
+              <span className="font-medium text-gray-700">{row.type}</span>
+              <span className="text-gray-600">{row.count} ({row.percentage}%)</span>
+            </div>
+            <div className="h-5 bg-gray-100 rounded overflow-hidden">
               <div
                 className={`h-full rounded ${COLORS[i % COLORS.length]}`}
                 style={{ width: `${(row.count / maxCount) * 100}%` }}
               />
             </div>
-            <span className="text-xs w-14 text-gray-600">
-              {row.count} ({row.percentage}%)
-            </span>
           </div>
         ))}
       </div>
