@@ -85,6 +85,21 @@ export const fetchCallVolume = async ({ startDate, endDate, region = 'all', gran
   }
 };
 
+export const fetchTypeBreakdown = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/type-breakdown', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+
+    const data = await fetchJson(url);
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
 export const fetchPostalBreakdown = async ({ startDate, endDate, region = 'all' }) => {
   try {
     const url = buildUrl('/incidents/postal-breakdown', {

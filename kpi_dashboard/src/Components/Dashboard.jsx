@@ -7,7 +7,7 @@ import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown } from '../services/incidentDataService'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [kpiSummary, setKpiSummary] = useState(null)
   const [heatmapData, setHeatmapData] = useState(null)
   const [postalData, setPostalData] = useState(null)
+  const [typeBreakdownData, setTypeBreakdownData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -75,7 +76,7 @@ const Dashboard = () => {
       return
     }
 
-    const [incidentResult, summaryResult, heatmapResult, postalResult] = await Promise.all([
+    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult] = await Promise.all([
       fetchKPIData({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
@@ -92,6 +93,11 @@ const Dashboard = () => {
         region,
       }),
       fetchPostalBreakdown({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchTypeBreakdown({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
@@ -121,6 +127,12 @@ const Dashboard = () => {
       setError((prev) => prev || postalResult.error || 'Failed to load postal breakdown')
     } else {
       setPostalData(postalResult.data?.postal_data || [])
+    }
+
+    if (!typeBreakdownResult.success) {
+      setError((prev) => prev || typeBreakdownResult.error || 'Failed to load type breakdown')
+    } else {
+      setTypeBreakdownData(typeBreakdownResult.data || null)
     }
 
     setIsLoading(false)
@@ -255,7 +267,7 @@ const Dashboard = () => {
 
         <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
-          <IncidentTypeBreakdown data={incidentData} />
+          <IncidentTypeBreakdown data={typeBreakdownData} />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
