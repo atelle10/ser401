@@ -1,17 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { authClient } from '../utils/authClient.js'
-import { markManualLogout } from '../utils/manualLogoutFlag.js'
 
-const UnverifiedSplash = () => {
+const SessionExpiredSplash = () => {
   const navigate = useNavigate()
-  const [isSigningOut, setIsSigningOut] = useState(false)
 
-  const handleSignOut = async () => {
-    if (isSigningOut) return
-    setIsSigningOut(true)
-    markManualLogout()
-    await authClient.signOut()
+  const handleSignIn = () => {
     navigate('/', { replace: true })
   }
 
@@ -35,32 +28,25 @@ const UnverifiedSplash = () => {
             </svg>
           </div>
         </div>
-        <h1 className="text-xl sm:text-2xl font-semibold text-white">
-          Account Created
-        </h1>
+        <h1 className="text-xl sm:text-2xl font-semibold text-white">Session Expired</h1>
         <p className="text-white/90">
-          Your account has been successfully created and is awaiting access
-          approval from an administrator.
-        </p>
-        <p className="text-white/90 text-sm">
-          You will be able to sign in once access is granted.
+          Your session has expired. Please sign in again.
         </p>
         <div className="bg-blue-500/30 border border-blue-300/40 rounded-lg p-3">
           <p className="text-sm text-white">
-            <strong>Status:</strong> Pending admin approval
+            <strong>Status:</strong> Signed out
           </p>
         </div>
         <button
           type="button"
-          onClick={handleSignOut}
-          disabled={isSigningOut}
-          className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+          onClick={handleSignIn}
+          className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg"
         >
-          {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+          Sign In Again
         </button>
       </div>
     </div>
   )
 }
 
-export default UnverifiedSplash
+export default SessionExpiredSplash
