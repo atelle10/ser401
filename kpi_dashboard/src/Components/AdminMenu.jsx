@@ -288,24 +288,22 @@ const AdminMenu = () => {
             Review registered users, adjust roles, or remove access.
           </p>
         </div>
-        {false && (
-          <div className="flex flex-wrap gap-2">
-            {/* TODO: Wire export list action to backend/users service. */}
-            <button
-              className="rounded-lg px-4 py-2 text-sm bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
-              type="button"
-            >
-              Export list
-            </button>
-            {/* TODO: Wire invite user flow to better-auth or email invite service. */}
-            <button
-              className="rounded-lg px-4 py-2 text-sm bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-              type="button"
-            >
-              Invite user
-            </button>
-          </div>
-        )}
+        <div className="hidden flex-wrap gap-2">
+          {/* TODO: Wire export list action to backend/users service. */}
+          <button
+            className="rounded-lg px-4 py-2 text-sm bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
+            type="button"
+          >
+            Export list
+          </button>
+          {/* TODO: Wire invite user flow to better-auth or email invite service. */}
+          <button
+            className="rounded-lg px-4 py-2 text-sm bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+            type="button"
+          >
+            Invite user
+          </button>
+        </div>
       </div>
 
       <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg overflow-hidden">
