@@ -1,21 +1,146 @@
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
+import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
+import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import Chart from './Dashboard/Chart'
+import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
+import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown } from '../services/incidentDataService'
 
-// Mock data for development
-const mockIncidentData = [
-  { timestamp: '2025-11-20T08:00:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T08:05:00', clear_time: '2025-11-20T08:50:00' },
-  { timestamp: '2025-11-20T09:30:00', postal_code: 85280, unit_id: 'R202', en_route_time: '2025-11-20T09:35:00', clear_time: '2025-11-20T11:35:00' },
-  { timestamp: '2025-11-20T14:15:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-20T14:20:00', clear_time: '2025-11-20T14:50:00' },
-  { timestamp: '2025-11-21T10:00:00', postal_code: 85270, unit_id: 'LA301', en_route_time: '2025-11-21T10:05:00', clear_time: '2025-11-21T11:35:00' },
-  { timestamp: '2025-11-21T16:45:00', postal_code: 85250, unit_id: 'E101', en_route_time: '2025-11-21T16:55:00', clear_time: '2025-11-21T18:35:00' },
-]
+const formatDateInputValue = (date) => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const buildIsoRangeFromDateInputs = ({ start, end }) => {
+  if (!start || !end) return { startDate: null, endDate: null }
+
+  const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
+  const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
+  return { startDate, endDate }
+}
 
 const Dashboard = () => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
+  const [isCustomRange, setIsCustomRange] = useState(false)
+  const [dateInputs, setDateInputs] = useState(() => {
+    const end = new Date()
+    const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
+    return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
+  })
+  const [incidentData, setIncidentData] = useState([])
+  const [kpiSummary, setKpiSummary] = useState(null)
+  const [heatmapData, setHeatmapData] = useState(null)
+  const [postalData, setPostalData] = useState(null)
+  const [typeBreakdownData, setTypeBreakdownData] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+
+  const dateRange = useMemo(() => {
+    if (isCustomRange) {
+      return buildIsoRangeFromDateInputs(dateInputs)
+    }
+
+    const end = new Date()
+    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+    return { startDate: start.toISOString(), endDate: end.toISOString() }
+  }, [dateInputs, isCustomRange, timeWindow])
+
+  useEffect(() => {
+    if (isCustomRange) return
+
+    const end = new Date()
+    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+    setDateInputs({ start: formatDateInputValue(start), end: formatDateInputValue(end) })
+  }, [isCustomRange, timeWindow])
+
+  const loadIncidentData = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    if (!dateRange.startDate || !dateRange.endDate) {
+      setError('Please select a start and end date')
+      setIsLoading(false)
+      return
+    }
+
+    if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
+      setError('Start date must be on or before end date')
+      setIsLoading(false)
+      return
+    }
+
+    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult] = await Promise.all([
+      fetchKPIData({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchKPISummary({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchIncidentHeatmap({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchPostalBreakdown({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchTypeBreakdown({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+    ])
+
+    if (!incidentResult.success) {
+      setError(incidentResult.error || 'Failed to load incident data')
+    } else {
+      setIncidentData(incidentResult.data || [])
+      setHasLoadedOnce(true)
+    }
+
+    if (!summaryResult.success) {
+      setError((prev) => prev || summaryResult.error || 'Failed to load KPI summary')
+    } else {
+      setKpiSummary(summaryResult.data || null)
+    }
+
+    if (!heatmapResult.success) {
+      setError((prev) => prev || heatmapResult.error || 'Failed to load heatmap data')
+    } else {
+      setHeatmapData(heatmapResult.data?.heatmap_data || [])
+    }
+
+    if (!postalResult.success) {
+      setError((prev) => prev || postalResult.error || 'Failed to load postal breakdown')
+    } else {
+      setPostalData(postalResult.data?.postal_data || [])
+    }
+
+    if (!typeBreakdownResult.success) {
+      setError((prev) => prev || typeBreakdownResult.error || 'Failed to load type breakdown')
+    } else {
+      setTypeBreakdownData(typeBreakdownResult.data || null)
+    }
+
+    setIsLoading(false)
+  }, [dateRange.endDate, dateRange.startDate, region])
+
+  useEffect(() => {
+    loadIncidentData()
+  }, [loadIncidentData])
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
@@ -28,6 +153,7 @@ const Dashboard = () => {
             onChange={(e) => setRegion(e.target.value)}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           >
+            <option value="all">All</option>
             <option value="south">South Scottsdale</option>
             <option value="north">North Scottsdale</option>
           </select>
@@ -36,7 +162,10 @@ const Dashboard = () => {
           <label className="text-xs sm:text-sm font-medium">Time Window:</label>
           <select
             value={timeWindow}
-            onChange={(e) => setTimeWindow(Number(e.target.value))}
+            onChange={(e) => {
+              setIsCustomRange(false)
+              setTimeWindow(Number(e.target.value))
+            }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           >
             <option value={7}>Last 7 Days</option>
@@ -44,27 +173,106 @@ const Dashboard = () => {
             <option value={30}>Last 30 Days</option>
           </select>
         </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Start:</label>
+          <input
+            type="date"
+            value={dateInputs.start}
+            onChange={(e) => {
+              setIsCustomRange(true)
+              setDateInputs((prev) => ({ ...prev, start: e.target.value }))
+            }}
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
+          />
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">End:</label>
+          <input
+            type="date"
+            value={dateInputs.end}
+            onChange={(e) => {
+              setIsCustomRange(true)
+              setDateInputs((prev) => ({ ...prev, end: e.target.value }))
+            }}
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
+          />
+        </div>
       </div>
+
+      {error && (
+        <ErrorMessage message={error} onRetry={loadIncidentData} color="blue" />
+      )}
+
+      {isLoading && !hasLoadedOnce && (
+        <div className="py-6">
+          <LoadingSpinner color="blue" />
+        </div>
+      )}
+
+      {hasLoadedOnce && kpiSummary && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Total Incidents</h3>
+            <div className="text-2xl font-semibold">{kpiSummary.total_incidents ?? '-'}</div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Avg Response (min)</h3>
+            <div className="text-2xl font-semibold">
+              {kpiSummary.avg_response_time_minutes != null
+                ? Number(kpiSummary.avg_response_time_minutes).toFixed(1)
+                : '-'}
+            </div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Active Units</h3>
+            <div className="text-2xl font-semibold">{kpiSummary.active_units ?? '-'}</div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Peak Load Factor</h3>
+            <div className="text-2xl font-semibold">
+              {kpiSummary.peak_load_factor != null
+                ? Number(kpiSummary.peak_load_factor).toFixed(2)
+                : '-'}
+            </div>
+          </div>
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Peak Hour</h3>
+            <div className="text-2xl font-semibold">{kpiSummary.peak_hour ?? '-'}</div>
+          </div>
+        </div>
+      )}
 
       {/* KPI Components Grid - Single column on mobile, 2 columns on large screens */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-          <HeatMapDayHour data={mockIncidentData} region={region} weeks={1} />
-        </div>
-
-        <div className="h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={mockIncidentData} />
+          <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
         </div>
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+          <UnitHourUtilization data={incidentData} />
+        </div>
+
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Call Volume Trend</h3>
-          <CallVolumeLinearChart 
-            data={mockIncidentData} 
+          <CallVolumeLinearChart
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
             region={region}
-            granularity="daily"
           />
+        </div>
+
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
+          <IncidentTypeBreakdown data={typeBreakdownData} />
+        </div>
+
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
+          <IncidentsByPostalCode data={postalData} />
         </div>
 
         {/* Placeholder for additional charts or KPIs - Currently hidden from view */}
