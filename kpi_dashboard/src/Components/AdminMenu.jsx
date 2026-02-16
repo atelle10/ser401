@@ -18,6 +18,7 @@ const AdminMenu = () => {
   const [deletingUserIds, setDeletingUserIds] = useState(new Set())
   const [confirmSelfDemotion, setConfirmSelfDemotion] = useState(null)
   const [confirmDeleteUser, setConfirmDeleteUser] = useState(null)
+  const [confirmApproveUser, setConfirmApproveUser] = useState(null)
   const { data: session } = authClient.useSession()
 
   useEffect(() => {
@@ -52,7 +53,12 @@ const AdminMenu = () => {
           name: user.name || user.email || 'Unknown user',
           email: user.email || '',
           role: primaryRole,
-          status: user.banned ? 'Banned' : 'Active',
+          status:
+            user.verified === false
+              ? 'Unverified'
+              : user.banned
+                ? 'Banned'
+                : 'Active',
         }
       })
 
@@ -131,6 +137,51 @@ const AdminMenu = () => {
         return next
       })
       setActionSuccess('Role updated successfully.')
+    }
+
+    setUpdatingUserIds((prev) => {
+      const next = new Set(prev)
+      next.delete(userId)
+      return next
+    })
+  }
+
+  const handleApproveUser = async (userId) => {
+    const targetUser = users.find((user) => user.id === userId)
+    setConfirmApproveUser({
+      userId,
+      name: targetUser?.name || targetUser?.email || 'this user',
+    })
+  }
+
+  const handleConfirmApproveUser = async () => {
+    if (!confirmApproveUser) return
+    const { userId } = confirmApproveUser
+    setConfirmApproveUser(null)
+
+    setActionError('')
+    setActionSuccess('')
+    setUpdatingUserIds((prev) => new Set(prev).add(userId))
+
+    const result = await authClient.admin.updateUser({
+      userId,
+      data: { verified: true },
+    })
+
+    if (result?.error) {
+      const fallback = result.error.status
+        ? `Failed to approve user (${result.error.status} ${result.error.statusText})`
+        : 'Failed to approve user.'
+      setActionError(result.error.message || fallback)
+    } else {
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId
+            ? { ...user, status: 'Active' }
+            : user
+        )
+      )
+      setActionSuccess('User approved successfully.')
     }
 
     setUpdatingUserIds((prev) => {
@@ -300,42 +351,69 @@ const AdminMenu = () => {
             No users found.
           </div>
         ) : (
-          editableUsers.map((user) => (
-            <div
-              key={user.id}
-              className="grid grid-cols-12 gap-3 px-4 py-4 items-center border-t border-white/10"
-            >
+          editableUsers.map((user) => {
+            const isUnverified = user.status === 'Unverified'
+
+            return (
+              <div
+                key={user.id}
+                className="grid grid-cols-12 gap-3 px-4 py-4 items-center border-t border-white/10"
+              >
               <div className="col-span-5 sm:col-span-4">
                 <p className="font-semibold">{user.name}</p>
-                <p className="text-xs text-white/70">{user.status}</p>
+                <p
+                  className={
+                    user.status === 'Active'
+                      ? 'text-xs text-green-200'
+                      : isUnverified
+                        ? 'text-xs text-red-200'
+                        : 'text-xs text-white/70'
+                  }
+                >
+                  {user.status}
+                </p>
                 <p className="text-xs text-white/70 md:hidden">{user.email}</p>
               </div>
               <div className="col-span-4 hidden md:block text-sm text-white/80">
                 {user.email}
               </div>
-              <div className="col-span-3 sm:col-span-2">
-                <select
-                  className="w-full rounded-md bg-white text-blue-900 text-sm px-2 py-1"
-                  value={user.pendingRole}
-                  onChange={(event) =>
-                    handleRoleChange(user.id, event.target.value)
-                  }
-                >
-                {roleOptions.map((role) => (
-                  <option key={role.value} value={role.value}>
-                    {role.label}
-                  </option>
-                ))}
-                </select>
-              </div>
-              <div className="col-span-4 sm:col-span-2 flex flex-col sm:flex-row justify-end gap-2 text-sm">
+              {!isUnverified && (
+                <div className="col-span-3 sm:col-span-2">
+                  <select
+                    className="w-full rounded-md bg-white text-blue-900 text-sm px-2 py-1"
+                    value={user.pendingRole}
+                    onChange={(event) =>
+                      handleRoleChange(user.id, event.target.value)
+                    }
+                  >
+                  {roleOptions.map((role) => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
+                  </select>
+                </div>
+              )}
+              <div
+                className={
+                  isUnverified
+                    ? 'col-span-7 sm:col-span-4 flex flex-col sm:flex-row justify-end gap-2 text-sm'
+                    : 'col-span-4 sm:col-span-2 flex flex-col sm:flex-row justify-end gap-2 text-sm'
+                }
+              >
                 <button
                   className="rounded-md px-3 py-1 bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
                   type="button"
-                  onClick={() => handleApplyRole(user.id)}
+                  onClick={() =>
+                    isUnverified
+                      ? handleApproveUser(user.id)
+                      : handleApplyRole(user.id)
+                  }
                   disabled={updatingUserIds.has(user.id)}
                 >
-                  {updatingUserIds.has(user.id) ? 'Updating...' : 'Update role'}
+                  {updatingUserIds.has(user.id)
+                    ? isUnverified ? 'Approving...' : 'Updating...'
+                    : isUnverified ? 'Approve' : 'Update role'}
                 </button>
                 <button
                   className="rounded-md px-3 py-1 bg-red-500 text-white font-semibold hover:bg-red-600 transition"
@@ -343,11 +421,14 @@ const AdminMenu = () => {
                   onClick={() => handleRemoveUser(user.id)}
                   disabled={deletingUserIds.has(user.id)}
                 >
-                  {deletingUserIds.has(user.id) ? 'Removing...' : 'Remove'}
+                  {deletingUserIds.has(user.id)
+                    ? 'Removing...'
+                    : 'Remove'}
                 </button>
               </div>
             </div>
-          ))
+            )
+          })
         )}
       </div>
       {confirmSelfDemotion && (
@@ -403,6 +484,29 @@ const AdminMenu = () => {
               onClick={handleConfirmDeleteUser}
             >
               Yes, remove user
+            </button>
+          </div>
+        </div>
+      )}
+      {confirmApproveUser && (
+        <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg px-4 py-4 text-center space-y-3">
+          <p>
+            Approve access for <span className="font-semibold">{confirmApproveUser.name}</span>?
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-2">
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-white/80 text-blue-900 font-semibold hover:bg-white transition"
+              onClick={() => setConfirmApproveUser(null)}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="rounded-md px-4 py-1.5 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+              onClick={handleConfirmApproveUser}
+            >
+              Approve
             </button>
           </div>
         </div>

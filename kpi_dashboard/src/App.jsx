@@ -1,11 +1,18 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Login from './Components/Login.jsx'
 import Home from './Components/Home.jsx'
 import Register from './Components/Register.jsx'
-import RequestSent from './Components/RequestSent.jsx'
 import CompleteProfile from './Components/CompleteProfile.jsx'
+import UnverifiedSplash from './Components/UnverifiedSplash.jsx'
+import SessionExpiredSplash from './Components/SessionExpiredSplash.jsx'
 import { authClient } from './utils/authClient.js'
+import { consumeManualLogout } from './utils/manualLogoutFlag.js'
+import {
+  clearAuthenticatedSession,
+  hasAuthenticatedSession,
+  markAuthenticatedSession,
+} from './utils/sessionPresenceFlag.js'
 
 const needsProfileCompletion = (user) =>
   !user?.username ||
@@ -14,9 +21,17 @@ const needsProfileCompletion = (user) =>
   user.username.startsWith('pending_') ||
   user.phone === '__pending__'
 
+const needsVerification = (user) => user?.verified === false
+
 const RequireAuth = ({ children }) => {
   const location = useLocation()
   const { data: session, isPending } = authClient.useSession()
+
+  useEffect(() => {
+    if (session?.user) {
+      markAuthenticatedSession()
+    }
+  }, [session?.user])
 
   if (isPending) {
     return (
@@ -27,11 +42,28 @@ const RequireAuth = ({ children }) => {
   }
 
   if (!session?.user) {
+    if (consumeManualLogout()) {
+      clearAuthenticatedSession()
+      return <Navigate to="/" replace />
+    }
+
+    if (hasAuthenticatedSession()) {
+      return <Navigate to="/session-expired" replace />
+    }
+
     return <Navigate to="/" replace state={{ from: location }} />
   }
 
   if (needsProfileCompletion(session.user) && location.pathname !== '/complete-profile') {
     return <Navigate to="/complete-profile" replace />
+  }
+
+  if (
+    needsVerification(session.user) &&
+    location.pathname !== '/awaiting-access' &&
+    location.pathname !== '/complete-profile'
+  ) {
+    return <Navigate to="/awaiting-access" replace />
   }
 
   return children
@@ -51,6 +83,9 @@ const RequireGuest = ({ children }) => {
   if (session?.user) {
     if (needsProfileCompletion(session.user)) {
       return <Navigate to="/complete-profile" replace />
+    }
+    if (needsVerification(session.user)) {
+      return <Navigate to="/awaiting-access" replace />
     }
     return <Navigate to="/home" replace />
   }
@@ -94,7 +129,8 @@ function App() {
                 </RequireGuest>
               }
             />
-            <Route path="/request-sent" element={<RequestSent />} />
+            <Route path="/awaiting-access" element={<UnverifiedSplash />} />
+            <Route path="/session-expired" element={<SessionExpiredSplash />} />
         </Routes>
     </div>
   )
