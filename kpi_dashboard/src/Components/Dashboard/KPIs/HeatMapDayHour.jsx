@@ -9,7 +9,7 @@ import { useMemo, useState } from 'react';
  */
 const HeatMapDayHour = ({ data , region}) => {
   const [selectedWeeks, setSelectedWeeks] = useState(5);
-  const regionState = region.region;
+  const regionState = region;
 
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const HOURS = Array.from({ length: 24 }, (_, i) => i);

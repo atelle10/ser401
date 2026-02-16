@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\leroy\\OneDrive - Arizona State University\\SER 401\\Group Project\\ser401\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\leroy\\OneDrive - Arizona State University\\SER 401\\Group Project\\ser401\\kpi_dashboard\\src\\Components\\CompleteProfile.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:kpi_dashboard\\src\\Components\\CompleteProfile.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CompleteProfile.jsx",
+              "DocumentMoniker": "C:\\Users\\leroy\\OneDrive - Arizona State University\\SER 401\\Group Project\\ser401\\kpi_dashboard\\src\\Components\\CompleteProfile.jsx",
+              "RelativeDocumentMoniker": "kpi_dashboard\\src\\Components\\CompleteProfile.jsx",
+              "ToolTip": "C:\\Users\\leroy\\OneDrive - Arizona State University\\SER 401\\Group Project\\ser401\\kpi_dashboard\\src\\Components\\CompleteProfile.jsx",
+              "RelativeToolTip": "kpi_dashboard\\src\\Components\\CompleteProfile.jsx",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2026-02-16T02:21:20.123Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

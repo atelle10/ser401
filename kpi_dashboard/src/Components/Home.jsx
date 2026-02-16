@@ -15,7 +15,6 @@ import accountIcon from './assets/account.png'
 import backgroundImage2 from './assets/background_img.png'
 import TestDash from './TestDash.tsx'
 import "../main.css"
-import "react-mosaic-component/react-mosaic-component.css";
 
 const fallbackProfile = {
   name: 'User',

@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\auth_server",
+    "\\kpi_dashboard",
+    "\\kpi_dashboard\\src",
+    "\\kpi_dashboard\\src\\Components"
+  ],
+  "SelectedNode": "\\kpi_dashboard\\src\\Components\\CompleteProfile.jsx",
+  "PreviewInSolutionExplorer": false
+}

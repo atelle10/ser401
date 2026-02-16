@@ -5,8 +5,6 @@ import { createSwapy } from 'swapy'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
-import Chart from './Dashboard/Chart'
-import KPI_1 from './Dashboard/KPIs/KPI_1'
 
 function TestDash() {
 
@@ -15,18 +13,14 @@ const [timeWindow, setTimeWindow] = useState(7)
 
 function DraggableHeatMap(){
 
-  const [expand, setExpand] = useState(() => {
-    const initialExpand = true;
-    console.log("Expand state set to " + initialExpand);
-    return initialExpand;
-  });
+  const [expand, setExpand] = useState(true);
 
   return (
-    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className={"w-full h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
       <div className="flex items-center">
         <h3 className="font-semibold cursor-default mb-3">Heat Map: Incidents by Day × Hour</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
-          <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+          <button onClick={()=>{handleClick;setExpand(!expand)}}  className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
             '< >'}</button>
         </span>
       </div>
@@ -36,18 +30,14 @@ function DraggableHeatMap(){
 }
 
 function DraggableCVLC(){
-  const [expand, setExpand] = useState(() => {
-    const initialExpand = true;
-    console.log("Expand state set to " + initialExpand);
-    return initialExpand;
-  });
+  const [expand, setExpand] = useState(true);
 
   return (
-    <div className={"bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (expand ? "col-span-2" : "col-span-1")}>
+    <div className="w-full h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg ">
           <div className="flex items-center">
             <h3 className="font-semibold mb-3">Call Volume Trend </h3>
             <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
-              <button onMouseUp={() => setExpand(!expand)} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+              <button onClick={()=>{handleClick;setExpand(!expand)}} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
                 '< >'}</button>
             </span>
           </div>
@@ -70,19 +60,15 @@ const mockIncidentData = [
 
 
 function DraggableUHU(){
-  const [expand, setExpand] = useState(() => {
-    const initialExpand = true;
-    console.log("Expand state set to " + initialExpand);
-    return initialExpand;
-  });
+  const [expand, setExpand] = useState(true);
 
   return (
-    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg ">
+    <div className="w-full h-fit bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg ">
       <div className="flex items-center">
         <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
         <span title={expand ? 'Collapse Chart' : 'Expand Chart'} className="ml-auto flex items-center">
-          <button onMouseUp={handleClick} className="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
-            '< >'}</button>
+          <button onClick={()=>{setExpand(!expand);handleClick;}} className="myButton text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded">{expand ? '><' :
+            '<>'}</button>
         </span>
       </div>
         <UnitHourUtilization data={mockIncidentData} />
@@ -99,6 +85,7 @@ function DraggableUHU(){
 
 
   const handleClick = () => {
+    console.log(count)
     setSize({flex:count})
     count === 4  ? setCount(1): setCount(count+1);
   };
@@ -140,10 +127,39 @@ function DraggableUHU(){
     }
   }, [])
   return (
+    <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Region:</label>
+          <select
+            value={region}
+            onChange={(e) => 
+              setRegion(e.target.value)
+            }
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
+          >
+            <option value="south">South Scottsdale</option>
+            <option value="north">North Scottsdale</option>
+          </select>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Time Window:</label>
+          <select
+            value={timeWindow}
+            onChange={(e) => setTimeWindow(Number(e.target.value))}
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
+          >
+            <option value={7}>Last 7 Days</option>
+            <option value={14}>Last 14 Days</option>
+            <option value={30}>Last 30 Days</option>
+          </select>
+        </div>
+      </div>
     <div className="container p-4" ref={containerRef}>
-      <div className="slot top" data-swapy-slot="a">
+      <div className="slot top" data-swapy-slot="a" style={size}>
         <div className="item item-a" data-swapy-item="a">
           <div className="handle" data-swapy-handle></div>
+          <br />
           <DraggableUHU />
         </div> 
       </div>
@@ -154,19 +170,20 @@ function DraggableUHU(){
             <DraggableCVLC />
           </div>
         </div>
-        <div className="slot middle-right" data-swapy-slot="c">
+        <div className="slot middle-right" data-swapy-slot="c" style={size}>
           <div className="item item-c" data-swapy-item="c">
             <div className="handle" data-swapy-handle></div>
             <DraggableHeatMap />
           </div>
         </div>
       </div>
-      <div className="slot bottom" data-swapy-slot="d">
+      <div className="slot bottom" data-swapy-slot="d" style={size}>
         <div className="item item-d" data-swapy-item="d">
             <div className="handle" data-swapy-handle></div>
             <div>D</div>
         </div>
       </div>
+    </div>
     </div>
   )
 }
