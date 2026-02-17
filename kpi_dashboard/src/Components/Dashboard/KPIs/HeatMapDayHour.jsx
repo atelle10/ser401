@@ -102,7 +102,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
           <h3 className="text-lg font-semibold">
             Incident Volume Heat Map - {regionLabel}
           </h3>
-          <p className="text-sm text-gray-600">Day of Week × Hour of Day</p>
+          <p className="text-sm text-gray-600">Hour of Day × Day of Week</p>
         </div>
 
         {heatData.source === 'incidents' && (
@@ -122,27 +122,27 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th className="border p-2 bg-gray-100 text-xs sticky left-0">Hour</th>
-              {DAYS.map(day => (
-                <th key={day} className="border p-2 bg-gray-100 text-xs font-medium">
-                  {day}
+              <th className="border p-2 bg-gray-100 text-xs sticky left-0">Day</th>
+              {HOURS.map(hour => (
+                <th key={hour} className="border p-2 bg-gray-100 text-xs font-medium">
+                  {hour.toString().padStart(2, '0')}:00
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {HOURS.map(hour => (
-              <tr key={hour}>
+            {DAYS.map((day, dayIdx) => (
+              <tr key={day}>
                 <td className="border p-2 bg-gray-50 text-xs font-medium text-right sticky left-0">
-                  {hour.toString().padStart(2, '0')}:00
+                  {day}
                 </td>
-                {DAYS.map((_, dayIdx) => {
+                {HOURS.map(hour => {
                   const count = heatData.grid[dayIdx][hour];
                   return (
                     <td
-                      key={dayIdx}
+                      key={hour}
                       className={`border p-3 ${getColor(count)} transition-colors cursor-pointer hover:opacity-60`}
-                      title={`${DAYS[dayIdx]} ${hour}:00 - ${count} incidents`}
+                      title={`${day} ${hour}:00 - ${count} incidents`}
                     >
                       <span className="text-xs font-medium">{count || ''}</span>
                     </td>
