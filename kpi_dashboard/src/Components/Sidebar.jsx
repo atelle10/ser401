@@ -7,6 +7,8 @@ import settingsIcon from './assets/settings_icon.png'
 import adminIcon from './assets/admin icon.png'
 
 const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin }) => {
+  const adminNotificationCount = 1
+
   const getItemClass = (view) => {
     const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view
@@ -52,6 +54,15 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin }) => {
           >
               <img src={adminIcon} alt="Admin Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2 -ml-0.5'/>
               <p className="hidden lg:inline whitespace-nowrap">Admin</p>
+              {adminNotificationCount > 0 && (
+                <span
+                  aria-label={`${adminNotificationCount} admin notifications`}
+                  className='relative ml-1 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full border border-white bg-red-500 px-1 text-[10px] font-bold leading-none tabular-nums text-white'
+                >
+                  <span className='absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60 motion-reduce:animate-none animate-ping' />
+                  <span className='relative'>{adminNotificationCount}</span>
+                </span>
+              )}
           </div>
         )}
         <div 
