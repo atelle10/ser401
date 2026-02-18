@@ -6,9 +6,7 @@ import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
 import adminIcon from './assets/admin icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin }) => {
-  const adminNotificationCount = 1
-
+const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0 }) => {
   const getItemClass = (view) => {
     const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view

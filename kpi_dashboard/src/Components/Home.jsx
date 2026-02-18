@@ -13,6 +13,7 @@ import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
 import backgroundImage2 from './assets/background_img.png'
+import { countUnverifiedUsers } from '../utils/userVerification'
 
 const fallbackProfile = {
   name: 'User',
@@ -41,6 +42,7 @@ const Home = () => {
   const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
   const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
+  const [adminNotificationCount, setAdminNotificationCount] = useState(0)
   const isAdmin = useMemo(() => isAdminUser(session?.user), [session?.user])
 
   useEffect(() => {
@@ -52,6 +54,33 @@ const Home = () => {
       setCurrentView('dashboard')
     }
   }, [currentView, isAdmin])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadAdminNotificationCount = async () => {
+      if (!isAdmin) {
+        if (isMounted) setAdminNotificationCount(0)
+        return
+      }
+
+      const result = await authClient.admin.listUsers()
+      if (!isMounted) return
+
+      if (result?.error) {
+        setAdminNotificationCount(0)
+        return
+      }
+
+      setAdminNotificationCount(countUnverifiedUsers(result?.data?.users || []))
+    }
+
+    loadAdminNotificationCount()
+
+    return () => {
+      isMounted = false
+    }
+  }, [isAdmin])
 
   const renderContent = () => {
     switch(currentView) {
@@ -70,7 +99,7 @@ const Home = () => {
       case 'settings':
         return <Settings />
       case 'admin':
-        return isAdmin ? <AdminMenu /> : <Dashboard className="flex-1 overflow-auto" />
+        return isAdmin ? <AdminMenu onUnverifiedCountChange={setAdminNotificationCount} /> : <Dashboard className="flex-1 overflow-auto" />
       default:
         return <Dashboard className="flex-1 overflow-auto" />
     }
@@ -89,6 +118,7 @@ const Home = () => {
                 setCurrentView={setCurrentView}
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
+                adminNotificationCount={adminNotificationCount}
               />
               <ChatBot />
             </div>
@@ -131,6 +161,7 @@ const Home = () => {
                 setCurrentView={setCurrentView}
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
+                adminNotificationCount={adminNotificationCount}
               />
             </div>
           </div>
