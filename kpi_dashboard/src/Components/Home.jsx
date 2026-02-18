@@ -13,7 +13,6 @@ import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
 import backgroundImage2 from './assets/background_img.png'
-import TestDash from './TestDash.tsx'
 import "../main.css"
 
 const fallbackProfile = {
@@ -58,7 +57,7 @@ const Home = () => {
   const renderContent = () => {
     switch(currentView) {
       case 'dashboard':
-        return <TestDash />
+        return <Dashboard />
       case 'upload':
         return <Upload />
       case 'account':
