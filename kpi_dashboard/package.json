@@ -20,6 +20,7 @@
     "react-dom": "^19.1.1",
     "react-mosaic-component": "^6.1.1",
     "react-router-dom": "^7.9.6",
+    "react-swapy": "^1.0.3",
     "reactjs-popup": "^2.0.6",
     "swapy": "^1.0.5",
     "tailwindcss": "^4.0.7",

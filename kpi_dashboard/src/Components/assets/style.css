@@ -9,28 +9,33 @@
   width: 100%;
 }
 
+.slot.top2 {
+  width: 100%;
+}
+
 .middle {
   display: flex;
   gap: 10px;
-  width: fit-content;
+  width: 100%;
 
 }
 
 .slot.middle-left {
-  width: fit-content;
+  width: 50%;
 }
 
 .slot.middle-right {
-  width: fit-content;
+  width: 50%;
 }
 
 .slot.bottom {
-  width: fit-content;
+  width: 100%;
 }
 
 .slot {
   border-radius: 10px;
   height: 25%;
+  margin: 4px;
 }
 .slot[data-swapy-highlighted] {
   background: rgba(255, 255, 255, 0.2);
@@ -80,13 +85,3 @@
 .item[data-swapy-dragging] {
   opacity: 0.5;
 } 
-
-.myButton {
-  width: 34px;
-  height: 24px;
-  background-color: blue;
-  color: rgb(0, 0, 0);
-  position: absolute;
-  top: 14px;
-  right: 10px;
-}

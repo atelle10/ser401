@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
@@ -8,6 +8,8 @@ import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
 import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown } from '../services/incidentDataService'
+import { createSwapy } from 'swapy'
+import './assets/style.css'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -24,7 +26,47 @@ const buildIsoRangeFromDateInputs = ({ start, end }) => {
   return { startDate, endDate }
 }
 
+
 const Dashboard = ({ role = "viewer" }) => {
+  function DraggableHeatMap(){
+    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+      <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
+      <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
+    </div>
+  }
+  function DraggableUHU(){
+    <div className=" bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+      <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+      <UnitHourUtilization data={incidentData} />
+    </div>
+  }
+
+  function DraggableCVLC(){
+    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+      <h3 className="font-semibold mb-3">Call Volume Trend</h3>
+      <CallVolumeLinearChart
+        startDate={dateRange.startDate}
+        endDate={dateRange.endDate}
+        region={region}
+      />
+    </div>
+  }
+
+  function DraggableBreakDown(){
+    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+      <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
+      <IncidentTypeBreakdown data={typeBreakdownData} />
+    </div>
+  }
+
+  function DraggablePostal(){
+    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+      <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
+      <IncidentsByPostalCode data={postalData} />
+    </div>
+  }
+
+
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
@@ -51,6 +93,45 @@ const Dashboard = ({ role = "viewer" }) => {
     const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
     return { startDate: start.toISOString(), endDate: end.toISOString() }
   }, [dateInputs, isCustomRange, timeWindow])
+
+  const swapyRef = useRef(null)
+  const containerRef = useRef(null)
+
+   useEffect(() => {
+        if (containerRef.current) {
+          swapyRef.current = createSwapy(containerRef.current, {
+            animation: 'spring',
+            // swapMode: 'drop',
+            // autoScrollOnDrag: true,
+            // enabled: true,
+            // dragAxis: 'x',
+          })
+    
+          // swapyRef.current.enable(false)
+          // swapyRef.current.destroy()
+          // console.log(swapyRef.current.slotItemMap())
+    
+          swapyRef.current.onBeforeSwap((event) => {
+            console.log('beforeSwap', event)
+            // This is for dynamically enabling and disabling swapping.
+            // Return true to allow swapping, and return false to prevent swapping.
+            return true
+          })
+    
+          swapyRef.current.onSwapStart((event) => {
+            console.log('start', event);
+          })
+          swapyRef.current.onSwap((event) => {
+            console.log('swap', event);
+          })
+          swapyRef.current.onSwapEnd((event) => {
+            console.log('end', event);
+          })
+        }
+        return () => {
+          swapyRef.current?.destroy()
+        }
+      }, [])
 
   useEffect(() => {
     if (isCustomRange) return
@@ -249,48 +330,45 @@ const Dashboard = ({ role = "viewer" }) => {
       )}
 
       {isAnalystOrAdmin && (
-        <div data-testid="advanced-analytics" className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-            <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
+        <div data-testid="advanced-analytics" className="container p-4" ref={containerRef}> 
+        <div className="slot top" data-swapy-slot="a">
+          <div className="item item-a" data-swapy-item="a">
+            <div className="handle" data-swapy-handle></div>
+            <br />
+            <DraggableUHU />
+          </div> 
+        </div>
+        <div className="slot top2" data-swapy-slot="e" >
+          <div className="item item-e" data-swapy-item="e">
+            <div className="handle" data-swapy-handle></div>
+            <br />
+            <DraggableHeatMap />
+          </div> 
+        </div>
+        <div className="middle">
+          <div className="slot middle-left" data-swapy-slot="b" >
+            <div className="item item-b" data-swapy-item="b">
+              <div className="handle" data-swapy-handle></div>
+              <DraggableCVLC/>
+            </div>
           </div>
-
-          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-            <UnitHourUtilization data={incidentData} />
-          </div>
-
-          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Call Volume Trend</h3>
-            <CallVolumeLinearChart
-              startDate={dateRange.startDate}
-              endDate={dateRange.endDate}
-              region={region}
-            />
-          </div>
-
-          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
-            <IncidentTypeBreakdown data={typeBreakdownData} />
-          </div>
-
-          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
-            <IncidentsByPostalCode data={postalData} />
-          </div>
-
-          <div className="hidden col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <Chart />
+          <div className="slot middle-right" data-swapy-slot="c" >
+            <div className="item item-c" data-swapy-item="c">
+              <div className="handle" data-swapy-handle></div>
+              <DraggableBreakDown />
+            </div>
           </div>
         </div>
-      )}
-
-      {role === "viewer" && (
-        <div data-testid="viewer-message" className="mt-8 text-center text-gray-600">
-          <p>Basic dashboard view. Contact admin for elevated access.</p>
+        <div className="slot bottom" data-swapy-slot="d" >
+          <div className="item item-d" data-swapy-item="d">
+              <div className="handle" data-swapy-handle></div>
+              <div>
+                <DraggablePostal />
+              </div>
+          </div>
         </div>
-      )}
     </div>
+  </div>
   )
 }
 
