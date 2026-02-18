@@ -5,6 +5,7 @@ import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import Chart from './Dashboard/Chart'
+import KPI_1 from './Dashboard/KPIs/KPI_1'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
 import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown } from '../services/incidentDataService'
@@ -25,6 +26,7 @@ const buildIsoRangeFromDateInputs = ({ start, end }) => {
   const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
   return { startDate, endDate }
 }
+
 
 
 const Dashboard = ({ role = "viewer" }) => {
@@ -367,9 +369,10 @@ const Dashboard = ({ role = "viewer" }) => {
               </div>
           </div>
         </div>
-    </div>
   </div>
   )
+}
+  </div>)
 }
 
 export default Dashboard
