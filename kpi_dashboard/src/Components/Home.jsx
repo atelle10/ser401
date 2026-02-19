@@ -35,11 +35,29 @@ const Home = ({ role = "viewer" }) => {
   const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
   const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
+  const [pendingApprovalCount, setPendingApprovalCount] = useState(0)
   const isAdmin = role === "admin"
+
+  const fetchPendingApprovalCount = React.useCallback(async () => {
+    if (!isAdmin) return
+    const result = await authClient.admin.listUsers()
+    if (result?.error) return
+    const users = result?.data?.users || []
+    const count = users.filter((u) => u.verified === false).length
+    setPendingApprovalCount(count)
+  }, [isAdmin])
 
   useEffect(() => {
     setUserProfile(buildProfile(session?.user))
   }, [session?.user])
+
+  useEffect(() => {
+    fetchPendingApprovalCount()
+  }, [fetchPendingApprovalCount])
+
+  useEffect(() => {
+    if (currentView === 'admin') fetchPendingApprovalCount()
+  }, [currentView, fetchPendingApprovalCount])
 
   useEffect(() => {
     if (!isAdmin && currentView === 'admin') {
@@ -73,7 +91,7 @@ const Home = ({ role = "viewer" }) => {
         if (!isAdmin) {
           return <div className="p-8 text-center text-red-600">Access Denied — Admin console for admin only</div>
         }
-        return <AdminMenu />
+        return <AdminMenu onPendingApprovalChange={fetchPendingApprovalCount} />
       default:
         return <Dashboard role={role} />
     }
@@ -91,6 +109,7 @@ const Home = ({ role = "viewer" }) => {
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
                 role={role}
+                pendingApprovalCount={pendingApprovalCount}
               />
               <ChatBot />
             </div>
@@ -127,6 +146,7 @@ const Home = ({ role = "viewer" }) => {
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
                 role={role}
+                pendingApprovalCount={pendingApprovalCount}
               />
             </div>
           </div>

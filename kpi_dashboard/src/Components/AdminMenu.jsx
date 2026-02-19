@@ -7,7 +7,7 @@ const roleOptions = [
   { value: 'admin', label: 'Admin' },
 ]
 
-const AdminMenu = () => {
+const AdminMenu = ({ onPendingApprovalChange }) => {
   const [users, setUsers] = useState([])
   const [roleEdits, setRoleEdits] = useState({})
   const [isLoading, setIsLoading] = useState(true)
@@ -182,6 +182,7 @@ const AdminMenu = () => {
         )
       )
       setActionSuccess('User approved successfully.')
+      onPendingApprovalChange?.()
     }
 
     setUpdatingUserIds((prev) => {
@@ -267,6 +268,7 @@ const AdminMenu = () => {
     } else {
       setUsers((prev) => prev.filter((user) => user.id !== userId))
       setActionSuccess('User removed successfully.')
+      onPendingApprovalChange?.()
     }
 
     setDeletingUserIds((prev) => {

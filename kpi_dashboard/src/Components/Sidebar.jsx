@@ -6,7 +6,7 @@ import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
 import adminIcon from './assets/admin icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, role = "viewer" }) => {
+const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, role = "viewer", pendingApprovalCount = 0 }) => {
   const getItemClass = (view) => {
     const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view
@@ -48,11 +48,16 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, role = 
         </div>
         {isAdmin && (
           <div 
-            className={getItemClass('admin')}
+            className={`${getItemClass('admin')} relative`}
             onClick={() => setCurrentView('admin')}
           >
               <img src={adminIcon} alt="Admin Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2 -ml-0.5'/>
               <p className="hidden lg:inline whitespace-nowrap">Admin</p>
+              {pendingApprovalCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold">
+                  {pendingApprovalCount > 99 ? '99+' : pendingApprovalCount}
+                </span>
+              )}
           </div>
         )}
         {canViewSettings && (
