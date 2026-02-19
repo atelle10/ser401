@@ -43,6 +43,7 @@ const Home = () => {
   const [currentView, setCurrentView] = useState('dashboard')
   const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
   const [adminNotificationCount, setAdminNotificationCount] = useState(0)
+  const [isUnverifiedBannerDismissed, setIsUnverifiedBannerDismissed] = useState(false)
   const isAdmin = useMemo(() => isAdminUser(session?.user), [session?.user])
 
   useEffect(() => {
@@ -54,6 +55,12 @@ const Home = () => {
       setCurrentView('dashboard')
     }
   }, [currentView, isAdmin])
+
+  useEffect(() => {
+    if (adminNotificationCount === 0) {
+      setIsUnverifiedBannerDismissed(false)
+    }
+  }, [adminNotificationCount])
 
   useEffect(() => {
     let isMounted = true
@@ -148,6 +155,20 @@ const Home = () => {
                 />
               </div>
             </div>
+
+            {isAdmin && adminNotificationCount > 0 && !isUnverifiedBannerDismissed && (
+              <div className="mx-1 mt-2 flex items-start justify-between gap-3 rounded-lg border border-yellow-200/70 bg-red-500/75 px-3 py-2 text-sm font-medium text-yellow-50 shadow-md">
+                <p>You have unverified users waiting for review.</p>
+                <button
+                  type="button"
+                  aria-label="Dismiss unverified users notification"
+                  className="rounded px-1 text-yellow-100 hover:bg-red-600/70 hover:text-white transition"
+                  onClick={() => setIsUnverifiedBannerDismissed(true)}
+                >
+                  X
+                </button>
+              </div>
+            )}
             
             {/* Content Area - Page scrolls (no inner scroll) */}
             <div className="flex-1">
