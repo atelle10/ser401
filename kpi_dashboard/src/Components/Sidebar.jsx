@@ -6,7 +6,7 @@ import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
 import adminIcon from './assets/admin icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0 }) => {
+const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0, role = "viewer" }) => {
   const getItemClass = (view) => {
     const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view
@@ -21,10 +21,11 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNo
       setCurrentView('account')
     }
   }
- 
+
+  const canViewSettings = role === "admin"  // Settings admin only
+
   return (
     <div className='w-fit lg:w-full text-xs text-white justify-center text-left font-bold shadow-blue-500/30 shadow-md rounded-2xl bg-blue-500/40 p-2'>
-      {/* Desktop: Vertical list, Mobile: Horizontal scrollable */}
       <div className='flex lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-x-visible'>
         <div 
           className={getItemClass('dashboard')}
@@ -63,13 +64,15 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNo
               )}
           </div>
         )}
-        <div 
-          className={getItemClass('settings')}
-          onClick={() => setCurrentView('settings')}
-        >
-            <img src={settingsIcon} alt="Settings Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2'/>
-            <p className="hidden lg:inline whitespace-nowrap">Settings</p>
-        </div>
+        {canViewSettings && (
+          <div 
+            className={getItemClass('settings')}
+            onClick={() => setCurrentView('settings')}
+          >
+              <img src={settingsIcon} alt="Settings Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2'/>
+              <p className="hidden lg:inline whitespace-nowrap">Settings</p>
+          </div>
+        )}
       </div>
     </div>
   )
