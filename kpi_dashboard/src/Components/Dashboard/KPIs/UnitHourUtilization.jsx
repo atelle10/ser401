@@ -1,16 +1,19 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+
+const PAGE_SIZE = 20;
 
 /**
  * Unit Hour Utilization (UHU) - Critical metric for resource allocation.
- * 
+ *
  * Why this matters: Leadership needs to justify staffing levels and equipment.
  * High UHU (>0.8) = understaffed, Low UHU (<0.3) = overstaffed.
- * 
+ *
  * Formula: (time from "en route" to "clear") / (total shift time)
  * - "en route" = unit dispatched to incident
  * - "clear" = unit available again
  */
 const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
   
   const UNIT_TYPES = {
     R: { name: 'Rescue (Ambulances)', color: 'bg-blue-600', icon: '🚑' },
@@ -56,6 +59,16 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
     return results;
   }, [data, timePeriodHours]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data, timePeriodHours]);
+
+  const totalPages = uhuByUnit ? Math.ceil(uhuByUnit.length / PAGE_SIZE) : 0;
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedRows = uhuByUnit
+    ? uhuByUnit.slice(startIndex, startIndex + PAGE_SIZE)
+    : [];
+
   if (!uhuByUnit?.length) {
     return (
       <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
@@ -83,7 +96,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       </div>
 
       <div className="space-y-2">
-        {uhuByUnit.map(({ unit, type, uhu, busyHours, incidents }) => {
+        {paginatedRows.map(({ unit, type, uhu, busyHours, incidents }) => {
           const unitType = UNIT_TYPES[type] || UNIT_TYPES.R;
           
           return (
@@ -110,6 +123,30 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 rounded border bg-blue-900/60 text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-blue-900/80 transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-300">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 rounded border bg-blue-900/60 text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-blue-900/80 transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <div className="mt-4 pt-4 border-t">
         <div className="grid grid-cols-4 gap-2 text-xs">
