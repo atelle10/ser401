@@ -5,6 +5,17 @@ const COLORS = [
   'bg-amber-300', 'bg-yellow-300', 'bg-orange-200', 'bg-amber-200',
 ];
 
+const EMS_KEYWORDS = [
+  'medical', 'ems', 'ambulance', 'cardiac', 'respiratory', 'trauma',
+  'overdose', 'seizure', 'unconscious', 'chest pain', 'breathing',
+  'stroke', 'diabetic', 'injury', 'fall', 'sick', 'illness'
+];
+
+const classifyIncidentType = (type) => {
+  const lowerType = type.toLowerCase();
+  return EMS_KEYWORDS.some(keyword => lowerType.includes(keyword));
+};
+
 const IncidentTypeBreakdown = ({ data }) => {
   if (!data?.types?.length) {
     return (
