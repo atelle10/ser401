@@ -17,6 +17,30 @@ const classifyIncidentType = (type) => {
 };
 
 const IncidentTypeBreakdown = ({ data }) => {
+  const [filter, setFilter] = useState('all');
+
+  const filteredData = useMemo(() => {
+    if (!data?.types?.length) return null;
+
+    let filtered = data.types;
+    if (filter === 'ems') {
+      filtered = data.types.filter(row => classifyIncidentType(row.type));
+    } else if (filter === 'non-ems') {
+      filtered = data.types.filter(row => !classifyIncidentType(row.type));
+    }
+
+    const totalCount = filtered.reduce((sum, row) => sum + row.count, 0);
+    const withPercentages = filtered.map(row => ({
+      ...row,
+      percentage: totalCount > 0 ? ((row.count / totalCount) * 100).toFixed(1) : 0
+    }));
+
+    return {
+      types: withPercentages,
+      total: totalCount
+    };
+  }, [data, filter]);
+
   if (!data?.types?.length) {
     return (
       <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
@@ -25,7 +49,16 @@ const IncidentTypeBreakdown = ({ data }) => {
     );
   }
 
-  const maxCount = data.types[0]?.count || 1;
+  if (!filteredData?.types?.length) {
+    return (
+      <div className="border rounded-lg p-4 bg-white h-full">
+        <h3 className="text-lg font-semibold mb-1">Incident Types</h3>
+        <p className="text-gray-500 text-sm">No incidents match the selected filter</p>
+      </div>
+    );
+  }
+
+  const maxCount = filteredData.types[0]?.count || 1;
 
   return (
     <div className="border rounded-lg p-4 bg-white h-full">
