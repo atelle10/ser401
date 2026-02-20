@@ -63,11 +63,31 @@ const IncidentTypeBreakdown = ({ data }) => {
   return (
     <div className="border rounded-lg p-4 bg-white h-full">
       <h3 className="text-lg font-semibold mb-1">Incident Types</h3>
+      <div className="flex gap-2 mb-3">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-3 py-1 text-xs rounded ${filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setFilter('ems')}
+          className={`px-3 py-1 text-xs rounded ${filter === 'ems' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+        >
+          EMS
+        </button>
+        <button
+          onClick={() => setFilter('non-ems')}
+          className={`px-3 py-1 text-xs rounded ${filter === 'non-ems' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+        >
+          Non-EMS
+        </button>
+      </div>
       <p className="text-sm text-gray-600 mb-3">
-        {data.total_displayed} total incidents
+        {filteredData.total} total incidents
       </p>
       <div className="space-y-3">
-        {data.types.map((row, i) => (
+        {filteredData.types.map((row, i) => (
           <div key={row.type}>
             <div className="flex justify-between text-xs mb-1">
               <span className="font-medium text-gray-700">{row.type}</span>
