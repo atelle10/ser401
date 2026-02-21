@@ -80,11 +80,11 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
     if (count === 0) return 'bg-gray-50';
     const intensity = Math.ceil((count / heatData.maxCount) * 5);
     const colors = [
-      'bg-blue-100 text-blue-800',
-      'bg-blue-200 text-blue-800', 
-      'bg-blue-400 text-blue-800',
-      'bg-blue-600 text-blue-800',
-      'bg-blue-800 text-white'
+      'bg-orange-100 text-orange-800',
+      'bg-orange-300 text-orange-900',
+      'bg-orange-500 text-white',
+      'bg-red-600 text-white',
+      'bg-red-800 text-white'
     ];
     return colors[Math.min(intensity - 1, 4)];
   };
@@ -157,7 +157,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
       <div className="mt-4 flex items-center gap-4 text-xs">
         <span>Low</span>
         <div className="flex gap-1">
-          {['bg-gray-50', 'bg-blue-100', 'bg-blue-200', 'bg-blue-400', 'bg-blue-600', 'bg-blue-800'].map((color, i) => (
+          {['bg-gray-50', 'bg-orange-100', 'bg-orange-300', 'bg-orange-500', 'bg-red-600', 'bg-red-800'].map((color, i) => (
             <div key={i} className={`w-6 h-4 ${color} border`}></div>
           ))}
         </div>
