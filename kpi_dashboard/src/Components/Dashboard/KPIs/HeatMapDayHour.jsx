@@ -102,7 +102,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
           <h3 className="text-lg font-semibold">
             Incident Volume Heat Map - {regionLabel}
           </h3>
-          <p className="text-sm text-gray-600">Hour of Day × Day of Week</p>
+          <p className="text-sm text-white">Hour of Day × Day of Week</p>
         </div>
 
         {heatData.source === 'incidents' && (
