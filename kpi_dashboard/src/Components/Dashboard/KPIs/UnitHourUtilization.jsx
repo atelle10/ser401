@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 /**
  * Unit Hour Utilization (UHU) - Critical metric for resource allocation.
