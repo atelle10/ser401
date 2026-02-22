@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
   const [currentPage, setCurrentPage] = useState(1);
