@@ -27,15 +27,15 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
 
     data.forEach(incident => {
       const unit = incident.unit_id;
-      if (!unit || !incident.en_route_time || !incident.clear_time) return;
+      if (!unit || !incident.dispatch_time || !incident.clear_time) return;
 
-      const enRoute = new Date(incident.en_route_time);
+      const dispatch = new Date(incident.dispatch_time);
       const clear = new Date(incident.clear_time);
-      
-      // Sanity check - reject impossible times (data quality issue)
-      if (clear <= enRoute || (clear - enRoute) > 24 * 60 * 60 * 1000) return;
 
-      const busyHours = (clear - enRoute) / (1000 * 60 * 60);
+      // Sanity check - reject impossible times (data quality issue)
+      if (clear <= dispatch || (clear - dispatch) > 24 * 60 * 60 * 1000) return;
+
+      const busyHours = (clear - dispatch) / (1000 * 60 * 60);
 
       if (!unitHours[unit]) {
         unitHours[unit] = { busy: 0, count: 0, type: unit.charAt(0) };
@@ -51,7 +51,9 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       uhu: (stats.busy / timePeriodHours) * 100,
       busyHours: stats.busy.toFixed(1),
       incidents: stats.count
-    })).sort((a, b) => b.uhu - a.uhu); // High to low
+    }))
+    .filter(entry => Number.isFinite(entry.uhu))
+    .sort((a, b) => b.uhu - a.uhu); // High to low
 
     return results;
   }, [data, timePeriodHours]);
@@ -67,9 +69,8 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
 
   // Color code by utilization level - industry thresholds
   const getUHUColor = (uhu) => {
-    if (uhu >= 80) return 'text-red-600 bg-red-50';      // Overworked
-    if (uhu >= 60) return 'text-orange-600 bg-orange-50'; // Busy
-    if (uhu >= 30) return 'text-green-600 bg-green-50';   // Optimal
+    if (uhu >= 25) return 'text-orange-600 bg-orange-50'; // Busy
+    if (uhu >= 10) return 'text-green-600 bg-green-50';   // Optimal
     return 'text-gray-600 bg-gray-50';                    // Underutilized
   };
 
@@ -78,7 +79,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Unit Hour Utilization (UHU)</h3>
         <p className="text-sm text-gray-300">
-          Time period: {timePeriodHours}h • Higher = more resource demand
+          Time period: {timePeriodHours}h
         </p>
       </div>
 
@@ -112,22 +113,18 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       </div>
 
       <div className="mt-4 pt-4 border-t">
-        <div className="grid grid-cols-4 gap-2 text-xs">
+        <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="text-center">
-            <div className="font-bold text-gray-300">&lt; 30%</div>
+            <div className="font-bold text-gray-300">&lt; 10%</div>
             <div className="text-gray-200">Underutilized</div>
           </div>
           <div className="text-center">
-            <div className="font-bold text-green-600">30-60%</div>
+            <div className="font-bold text-green-600">10-25%</div>
             <div className="text-gray-200">Optimal</div>
           </div>
           <div className="text-center">
-            <div className="font-bold text-orange-600">60-80%</div>
+            <div className="font-bold text-orange-600">25%+</div>
             <div className="text-gray-200">Busy</div>
-          </div>
-          <div className="text-center">
-            <div className="font-bold text-red-600">&gt; 80%</div>
-            <div className="text-gray-200">Overworked</div>
           </div>
         </div>
       </div>

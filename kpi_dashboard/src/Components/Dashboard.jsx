@@ -253,7 +253,12 @@ const Dashboard = () => {
 
         <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
           <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-          <UnitHourUtilization data={incidentData} />
+          <UnitHourUtilization
+            data={incidentData}
+            timePeriodHours={
+              (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60)
+            }
+          />
         </div>
 
         <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">

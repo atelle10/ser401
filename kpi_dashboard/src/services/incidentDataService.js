@@ -133,8 +133,8 @@ const transformAPIData = (apiData) => {
       unit_id: unit.unit_id,
       dispatch_time: unit.dispatch_time,
       arrival_time: unit.arrival_time,
-      en_route_time: unit.en_route_time || unit.dispatch_time,
-      clear_time: unit.clear_time || unit.arrival_time,
+      dispatch_time: unit.dispatch_time,
+      clear_time: unit.clear_time,
     }));
   });
 };
