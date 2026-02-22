@@ -30,45 +30,6 @@ const buildIsoRangeFromDateInputs = ({ start, end }) => {
 
 
 const Dashboard = ({ role = "viewer" }) => {
-  function DraggableHeatMap(){
-    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-      <h3 className="font-semibold mb-3">Heat Map: Incidents by Day × Hour</h3>
-      <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
-    </div>
-  }
-  function DraggableUHU(){
-    <div className=" bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-      <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-      <UnitHourUtilization data={incidentData} />
-    </div>
-  }
-
-  function DraggableCVLC(){
-    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-      <h3 className="font-semibold mb-3">Call Volume Trend</h3>
-      <CallVolumeLinearChart
-        startDate={dateRange.startDate}
-        endDate={dateRange.endDate}
-        region={region}
-      />
-    </div>
-  }
-
-  function DraggableBreakDown(){
-    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-      <h3 className="font-semibold mb-3">Incident Type Breakdown</h3>
-      <IncidentTypeBreakdown data={typeBreakdownData} />
-    </div>
-  }
-
-  function DraggablePostal(){
-    <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-      <h3 className="font-semibold mb-3">Incidents by Postal Code</h3>
-      <IncidentsByPostalCode data={postalData} />
-    </div>
-  }
-
-
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
@@ -336,37 +297,58 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="slot top" data-swapy-slot="a">
           <div className="item item-a" data-swapy-item="a">
             <div className="handle" data-swapy-handle></div>
-            <br />
-            <DraggableUHU />
+            <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+               <br />
+              <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day × Hour</h3>
+              <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
+            </div>
           </div> 
         </div>
         <div className="slot top2" data-swapy-slot="e" >
           <div className="item item-e" data-swapy-item="e">
             <div className="handle" data-swapy-handle></div>
             <br />
-            <DraggableHeatMap />
+            <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+               <br />
+              <h3 className="font-semibold mb-3 text-center">Call Volume Trend</h3>
+              <CallVolumeLinearChart
+                startDate={dateRange.startDate}
+                endDate={dateRange.endDate}
+                region={region}
+              />
+            </div>
           </div> 
         </div>
         <div className="middle">
           <div className="slot middle-left" data-swapy-slot="b" >
             <div className="item item-b" data-swapy-item="b">
               <div className="handle" data-swapy-handle></div>
-              <DraggableCVLC/>
+              <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+               <br />
+              <h3 className="font-semibold mb-3 text-center">Unit Hour Utilization (UHU)</h3>
+              <UnitHourUtilization data={incidentData} />
+            </div>
             </div>
           </div>
           <div className="slot middle-right" data-swapy-slot="c" >
             <div className="item item-c" data-swapy-item="c">
               <div className="handle" data-swapy-handle></div>
-              <DraggableBreakDown />
+                <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+                <br />
+                <h3 className="font-semibold mb-3 text-center">Incidents by Postal Code</h3>
+                <IncidentsByPostalCode data={postalData} />
+              </div>
             </div>
           </div>
         </div>
         <div className="slot bottom" data-swapy-slot="d" >
           <div className="item item-d" data-swapy-item="d">
               <div className="handle" data-swapy-handle></div>
-              <div>
-                <DraggablePostal />
-              </div>
+              <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+               <br />
+              <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
+              <IncidentTypeBreakdown data={typeBreakdownData} />
+            </div>
           </div>
         </div>
   </div>
