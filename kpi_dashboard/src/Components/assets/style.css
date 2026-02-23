@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
   margin: 0 auto;
 }
 
@@ -35,7 +35,7 @@
 .slot {
   border-radius: 10px;
   height: 25%;
-  margin: 4px;
+  margin: 10px;
 }
 .slot[data-swapy-highlighted] {
   background: rgba(255, 255, 255, 0.2);

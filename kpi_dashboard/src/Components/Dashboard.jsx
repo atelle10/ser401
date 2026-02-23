@@ -11,6 +11,7 @@ import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
 import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown } from '../services/incidentDataService'
 import { createSwapy } from 'swapy'
 import './assets/style.css'
+import { Multiselect } from 'multiselect-react-dropdown'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -46,6 +47,12 @@ const Dashboard = ({ role = "viewer" }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+  const [heatmapVisible, setHeatmapVisible] = useState(true)
+  const [postalCodeVisible, setPostalCodeVisible] = useState(true)
+  const [unitHourUtilizationVisible, setUnitHourUtilizationVisible] = useState(true)
+  const [callVolumeVisible, setCallVolumeVisible] = useState(true)
+  const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
+
 
   const dateRange = useMemo(() => {
     if (isCustomRange) {
@@ -186,8 +193,17 @@ const Dashboard = ({ role = "viewer" }) => {
     loadIncidentData()
   }, [loadIncidentData])
 
+
+  const options = [
+            { label: 'Heatmap', value: 'heatmap' },
+            { label: 'Postal Code', value: 'postal_code' },
+            { label: 'Type Breakdown', value: 'type_breakdown' },
+            { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
+            { label: 'Call Volume Trend', value: 'call_volume_trend' },
+          ]
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const isAdmin = role === "admin"
+
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
@@ -247,6 +263,50 @@ const Dashboard = ({ role = "viewer" }) => {
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           />
         </div>
+
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
+          <Multiselect
+          selectedValues={options}
+          options={options}
+          onSelect={
+            selectedList => {
+              const selectedValues = selectedList.map(opt => opt.value)
+              setHeatmapVisible(selectedValues.includes('heatmap'))
+              setPostalCodeVisible(selectedValues.includes('postal_code'))
+              setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
+              setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
+              setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+            }
+          }
+          onRemove={
+            selectedList => {
+              const selectedValues = selectedList.map(opt => opt.value)
+              setHeatmapVisible(selectedValues.includes('heatmap'))
+              setPostalCodeVisible(selectedValues.includes('postal_code'))
+              setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
+              setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
+              setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+            }
+          }
+          avoidHighlightFirstOption={true}
+          displayValue='label'
+          showCheckbox={true}
+          hideSelectedList={true}
+          placeholder='Search charts...'
+          style={{
+              multiselectContainer: {
+                color: 'blue',
+                background: 'transparent',
+              },
+               searchBox: {
+                color: 'blue',
+                background: 'white',
+              }
+          }}
+        />
+        </div>
       </div>
 
       {error && (
@@ -297,7 +357,7 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="slot top" data-swapy-slot="a">
           <div className="item item-a" data-swapy-item="a">
             <div className="handle" data-swapy-handle></div>
-            <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (heatmapVisible ? 'visible' : 'hidden') }>
                <br />
               <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day × Hour</h3>
               <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
@@ -308,7 +368,7 @@ const Dashboard = ({ role = "viewer" }) => {
           <div className="item item-e" data-swapy-item="e">
             <div className="handle" data-swapy-handle></div>
             <br />
-            <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (callVolumeVisible ? 'visible' : 'hidden')} >
                <br />
               <h3 className="font-semibold mb-3 text-center">Call Volume Trend</h3>
               <CallVolumeLinearChart
@@ -323,7 +383,7 @@ const Dashboard = ({ role = "viewer" }) => {
           <div className="slot middle-left" data-swapy-slot="b" >
             <div className="item item-b" data-swapy-item="b">
               <div className="handle" data-swapy-handle></div>
-              <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (unitHourUtilizationVisible ? 'visible' : 'hidden')}>
                <br />
               <h3 className="font-semibold mb-3 text-center">Unit Hour Utilization (UHU)</h3>
               <UnitHourUtilization data={incidentData} />
@@ -333,7 +393,7 @@ const Dashboard = ({ role = "viewer" }) => {
           <div className="slot middle-right" data-swapy-slot="c" >
             <div className="item item-c" data-swapy-item="c">
               <div className="handle" data-swapy-handle></div>
-                <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+                <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (postalCodeVisible ? 'visible' : 'hidden')}>
                 <br />
                 <h3 className="font-semibold mb-3 text-center">Incidents by Postal Code</h3>
                 <IncidentsByPostalCode data={postalData} />
@@ -344,7 +404,7 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="slot bottom" data-swapy-slot="d" >
           <div className="item item-d" data-swapy-item="d">
               <div className="handle" data-swapy-handle></div>
-              <div className="w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (typeBreakdownVisible ? 'visible' : 'hidden')}>
                <br />
               <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
               <IncidentTypeBreakdown data={typeBreakdownData} />
