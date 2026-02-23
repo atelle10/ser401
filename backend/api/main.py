@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.db_ops.relational_data_store import RelationalDataStore
 from backend.ingestion.data_classes import DataSet, DQPolicy, DQRule
 from backend.ingestion.ingestion_service import IngestionService
+from backend.local_unit_def import UnitOriginHelper
 
 app = FastAPI(title="FAMAR KPI Dashboard API")
 
@@ -442,6 +443,50 @@ async def get_call_volume(
             "trend_data": trend_data,
             "total_incidents": total,
             "granularity": granularity,
+            "region": region,
+            "time_window": {"start": start_date, "end": end_date},
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+@app.get("/api/incidents/unit-origin")
+async def get_unit_origin(
+    start_date: str = Query(...), end_date: str = Query(...), region: str = Query("all")
+):
+    try:
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date: {str(e)}")
+
+    try:
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+
+        region_filter = ""
+        if region == "south":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+        elif region == "north":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+
+        query = f"""
+        SELECT ur.apparatus_resource_id AS unit_id
+        FROM fire_ems.incident i
+        JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+        WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+        {region_filter}
+        AND ur.apparatus_resource_id IS NOT NULL
+        """
+
+        df = db.read_table(f"({query}) as subquery")
+        db.disconnect()
+
+        breakdown = UnitOriginHelper.get_unit_origin_breakdown(df)
+
+        return {
+            "units": breakdown,
             "region": region,
             "time_window": {"start": start_date, "end": end_date},
         }
