@@ -1,7 +1,7 @@
-import React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react'
 import accountIcon from './assets/account.png'
-import { authClient } from '../utils/authClient.js';
+import { authClient } from '../utils/authClient.js'
+import { markManualLogout } from '../utils/manualLogoutFlag.js'
 
 const User = ({ onViewAccount, profile }) => {
   const [open, setOpen] = useState(false);
@@ -46,6 +46,7 @@ const User = ({ onViewAccount, profile }) => {
               <button
                 onClick={async () => {
                   setOpen(false);
+                  markManualLogout();
                   await authClient.signOut();
                 }}
                 className="block w-full text-left px-4 py-2 hover:bg-blue-500/40 hover:rounded-xl"

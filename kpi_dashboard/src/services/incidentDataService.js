@@ -1,23 +1,38 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+import { API_URL } from '../config.js';
+
+const API_BASE_URL = `${API_URL}/api`;
+
+const buildUrl = (path, params) => {
+  const url = new URL(`${API_BASE_URL}${path}`);
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value == null) return;
+    url.searchParams.set(key, String(value));
+  });
+  return url.toString();
+};
+
+const fetchJson = async (url) => {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+};
 
 export const fetchKPIData = async ({ startDate, endDate, region = 'all' }) => {
   try {
-    const params = new URLSearchParams({
+    const url = buildUrl('/incidents/kpi-data', {
       start_date: startDate,
       end_date: endDate,
-      region: region
+      region,
     });
 
-    const response = await fetch(`${API_BASE_URL}/incidents/kpi-data?${params}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await fetchJson(url);
     return { success: true, data: transformAPIData(data), error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
@@ -26,23 +41,85 @@ export const fetchKPIData = async ({ startDate, endDate, region = 'all' }) => {
 
 export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) => {
   try {
-    const params = new URLSearchParams({
+    const url = buildUrl('/incidents/summary', {
       start_date: startDate,
       end_date: endDate,
-      region: region
+      region,
     });
 
-    const response = await fetch(`${API_BASE_URL}/incidents/summary?${params}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    const data = await fetchJson(url);
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
+const fetchOptional = async (url, emptyData) => {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (response.status === 404) {
+    return emptyData;
+  }
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  return response.json();
+};
+
+export const fetchIncidentHeatmap = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/heatmap', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
     });
+    const data = await fetchOptional(url, { heatmap_data: [] });
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
+export const fetchCallVolume = async ({ startDate, endDate, region = 'all', granularity = 'daily' }) => {
+  try {
+    const url = buildUrl('/incidents/call-volume', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+      granularity,
+    });
+    const data = await fetchOptional(url, { trend_data: [] });
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
 
-    const data = await response.json();
-    return { success: true, data: data, error: null };
+export const fetchTypeBreakdown = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/type-breakdown', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+    const data = await fetchOptional(url, null);
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
+export const fetchPostalBreakdown = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/postal-breakdown', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+    const data = await fetchOptional(url, { postal_data: [] });
+    return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
   }
@@ -50,11 +127,12 @@ export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) =>
 
 const transformAPIData = (apiData) => {
   if (!apiData || !apiData.incidents) return [];
-  
+
   return apiData.incidents.flatMap(incident => {
+    const postalCode = incident.postal_code != null ? Number.parseInt(String(incident.postal_code), 10) : null;
     const base = {
       timestamp: incident.timestamp,
-      postal_code: incident.postal_code,
+      postal_code: Number.isNaN(postalCode) ? null : postalCode,
       incident_type: incident.incident_type,
     };
 
@@ -65,8 +143,8 @@ const transformAPIData = (apiData) => {
       unit_id: unit.unit_id,
       dispatch_time: unit.dispatch_time,
       arrival_time: unit.arrival_time,
-      en_route_time: unit.en_route_time,
-      clear_time: unit.clear_time,
+      en_route_time: unit.en_route_time || unit.dispatch_time,
+      clear_time: unit.clear_time || unit.arrival_time,
     }));
   });
 };

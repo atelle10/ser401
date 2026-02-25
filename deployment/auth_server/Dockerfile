@@ -22,4 +22,4 @@ COPY --from=build /app/dist ./dist/
 
 EXPOSE 3001
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "node dist/scripts/seedAdmin.js || true; node dist/server.js"]

@@ -4,8 +4,9 @@ import whiteFireIcon from './assets/white fire icon.png'
 import whiteMedicalIcon from './assets/white medical icon.png'
 import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
+import adminIcon from './assets/admin icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
+const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0, role = "viewer" }) => {
   const getItemClass = (view) => {
     const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view
@@ -20,10 +21,11 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
       setCurrentView('account')
     }
   }
- 
+
+  const canViewSettings = role === "admin"  // Settings admin only
+
   return (
     <div className='w-fit lg:w-full text-xs text-white justify-center text-left font-bold shadow-blue-500/30 shadow-md rounded-2xl bg-blue-500/40 p-2'>
-      {/* Desktop: Vertical list, Mobile: Horizontal scrollable */}
       <div className='flex lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-x-visible'>
         <div 
           className={getItemClass('dashboard')}
@@ -44,13 +46,33 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick }) => {
             <img src={accountIcon} alt="Account Icon" className='inline w-5 h-5 lg:mr-2'/>
             <p className="hidden lg:inline whitespace-nowrap">Account</p>
         </div>
-        <div 
-          className={getItemClass('settings')}
-          onClick={() => setCurrentView('settings')}
-        >
-            <img src={settingsIcon} alt="Settings Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2'/>
-            <p className="hidden lg:inline whitespace-nowrap">Settings</p>
-        </div>
+        {isAdmin && (
+          <div 
+            className={getItemClass('admin')}
+            onClick={() => setCurrentView('admin')}
+          >
+              <img src={adminIcon} alt="Admin Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2 -ml-0.5'/>
+              <p className="hidden lg:inline whitespace-nowrap">Admin</p>
+              {adminNotificationCount > 0 && (
+                <span
+                  aria-label={`${adminNotificationCount} admin notifications`}
+                  className='relative ml-1 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full border border-white bg-red-500 px-1 text-[10px] font-bold leading-none tabular-nums text-white'
+                >
+                  <span className='absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60 motion-reduce:animate-none animate-ping' />
+                  <span className='relative'>{adminNotificationCount}</span>
+                </span>
+              )}
+          </div>
+        )}
+        {canViewSettings && (
+          <div 
+            className={getItemClass('settings')}
+            onClick={() => setCurrentView('settings')}
+          >
+              <img src={settingsIcon} alt="Settings Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2'/>
+              <p className="hidden lg:inline whitespace-nowrap">Settings</p>
+          </div>
+        )}
       </div>
     </div>
   )

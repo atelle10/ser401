@@ -385,3 +385,57 @@ print(f"Busiest Unit")
 print(f"{busiest_unit}: {busiest_unit_calls:,} calls ({busiest_unit_pct:.1f}% of total)")
 
 
+
+days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]                                                                                                                                                                                         
+                                                                                                                                                                                                                                                                                        
+heatmap_df = (                                                                                                                                                                                                                                                                        
+      fire_example_df.groupby(["Basic Incident Day Name (FD1.3)", "hour"])                                                                                                                                                                                                              
+      .size()                                                                                                                                                                                                                                                                           
+      .unstack(fill_value=0)                                                                                                                                                                                                                                                            
+      .reindex(days_of_week, fill_value=0)                                                                                                                                                                                                                                              
+  )                                                                                                                                                                                                                                                                                     
+heatmap_df.columns = [f"{h}:00" for h in heatmap_df.columns]                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                        
+heatmap_df.style.background_gradient(cmap="YlOrRd", axis=None).set_caption("Incidents by Day of Week and Hour")
+
+
+weeks_per_day = fire_example_df.groupby("Basic Incident Day Name (FD1.3)")["dispatch_dt"].apply(lambda x: x.dt.isocalendar().week.nunique())                                                                                                                                          
+                                                                                                                                                                                                                                                                                        
+avg_heatmap_df = (                                                                                                                                                                                                                                                                    
+      fire_example_df.groupby(["Basic Incident Day Name (FD1.3)", "hour"])                                                                                                                                                                                                              
+      .size()                                                                                                                                                                                                                                                                           
+      .unstack(fill_value=0)                                                                                                                                                                                                                                                            
+      .reindex(days_of_week, fill_value=0)                                                                                                                                                                                                                                              
+      .div(weeks_per_day.reindex(days_of_week), axis=0)                                                                                                                                                                                                                                 
+      .round(2)                                                                                                                                                                                                                                                                         
+  )                                                                                                                                                                                                                                                                                     
+avg_heatmap_df.columns = [f"{h}:00" for h in avg_heatmap_df.columns]                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                                                                        
+avg_heatmap_df.style.background_gradient(cmap="YlOrRd", axis=None).set_caption("Avg Incidents by Day of Week and Hour")
+
+
+
+fire_example_df["dispatch_dt"] = pd.to_datetime(                                                                                                                                                                                                        
+      fire_example_df["Apparatus Resource Dispatch Date Time (FD18.3)"], errors="coerce"
+)                                                                                                                                                                                                                                                       
+fire_example_df["clear_dt"] = pd.to_datetime(                                                                                                                                                                                                           
+      fire_example_df["Apparatus Resource Clear Date Time (FD18.5)"], errors="coerce"
+)
+
+fire_example_df["busy_hours"] = (
+      fire_example_df["clear_dt"] - fire_example_df["dispatch_dt"]
+).dt.total_seconds() / 3600
+
+valid = fire_example_df[
+      fire_example_df["busy_hours"].between(0, 24, inclusive="neither")
+]
+
+unit_hours = (
+    valid.groupby("Apparatus Resource ID (FD18.1)")["busy_hours"]
+    .sum()
+    .round(2)
+    .sort_values(ascending=False)
+    .reset_index()
+)
+unit_hours.columns = ["Unit", "Total Hours Utilized"]
+  
