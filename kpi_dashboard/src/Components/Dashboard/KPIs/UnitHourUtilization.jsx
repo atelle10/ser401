@@ -67,7 +67,10 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Unit Hour Utilization (UHU)</h3>
         <p className="text-sm text-gray-300">
-          Time period: {timePeriodHours}h
+          UHU = (dispatch-to-clear busy time / {timePeriodHours}h period) * 100
+        </p>
+        <p className="text-xs text-gray-300">
+          Source columns: unit_response.apparatus_resource_dispatch_date_time and unit_response.apparatus_resource_clear_date_time
         </p>
       </div>
 
