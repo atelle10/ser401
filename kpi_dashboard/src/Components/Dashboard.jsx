@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
+import UnitHourUtilizationByOrigin from './Dashboard/KPIs/UnitHourUtilizationByOrigin'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
@@ -259,6 +260,10 @@ const Dashboard = () => {
               (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60)
             }
           />
+          <div className="mt-4 pt-4 border-t border-white/20">
+            <h3 className="font-semibold mb-3">UHU by Unit Origin</h3>
+            <UnitHourUtilizationByOrigin />
+          </div>
         </div>
 
         <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
