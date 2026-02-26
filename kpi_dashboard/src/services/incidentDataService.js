@@ -125,6 +125,23 @@ export const fetchPostalBreakdown = async ({ startDate, endDate, region = 'all' 
   }
 };
 
+export const fetchMutualAid = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/mutual-aid', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+    const data = await fetchOptional(url, {
+      scottsdale_units_outside: 0,
+      other_units_in_scottsdale: 0,
+    });
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
 const transformAPIData = (apiData) => {
   if (!apiData || !apiData.incidents) return [];
 

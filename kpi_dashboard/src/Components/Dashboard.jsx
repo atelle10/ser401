@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
+import MutualAidChart from './Dashboard/KPIs/MutualAidChart'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
@@ -256,6 +257,15 @@ const Dashboard = ({ role = "viewer" }) => {
           <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
             <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
             <UnitHourUtilization data={incidentData} />
+          </div>
+
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Mutual Aid: Scottsdale vs Other Units</h3>
+            <MutualAidChart
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+              region={region}
+            />
           </div>
 
           <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
