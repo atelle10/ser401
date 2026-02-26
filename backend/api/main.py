@@ -73,7 +73,8 @@ async def get_kpi_data(
             i.basic_incident_type AS incident_type,
             ur.apparatus_resource_id AS unit_id,
             ur.apparatus_resource_dispatch_date_time AS dispatch_time,
-            ur.apparatus_resource_arrival_date_time AS arrival_time
+            ur.apparatus_resource_arrival_date_time AS arrival_time,
+            ur.apparatus_resource_clear_date_time AS clear_time
         FROM fire_ems.incident i
         LEFT JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
         WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
@@ -111,6 +112,9 @@ async def get_kpi_data(
                     else None,
                     "arrival_time": row["arrival_time"].isoformat()
                     if row["arrival_time"]
+                    else None,
+                    "clear_time": row["clear_time"].isoformat()
+                    if row["clear_time"]
                     else None,
                 }
                 incidents_dict[incident_id]["units"].append(unit)
