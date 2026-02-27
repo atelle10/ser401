@@ -23,4 +23,7 @@ else
   echo "CSV files not found, skipping migration"
 fi
 
+echo "Populating scottsdale_units..."
+PGPASSWORD=$POSTGRES_PASSWORD psql -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f /app/scottsdale_units_populate.sql
+
 echo "Database initialization complete"
