@@ -71,14 +71,14 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
   }
 
   return (
-    <div className="border rounded-lg p-6 bg-white min-h-[200px] w-full">
-      <div className="space-y-3">
+    <div className="border rounded-lg p-6 bg-white w-full">
+      <div className="space-y-6">
         <div>
-          <div className="flex justify-between text-xs mb-1">
+          <div className="flex justify-between text-sm mb-2">
             <span className="font-medium text-gray-700">Scottsdale units outside</span>
-            <span className="text-gray-600">{chartData.scottsdale}</span>
+            <span className="font-semibold text-gray-800">{chartData.scottsdale}</span>
           </div>
-          <div className="h-5 bg-gray-100 rounded overflow-hidden">
+          <div className="h-10 bg-gray-100 rounded overflow-hidden">
             <div
               className="h-full rounded bg-blue-700 transition-all"
               style={{ width: `${chartData.scottsdaleHeight}%` }}
@@ -87,11 +87,11 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
         </div>
 
         <div>
-          <div className="flex justify-between text-xs mb-1">
+          <div className="flex justify-between text-sm mb-2">
             <span className="font-medium text-gray-700">Other units in Scottsdale</span>
-            <span className="text-gray-600">{chartData.others}</span>
+            <span className="font-semibold text-gray-800">{chartData.others}</span>
           </div>
-          <div className="h-5 bg-gray-100 rounded overflow-hidden">
+          <div className="h-10 bg-gray-100 rounded overflow-hidden">
             <div
               className="h-full rounded bg-orange-400 transition-all"
               style={{ width: `${chartData.othersHeight}%` }}
@@ -100,7 +100,7 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
         </div>
       </div>
 
-      <div className="mt-3 text-xs text-gray-600">
+      <div className="mt-4 text-xs text-gray-600">
         Counts for {formatDateRange(startDate, endDate)} · {regionLabel(region)}.
       </div>
     </div>

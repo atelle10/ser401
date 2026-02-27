@@ -47,6 +47,38 @@ class UnitOriginHelper:
         return sorted(units.values(), key=lambda u: u["response_count"], reverse=True)
 
     @staticmethod
+    def compute_mutual_aid(df, db=None):
+        breakdown = UnitOriginHelper.get_unit_origin_breakdown(df, db)
+        scottsdale_set = {u["unit_id"] for u in breakdown if u["is_scottsdale_unit"]}
+
+        scottsdale_units_outside = 0
+        other_units_in_scottsdale = 0
+
+        for _, row in df.iterrows():
+            unit_id = row.get("unit_id")
+            postal_code = row.get("postal_code")
+            if not unit_id or str(unit_id) == "None":
+                continue
+            unit_id = str(unit_id)
+
+            try:
+                p = int(str(postal_code).strip())
+                in_scottsdale = 85250 <= p <= 85266
+            except (ValueError, TypeError):
+                in_scottsdale = False
+
+            is_scottsdale = unit_id in scottsdale_set
+            if is_scottsdale and not in_scottsdale:
+                scottsdale_units_outside += 1
+            elif not is_scottsdale and in_scottsdale:
+                other_units_in_scottsdale += 1
+
+        return {
+            "scottsdale_units_outside": scottsdale_units_outside,
+            "other_units_in_scottsdale": other_units_in_scottsdale,
+        }
+
+    @staticmethod
     def compute_uhu_by_origin(df, time_period_hours):
         scottsdale_hours = {}
         non_scottsdale_hours = {}
