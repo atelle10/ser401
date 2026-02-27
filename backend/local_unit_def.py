@@ -1,4 +1,5 @@
 import logging
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ class UnitOriginHelper:
                 busy = (clear - dispatch).total_seconds() / 3600
             except Exception:
                 continue
-            if busy <= 0 or busy > 24:
+            if not math.isfinite(busy) or busy <= 0 or busy > 24:
                 continue
 
             target = scottsdale_hours if UnitOriginHelper.is_scottsdale_unit(unit_id) else non_scottsdale_hours
