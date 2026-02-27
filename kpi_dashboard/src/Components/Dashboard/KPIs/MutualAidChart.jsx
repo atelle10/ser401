@@ -1,6 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchMutualAid } from '../../../services/incidentDataService';
 
+const formatDateRange = (startDate, endDate) => {
+  if (!startDate || !endDate) return '';
+  try {
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    const opts = { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' };
+    return `${s.toLocaleDateString('en-US', opts)} – ${e.toLocaleDateString('en-US', opts)}`;
+  } catch {
+    return '';
+  }
+};
+
+const regionLabel = (r) => {
+  if (r === 'south') return 'South Scottsdale';
+  if (r === 'north') return 'North Scottsdale';
+  return 'All';
+};
+
 const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
   const [stats, setStats] = useState(null);
 
@@ -83,7 +101,7 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
       </div>
 
       <div className="mt-3 text-xs text-gray-600">
-        Counts of unit responses in the selected date range and region.
+        Counts for {formatDateRange(startDate, endDate)} · {regionLabel(region)}.
       </div>
     </div>
   );
