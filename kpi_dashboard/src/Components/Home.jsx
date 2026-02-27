@@ -13,11 +13,12 @@ import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
 import backgroundImage2 from './assets/background_img.png'
+import { countUnverifiedUsers } from '../utils/userVerification'
 
 const fallbackProfile = {
   name: 'User',
   email: '',
-  role: 'User',
+  role: 'viewer',
   avatar: accountIcon,
 }
 
@@ -32,16 +33,13 @@ const buildProfile = (user) => {
   }
 }
 
-const isAdminUser = (user) => {
-  const role = (user?.role || '').toString().toLowerCase()
-  return role === 'admin' || role === 'administrator'
-}
-
-const Home = () => {
+const Home = ({ role = "viewer" }) => {  
   const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
   const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
-  const isAdmin = useMemo(() => isAdminUser(session?.user), [session?.user])
+  const [adminNotificationCount, setAdminNotificationCount] = useState(0)
+  const [isUnverifiedBannerDismissed, setIsUnverifiedBannerDismissed] = useState(false)
+  const isAdmin = role === "admin"
 
   useEffect(() => {
     setUserProfile(buildProfile(session?.user))
@@ -53,11 +51,47 @@ const Home = () => {
     }
   }, [currentView, isAdmin])
 
+  useEffect(() => {
+    if (adminNotificationCount === 0) {
+      setIsUnverifiedBannerDismissed(false)
+    }
+  }, [adminNotificationCount])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadAdminNotificationCount = async () => {
+      if (!isAdmin) {
+        if (isMounted) setAdminNotificationCount(0)
+        return
+      }
+
+      const result = await authClient.admin.listUsers()
+      if (!isMounted) return
+
+      if (result?.error) {
+        setAdminNotificationCount(0)
+        return
+      }
+
+      setAdminNotificationCount(countUnverifiedUsers(result?.data?.users || []))
+    }
+
+    loadAdminNotificationCount()
+
+    return () => {
+      isMounted = false
+    }
+  }, [isAdmin])
+
   const renderContent = () => {
     switch(currentView) {
       case 'dashboard':
-        return <Dashboard />
+        return <Dashboard role={role} />
       case 'upload':
+        if (!["analyst", "admin"].includes(role)) {
+          return <div className="p-8 text-center text-red-600">Access Denied — Upload for analyst/admin only</div>
+        }
         return <Upload />
       case 'account':
         return (
@@ -68,19 +102,23 @@ const Home = () => {
           />
         )
       case 'settings':
+        if (role !== "admin") {
+          return <div className="p-8 text-center text-red-600">Access Denied — Settings for admin only</div>
+        }
         return <Settings />
       case 'admin':
-        return isAdmin ? <AdminMenu /> : <Dashboard className="flex-1 overflow-auto" />
+        if (!isAdmin) {
+          return <div className="p-8 text-center text-red-600">Access Denied — Admin console for admin only</div>
+        }
+        return <AdminMenu onUnverifiedCountChange={setAdminNotificationCount} />
       default:
-        return <Dashboard className="flex-1 overflow-auto" />
+        return <Dashboard role={role} />
     }
   }
 
   return(
       <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
-        {/* Mobile: Stack vertically, Desktop: Side-by-side grid */}
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-0 sm:p-3 md:p-4">
-          {/* Sidebar Column - Hidden on mobile, visible on lg+ */}
           <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
             <Logo />
             <div className="flex flex-col gap-2">
@@ -89,28 +127,25 @@ const Home = () => {
                 setCurrentView={setCurrentView}
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
+                adminNotificationCount={adminNotificationCount}
+                role={role}
               />
               <ChatBot />
             </div>
           </div>
           
-          {/* Main Content Column */}
           <div className="flex-1 lg:col-span-6 flex flex-col gap-0">
-            {/* Top Bar with Logo (mobile only), NavBar, and User */}
             <div className="flex items-center w-full gap-2">
-              {/* Mobile Logo - Smaller version */}
               <div className="lg:hidden flex-shrink-0">
                 <div className="bg-white rounded-xl shadow-md p-1">
                   <img src={famarLogo} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
                 </div>
               </div>
               
-              {/* NavBar */}
               <div className="flex-1 min-w-0 pl-[6px]">
-                <NavBar currentView={currentView} setCurrentView={setCurrentView} />
+                <NavBar currentView={currentView} setCurrentView={setCurrentView} role={role} />
               </div>
               
-              {/* User */}
               <div className="flex-shrink-0">
                 <User
                   profile={userProfile}
@@ -118,19 +153,33 @@ const Home = () => {
                 />
               </div>
             </div>
+
+            {isAdmin && adminNotificationCount > 0 && !isUnverifiedBannerDismissed && (
+              <div className="mx-1 mt-2 flex items-start justify-between gap-3 rounded-lg border border-yellow-200/70 bg-red-500/75 px-3 py-2 text-sm font-medium text-yellow-50 shadow-md">
+                <p>You have unverified users waiting for review.</p>
+                <button
+                  type="button"
+                  aria-label="Dismiss unverified users notification"
+                  className="rounded px-1 text-yellow-100 hover:bg-red-600/70 hover:text-white transition"
+                  onClick={() => setIsUnverifiedBannerDismissed(true)}
+                >
+                  X
+                </button>
+              </div>
+            )}
             
-            {/* Content Area - Page scrolls (no inner scroll) */}
             <div className="flex-1">
               {renderContent()}
             </div>
             
-            {/* Mobile Bottom Navigation (Sidebar items) */}
             <div className="lg:hidden mt-auto self-center">
               <Sidebar
                 currentView={currentView}
                 setCurrentView={setCurrentView}
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
+                adminNotificationCount={adminNotificationCount}
+                role={role}
               />
             </div>
           </div>

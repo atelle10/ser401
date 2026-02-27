@@ -54,6 +54,20 @@ export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) =>
   }
 };
 
+const fetchOptional = async (url, emptyData) => {
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (response.status === 404) {
+    return emptyData;
+  }
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  return response.json();
+};
+
 export const fetchIncidentHeatmap = async ({ startDate, endDate, region = 'all' }) => {
   try {
     const url = buildUrl('/incidents/heatmap', {
@@ -61,8 +75,7 @@ export const fetchIncidentHeatmap = async ({ startDate, endDate, region = 'all' 
       end_date: endDate,
       region,
     });
-
-    const data = await fetchJson(url);
+    const data = await fetchOptional(url, { heatmap_data: [] });
     return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
@@ -77,8 +90,7 @@ export const fetchCallVolume = async ({ startDate, endDate, region = 'all', gran
       region,
       granularity,
     });
-
-    const data = await fetchJson(url);
+    const data = await fetchOptional(url, { trend_data: [] });
     return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
@@ -92,8 +104,7 @@ export const fetchTypeBreakdown = async ({ startDate, endDate, region = 'all' })
       end_date: endDate,
       region,
     });
-
-    const data = await fetchJson(url);
+    const data = await fetchOptional(url, null);
     return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
@@ -107,8 +118,24 @@ export const fetchPostalBreakdown = async ({ startDate, endDate, region = 'all' 
       end_date: endDate,
       region,
     });
+    const data = await fetchOptional(url, { postal_data: [] });
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
 
-    const data = await fetchJson(url);
+export const fetchMutualAid = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/mutual-aid', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+    const data = await fetchOptional(url, {
+      scottsdale_units_outside: 0,
+      other_units_in_scottsdale: 0,
+    });
     return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };

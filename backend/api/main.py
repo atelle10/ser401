@@ -572,3 +572,82 @@ async def get_type_breakdown(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+def _is_scottsdale_unit(unit_resource_id: str) -> bool:
+    if not unit_resource_id:
+        return False
+    u = str(unit_resource_id).strip().upper()
+    if u in ("NEDC", "BT", "WT", "MC"):
+        return False
+    if len(u) == 4 and u[0] == "6":
+        return True
+    for prefix in ("E", "L", "R", "A", "T", "B"):
+        if u.startswith(prefix):
+            return True
+    return False
+
+
+def _incident_in_scottsdale(postal_code) -> bool:
+    if postal_code is None:
+        return False
+    try:
+        p = int(str(postal_code).strip())
+        return 85250 <= p <= 85266
+    except (ValueError, TypeError):
+        return False
+
+
+@app.get("/api/incidents/mutual-aid")
+async def get_mutual_aid(
+    start_date: str = Query(...),
+    end_date: str = Query(...),
+    region: str = Query("all"),
+):
+    try:
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date: {str(e)}")
+
+    try:
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+
+        region_filter = ""
+        if region == "south":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+        elif region == "north":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+
+        query = f"""
+        SELECT
+            i.basic_incident_postal_code AS postal_code,
+            ur.apparatus_resource_id AS unit_id
+        FROM fire_ems.incident i
+        JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+        WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+        {region_filter}
+        """
+        df = db.read_table(f"({query}) as subquery")
+        db.disconnect()
+
+        scottsdale_units_outside = 0
+        other_units_in_scottsdale = 0
+        for _, row in df.iterrows():
+            in_scottsdale = _incident_in_scottsdale(row.get("postal_code"))
+            is_scottsdale = _is_scottsdale_unit(row.get("unit_id"))
+            if is_scottsdale and not in_scottsdale:
+                scottsdale_units_outside += 1
+            elif not is_scottsdale and in_scottsdale:
+                other_units_in_scottsdale += 1
+
+        return {
+            "scottsdale_units_outside": scottsdale_units_outside,
+            "other_units_in_scottsdale": other_units_in_scottsdale,
+            "region": region,
+            "time_window": {"start": start_date, "end": end_date},
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")

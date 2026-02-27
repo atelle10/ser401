@@ -1,15 +1,5 @@
 import { useMemo } from 'react';
 
-/**
- * Unit Hour Utilization (UHU) - Critical metric for resource allocation.
- * 
- * Why this matters: Leadership needs to justify staffing levels and equipment.
- * High UHU (>0.8) = understaffed, Low UHU (<0.3) = overstaffed.
- * 
- * Formula: (time from "en route" to "clear") / (total shift time)
- * - "en route" = unit dispatched to incident
- * - "clear" = unit available again
- */
 const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
   
   const UNIT_TYPES = {
@@ -19,11 +9,10 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
     LA: { name: 'Low-Acuity EMS', color: 'bg-green-600', icon: '🚐' }
   };
 
-  // Calculate UHU per unit - single pass O(n)
   const uhuByUnit = useMemo(() => {
     if (!data?.length) return null;
 
-    const unitHours = {}; // Track busy hours per unit
+    const unitHours = {};
 
     data.forEach(incident => {
       const unit = incident.unit_id;
@@ -44,7 +33,6 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       unitHours[unit].count += 1;
     });
 
-    // Calculate UHU percentage
     const results = Object.entries(unitHours).map(([unit, stats]) => ({
       unit,
       type: stats.type,
@@ -53,7 +41,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       incidents: stats.count
     }))
     .filter(entry => Number.isFinite(entry.uhu))
-    .sort((a, b) => b.uhu - a.uhu); // High to low
+    .sort((a, b) => b.uhu - a.uhu);
 
     return results;
   }, [data, timePeriodHours]);
@@ -67,11 +55,10 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
     );
   }
 
-  // Color code by utilization level - industry thresholds
   const getUHUColor = (uhu) => {
-    if (uhu >= 25) return 'text-orange-600 bg-orange-50'; // Busy
-    if (uhu >= 10) return 'text-green-600 bg-green-50';   // Optimal
-    return 'text-gray-600 bg-gray-50';                    // Underutilized
+    if (uhu >= 25) return 'text-orange-600 bg-orange-50';
+    if (uhu >= 10) return 'text-green-600 bg-green-50';
+    return 'text-gray-600 bg-gray-50';
   };
 
   return (
@@ -79,7 +66,10 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       <div className="mb-4">
         <h3 className="text-lg font-semibold">Unit Hour Utilization (UHU)</h3>
         <p className="text-sm text-gray-300">
-          Time period: {timePeriodHours}h
+          UHU = (dispatch-to-clear busy time / {timePeriodHours}h period) * 100
+        </p>
+        <p className="text-xs text-gray-300">
+          Source columns: unit_response.apparatus_resource_dispatch_date_time and unit_response.apparatus_resource_clear_date_time
         </p>
       </div>
 
