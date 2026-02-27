@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
+import UnitHourUtilizationByOrigin from './Dashboard/KPIs/UnitHourUtilizationByOrigin'
+import MutualAidChart from './Dashboard/KPIs/MutualAidChart'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import Chart from './Dashboard/Chart'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin } from '../services/incidentDataService'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -38,6 +40,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [heatmapData, setHeatmapData] = useState(null)
   const [postalData, setPostalData] = useState(null)
   const [typeBreakdownData, setTypeBreakdownData] = useState(null)
+  const [unitOriginData, setUnitOriginData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -76,7 +79,7 @@ const Dashboard = ({ role = "viewer" }) => {
       return
     }
 
-    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult] = await Promise.all([
+    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult] = await Promise.all([
       fetchKPIData({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
@@ -98,6 +101,11 @@ const Dashboard = ({ role = "viewer" }) => {
         region,
       }),
       fetchTypeBreakdown({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchUnitOrigin({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
@@ -133,6 +141,12 @@ const Dashboard = ({ role = "viewer" }) => {
       setError((prev) => prev || typeBreakdownResult.error || 'Failed to load type breakdown')
     } else {
       setTypeBreakdownData(typeBreakdownResult.data || null)
+    }
+
+    if (!unitOriginResult.success) {
+      setError((prev) => prev || unitOriginResult.error || 'Failed to load unit origin data')
+    } else {
+      setUnitOriginData(unitOriginResult.data || null)
     }
 
     setIsLoading(false)
@@ -253,9 +267,30 @@ const Dashboard = ({ role = "viewer" }) => {
             <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
           </div>
 
-          <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
-            <UnitHourUtilization data={incidentData} />
+        <div className="col-span-1 lg:col-span-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+          <h3 className="font-semibold mb-3">Unit Hour Utilization (UHU)</h3>
+          <UnitHourUtilization
+            data={incidentData}
+            timePeriodHours={
+              (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60)
+            }
+          />
+          <div className="mt-4 pt-4 border-t border-white/20">
+            <h3 className="font-semibold mb-3">UHU by Unit Origin</h3>
+            <UnitHourUtilizationByOrigin
+              scottsdaleUhu={unitOriginData?.scottsdale_uhu}
+              nonScottsdaleUhu={unitOriginData?.non_scottsdale_uhu}
+            />
+          </div>
+        </div>
+
+          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
+            <h3 className="font-semibold mb-3">Mutual Aid: Scottsdale vs Other Units</h3>
+            <MutualAidChart
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+              region={region}
+            />
           </div>
 
           <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">

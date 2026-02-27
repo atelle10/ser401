@@ -19,13 +19,12 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
 
     data.forEach(incident => {
       const unit = incident.unit_id;
-      const dispatchTime = incident.dispatch_time || incident.en_route_time;
-      const clearTime = incident.clear_time;
-      if (!unit || !dispatchTime || !clearTime) return;
+      if (!unit || !incident.dispatch_time || !incident.clear_time) return;
 
-      const dispatch = new Date(dispatchTime);
-      const clear = new Date(clearTime);
-      
+      const dispatch = new Date(incident.dispatch_time);
+      const clear = new Date(incident.clear_time);
+
+      // Sanity check - reject impossible times (data quality issue)
       if (clear <= dispatch || (clear - dispatch) > 24 * 60 * 60 * 1000) return;
 
       const busyHours = (clear - dispatch) / (1000 * 60 * 60);
