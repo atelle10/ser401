@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class UnitOriginHelper:
     SCOTTSDALE_PREFIXES = ["LT", "BC", "BR", "BE", "HM", "E", "L", "R", "S", "U", "T"]
 
@@ -7,12 +12,18 @@ class UnitOriginHelper:
             if not unit_resource_id.startswith(prefix):
                 continue
             remainder = unit_resource_id[len(prefix) :]
-            if len(remainder) == 4 and remainder[0] == "6" and remainder.isdigit():
+            if len(remainder) in (3, 4) and remainder[0] == "6" and remainder.isdigit():
                 return True
         return False
 
     @staticmethod
-    def get_unit_origin_breakdown(df):
+    def get_unit_origin_breakdown(df, db=None):
+        if db:
+            db_df = db.read_table("fire_ems.scottsdale_units")
+            db_units = set(db_df["unit_id"].tolist()) if not db_df.empty else set()
+        else:
+            db_units = None
+
         units = {}
         for _, row in df.iterrows():
             unit_id = row.get("unit_id")
@@ -20,9 +31,16 @@ class UnitOriginHelper:
                 continue
             unit_id = str(unit_id)
             if unit_id not in units:
+                is_scottsdale = UnitOriginHelper.is_scottsdale_unit(unit_id)
+                if db_units is not None:
+                    in_db = unit_id in db_units
+                    if is_scottsdale and not in_db:
+                        logger.warning(f"Unit {unit_id}: classified as Scottsdale but missing from DB table")
+                    elif not is_scottsdale and in_db:
+                        logger.warning(f"Unit {unit_id}: in DB table but not classified as Scottsdale")
                 units[unit_id] = {
                     "unit_id": unit_id,
-                    "is_scottsdale_unit": UnitOriginHelper.is_scottsdale_unit(unit_id),
+                    "is_scottsdale_unit": is_scottsdale,
                     "response_count": 0,
                 }
             units[unit_id]["response_count"] += 1

@@ -481,9 +481,10 @@ async def get_unit_origin(
         """
 
         df = db.read_table(f"({query}) as subquery")
-        db.disconnect()
 
-        breakdown = UnitOriginHelper.get_unit_origin_breakdown(df)
+        breakdown = UnitOriginHelper.get_unit_origin_breakdown(df, db)
+
+        db.disconnect()
 
         return {
             "units": breakdown,
