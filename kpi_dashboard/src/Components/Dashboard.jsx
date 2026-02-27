@@ -71,31 +71,9 @@ const Dashboard = ({ role = "viewer" }) => {
         if (containerRef.current) {
           swapyRef.current = createSwapy(containerRef.current, {
             animation: 'spring',
-            // swapMode: 'drop',
-            // autoScrollOnDrag: true,
-            // enabled: true,
-            // dragAxis: 'x',
           })
-    
-          // swapyRef.current.enable(false)
-          // swapyRef.current.destroy()
-          // console.log(swapyRef.current.slotItemMap())
-    
           swapyRef.current.onBeforeSwap((event) => {
-            console.log('beforeSwap', event)
-            // This is for dynamically enabling and disabling swapping.
-            // Return true to allow swapping, and return false to prevent swapping.
             return true
-          })
-    
-          swapyRef.current.onSwapStart((event) => {
-            console.log('start', event);
-          })
-          swapyRef.current.onSwap((event) => {
-            console.log('swap', event);
-          })
-          swapyRef.current.onSwapEnd((event) => {
-            console.log('end', event);
           })
         }
         return () => {
@@ -203,7 +181,7 @@ const Dashboard = ({ role = "viewer" }) => {
           ]
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const isAdmin = role === "admin"
-
+  const selectRef = React.createRef()
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
@@ -268,6 +246,7 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
+          ref={selectRef}
           selectedValues={options}
           options={options}
           onSelect={
@@ -357,8 +336,25 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="slot top" data-swapy-slot="a">
           <div className="item item-a" data-swapy-item="a">
             <div className="handle" data-swapy-handle></div>
-            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (heatmapVisible ? 'visible' : 'hidden') }>
-               <br />
+            <div className={heatmapVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setHeatmapVisible(true); 
+                console.log(selectRef.current.getSelectedItems());
+                selectRef.current.selectedValues = [...selectRef.current.getSelectedItems(), options.filter(value => value.value === 'heatmap')[0]];
+                console.log(options.filter(item => item.value === 'heatmap')[0]);  
+                console.log(selectRef.current.selectedValues);
+                selectRef.current.onSelect();
+                console.log(selectRef.current.selectedValues)
+                }} 
+                title='Display Heat Map'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
+            <div className={ "w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (heatmapVisible ? 'visible' : 'hidden') }>
+              <br />
               <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day × Hour</h3>
               <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
             </div>
@@ -367,7 +363,6 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="slot top2" data-swapy-slot="e" >
           <div className="item item-e" data-swapy-item="e">
             <div className="handle" data-swapy-handle></div>
-            <br />
             <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (callVolumeVisible ? 'visible' : 'hidden')} >
                <br />
               <h3 className="font-semibold mb-3 text-center">Call Volume Trend</h3>
