@@ -472,7 +472,10 @@ async def get_unit_origin(
             region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
 
         query = f"""
-        SELECT ur.apparatus_resource_id AS unit_id
+        SELECT
+            ur.apparatus_resource_id AS unit_id,
+            ur.apparatus_resource_dispatch_date_time AS dispatch_time,
+            ur.apparatus_resource_clear_date_time AS clear_time
         FROM fire_ems.incident i
         JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
         WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
@@ -484,10 +487,15 @@ async def get_unit_origin(
 
         breakdown = UnitOriginHelper.get_unit_origin_breakdown(df, db)
 
+        time_period_hours = (end_dt - start_dt).total_seconds() / 3600
+        uhu_by_origin = UnitOriginHelper.compute_uhu_by_origin(df, time_period_hours)
+
         db.disconnect()
 
         return {
             "units": breakdown,
+            "scottsdale_uhu": uhu_by_origin["scottsdale_uhu"],
+            "non_scottsdale_uhu": uhu_by_origin["non_scottsdale_uhu"],
             "region": region,
             "time_window": {"start": start_date, "end": end_date},
         }

@@ -45,3 +45,38 @@ class UnitOriginHelper:
                 }
             units[unit_id]["response_count"] += 1
         return sorted(units.values(), key=lambda u: u["response_count"], reverse=True)
+
+    @staticmethod
+    def compute_uhu_by_origin(df, time_period_hours):
+        scottsdale_hours = {}
+        non_scottsdale_hours = {}
+
+        for _, row in df.iterrows():
+            unit_id = row.get("unit_id")
+            dispatch = row.get("dispatch_time")
+            clear = row.get("clear_time")
+            if not unit_id or not dispatch or not clear:
+                continue
+            unit_id = str(unit_id)
+            try:
+                busy = (clear - dispatch).total_seconds() / 3600
+            except Exception:
+                continue
+            if busy <= 0 or busy > 24:
+                continue
+
+            target = scottsdale_hours if UnitOriginHelper.is_scottsdale_unit(unit_id) else non_scottsdale_hours
+            if unit_id not in target:
+                target[unit_id] = 0
+            target[unit_id] += busy
+
+        def avg_uhu(unit_hours):
+            if not unit_hours:
+                return 0
+            uhus = [(hours / time_period_hours) * 100 for hours in unit_hours.values()]
+            return sum(uhus) / len(uhus)
+
+        return {
+            "scottsdale_uhu": round(avg_uhu(scottsdale_hours), 1),
+            "non_scottsdale_uhu": round(avg_uhu(non_scottsdale_hours), 1),
+        }
