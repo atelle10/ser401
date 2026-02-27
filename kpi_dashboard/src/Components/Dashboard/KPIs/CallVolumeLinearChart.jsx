@@ -51,7 +51,7 @@ const CallVolumeLinearChart = ({ startDate, endDate, region = 'south' }) => {
 
   const width = 800;
   const height = 300;
-  const padding = { top: 20, right: 20, bottom: 40, left: 50 };
+  const padding = { top: 20, right: 170, bottom: 40, left: 50 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
 
@@ -68,6 +68,9 @@ const CallVolumeLinearChart = ({ startDate, endDate, region = 'south' }) => {
     .join(' ');
 
   const avgY = padding.top + yScale(chartData.avgCount);
+  const periodUnit = granularity === 'daily' ? 'day' : granularity === 'weekly' ? 'week' : 'month';
+  const avgLineLabel = `Average: ${chartData.avgCount.toFixed(1)} calls/${periodUnit}`;
+  const avgLabelX = padding.left + chartWidth + 12;
 
   const labelStep = Math.ceil(chartData.points.length / 10);
   const xLabels = chartData.points.filter((_, i) => i % labelStep === 0);
@@ -79,19 +82,16 @@ const CallVolumeLinearChart = ({ startDate, endDate, region = 'south' }) => {
           <h3 className="text-lg font-semibold">
             Call Volume Trend - {region === 'south' ? 'South (Urban)' : region === 'north' ? 'North (Rural)' : 'All Regions'}
           </h3>
-          <p className="text-sm text-gray-600">
-            Average: {chartData.avgCount.toFixed(1)} calls/{granularity === 'daily' ? 'day' : granularity === 'weekly' ? 'week' : 'month'}
-          </p>
         </div>
 
         <select
           value={granularity}
           onChange={(e) => setGranularity(e.target.value)}
-          className="border rounded px-3 py-1 text-sm"
+          className="border rounded px-3 py-1 text-sm text-black bg-white"
         >
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
+          <option value="daily" className="text-black bg-white">Daily</option>
+          <option value="weekly" className="text-black bg-white">Weekly</option>
+          <option value="monthly" className="text-black bg-white">Monthly</option>
         </select>
       </div>
 
@@ -135,6 +135,17 @@ const CallVolumeLinearChart = ({ startDate, endDate, region = 'south' }) => {
           strokeDasharray="5,5"
           opacity="0.5"
         />
+        <text
+          x={avgLabelX}
+          y={avgY}
+          textAnchor="start"
+          dominantBaseline="middle"
+          fontSize="13"
+          fill="#2563eb"
+          fontWeight="600"
+        >
+          {avgLineLabel}
+        </text>
 
         <path
           d={linePath}
