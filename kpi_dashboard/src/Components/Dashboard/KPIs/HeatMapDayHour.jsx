@@ -44,9 +44,14 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
       if (incidentDate < cutoff) return;
       
       // Regional filter - postal codes define urban vs rural
-      const isTargetRegion = region === 'south' 
-        ? incident.postal_code < 85260  // South Scottsdale urban codes
-        : incident.postal_code >= 85260; // North Scottsdale rural codes
+      const postalCode = incident.postal_code;
+      if (typeof postalCode !== 'number') return;
+
+      const isTargetRegion = region === 'all'
+        ? true
+        : (region === 'south'
+          ? postalCode < 85260  // South Scottsdale urban codes
+          : postalCode >= 85260); // North Scottsdale rural codes
       
       if (!isTargetRegion) return;
 
@@ -89,7 +94,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
-            Incident Volume Heat Map - {region === 'south' ? 'South (Urban)' : 'North (Rural)'}
+            Incident Volume Heat Map - {region === 'south' ? 'South (Urban)' : region === 'north' ? 'North (Rural)' : 'All Regions'}
           </h3>
           <p className="text-sm text-white">Hour of Day × Day of Week</p>
         </div>

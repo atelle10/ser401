@@ -2,7 +2,7 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY kpi_dashboard/package*.json ./
+COPY kpi_dashboard/package*.json kpi_dashboard/.npmrc ./
 
 RUN npm ci
 
