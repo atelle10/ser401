@@ -53,3 +53,8 @@ Client-side keyword matching on incident type field:
 - #624: EMS vs Non-EMS filter toggle
 - #625: UHU thresholds update
 - #626: UHU calculation description
+
+## Sprint 6 Wrap-up Notes
+- All frontend tasks completed and merged to staging
+- Backend clear_time exposure verified working
+- Ready for sprint 7 handoff
