@@ -52,6 +52,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [unitHourUtilizationVisible, setUnitHourUtilizationVisible] = useState(true)
   const [callVolumeVisible, setCallVolumeVisible] = useState(true)
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
+  const [selectKey, setSelectKey] = useState(0)
 
 
   const dateRange = useMemo(() => {
@@ -179,6 +180,7 @@ const Dashboard = ({ role = "viewer" }) => {
             { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
             { label: 'Call Volume Trend', value: 'call_volume_trend' },
           ]
+  const [selectedCharts, setSelectedCharts] = useState(options)
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const isAdmin = role === "admin"
   const selectRef = React.createRef()
@@ -246,8 +248,9 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
+          key={selectKey}
           ref={selectRef}
-          selectedValues={options}
+          selectedValues={selectedCharts}
           options={options}
           onSelect={
             selectedList => {
@@ -257,6 +260,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+              setSelectedCharts(selectedList)
             }
           }
           onRemove={
@@ -267,6 +271,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+              setSelectedCharts(selectedList)
             }
           }
           avoidHighlightFirstOption={true}
@@ -339,13 +344,9 @@ const Dashboard = ({ role = "viewer" }) => {
             <div className={heatmapVisible ? 'hidden' : 'visible'  }>
               <br />
               <button onClick={() => {
-                setHeatmapVisible(true); 
-                console.log(selectRef.current.getSelectedItems());
-                selectRef.current.selectedValues = [...selectRef.current.getSelectedItems(), options.filter(value => value.value === 'heatmap')[0]];
-                console.log(options.filter(item => item.value === 'heatmap')[0]);  
-                console.log(selectRef.current.selectedValues);
-                selectRef.current.onSelect();
-                console.log(selectRef.current.selectedValues)
+                setHeatmapVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'heatmap')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
                 }} 
                 title='Display Heat Map'>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
@@ -354,6 +355,18 @@ const Dashboard = ({ role = "viewer" }) => {
               </button>
             </div>
             <div className={ "w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (heatmapVisible ? 'visible' : 'hidden') }>
+              <div className="right-align-button">
+                <button onClick={() => {
+                  setHeatmapVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'heatmap'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Heat Map'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <br />
               <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day × Hour</h3>
               <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
@@ -363,8 +376,33 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="slot top2" data-swapy-slot="e" >
           <div className="item item-e" data-swapy-item="e">
             <div className="handle" data-swapy-handle></div>
+            <div className={callVolumeVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setCallVolumeVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'call_volume_trend')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Call Volume Trend'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
             <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (callVolumeVisible ? 'visible' : 'hidden')} >
-               <br />
+              <div className="right-align-button">
+                <button onClick={() => {
+                  setCallVolumeVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'call_volume_trend'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Call Volume Trend'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <br />
               <h3 className="font-semibold mb-3 text-center">Call Volume Trend</h3>
               <CallVolumeLinearChart
                 startDate={dateRange.startDate}
@@ -378,7 +416,32 @@ const Dashboard = ({ role = "viewer" }) => {
           <div className="slot middle-left" data-swapy-slot="b" >
             <div className="item item-b" data-swapy-item="b">
               <div className="handle" data-swapy-handle></div>
+              <div className={unitHourUtilizationVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setUnitHourUtilizationVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'unit_hour_utilization')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Unit Hour Utilization'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
               <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (unitHourUtilizationVisible ? 'visible' : 'hidden')}>
+               <div className="right-align-button">
+                <button onClick={() => {
+                  setUnitHourUtilizationVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'unit_hour_utilization'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Unit Hour Utilization'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
                <br />
               <h3 className="font-semibold mb-3 text-center">Unit Hour Utilization (UHU)</h3>
               <UnitHourUtilization data={incidentData} />
@@ -388,7 +451,32 @@ const Dashboard = ({ role = "viewer" }) => {
           <div className="slot middle-right" data-swapy-slot="c" >
             <div className="item item-c" data-swapy-item="c">
               <div className="handle" data-swapy-handle></div>
+              <div className={postalCodeVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setPostalCodeVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'postal_code')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Postal Code'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
                 <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (postalCodeVisible ? 'visible' : 'hidden')}>
+                <div className="right-align-button">
+                <button onClick={() => {
+                  setPostalCodeVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'postal_code'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Postal Code'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
                 <br />
                 <h3 className="font-semibold mb-3 text-center">Incidents by Postal Code</h3>
                 <IncidentsByPostalCode data={postalData} />
@@ -399,7 +487,32 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="slot bottom" data-swapy-slot="d" >
           <div className="item item-d" data-swapy-item="d">
               <div className="handle" data-swapy-handle></div>
+              <div className={typeBreakdownVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setTypeBreakdownVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'type_breakdown')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Type Breakdown'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
               <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (typeBreakdownVisible ? 'visible' : 'hidden')}>
+                <div className="right-align-button">
+                <button onClick={() => {
+                  setTypeBreakdownVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'type_breakdown'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Type Breakdown'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
                <br />
               <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
               <IncidentTypeBreakdown data={typeBreakdownData} />

@@ -70,18 +70,24 @@
   position: relative;
 }
 
+.item[data-swapy-dragging] {
+  opacity: 0.5;
+} 
+
 .handle {
   cursor: grab;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   background-image: url(./handle.svg);
   opacity: 0.5;
   position: absolute;
   top: 14px;
   left: 10px;
   border-radius: 3px;
+  padding: 5px;
 }
 
-.item[data-swapy-dragging] {
-  opacity: 0.5;
-} 
+.right-align-button {
+  display: flex;
+  justify-content: flex-end; /* Pushes content to the right */
+}
