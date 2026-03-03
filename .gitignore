@@ -89,3 +89,4 @@ Desktop.ini
 mock_data/
 *.csv
 node_modules/
+.vs/

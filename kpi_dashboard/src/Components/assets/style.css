@@ -1,0 +1,87 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0 auto;
+}
+
+.slot.top {
+  width: 100%;
+}
+
+.slot.top2 {
+  width: 100%;
+}
+
+.middle {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+
+}
+
+.slot.middle-left {
+  width: 50%;
+}
+
+.slot.middle-right {
+  width: 50%;
+}
+
+.slot.bottom {
+  width: 100%;
+}
+
+.slot {
+  border-radius: 10px;
+  height: 25%;
+  margin: 10px;
+}
+.slot[data-swapy-highlighted] {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.item {
+  border-radius: 10px;
+  width: 100%;
+  height: 100%;
+}
+
+.card {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item:has(.handle) {
+  position: relative;
+}
+.item:has(.myButton){
+  position: relative;
+}
+
+.handle {
+  cursor: grab;
+  width: 24px;
+  height: 24px;
+  background-image: url(./handle.svg);
+  opacity: 0.5;
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  border-radius: 3px;
+}
+
+.item[data-swapy-dragging] {
+  opacity: 0.5;
+} 

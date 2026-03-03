@@ -74,10 +74,8 @@ const Login = () => {
 
   return (
     <div className="w-screen h-screen flex items-center justify-center bg-no-repeat bg-black p-1" style={{ backgroundImage: `url(${backgroundImage})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      <div className="flex items-center md:flex-row bg-gray-100 rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2 bg-transparent">
-        {/* Main Login Card - matching dashboard style - Mobile Responsive */}
-        <div className="backdrop-blur-md bg-white/30 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 h-1/2 w-auto max-w-md space-y-4 sm:space-y-6">
-          {/* Logo */}
+      <div className="flex items-center md:flex-row rounded-2xl shadow-lg overflow-hidden max-w-4xl w-fit h-fit p-2 bg-transparent">
+        <div className="bg-blue-950 rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-md space-y-4 sm:space-y-6 border border-blue-800">
           <div className="flex justify-center">
             <img 
               src={famarLogo} 
@@ -85,21 +83,18 @@ const Login = () => {
               className="w-24 h-24 sm:w-32 sm:h-32 object-contain" 
             />
           </div>
-          {/* Title */}
           <div className="text-center">
-            <h1 className="text-xl sm:text-2xl font-bold text-black">Welcome Back</h1>
-            <p className="text-xs sm:text-sm text-gray-800 mt-1">Sign in to continue to dashboard</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Welcome Back</h1>
+            <p className="text-xs sm:text-sm text-white/80 mt-1">Sign in to continue to dashboard</p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-white/90 mb-1">
                 Email
               </label>
               <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2 bg-blue-900/40 text-white placeholder-white/50 border border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 type="email"
                 id="email"
                 placeholder="Enter your email"
@@ -110,13 +105,12 @@ const Login = () => {
             />
             </div>
 
-            {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-white/90 mb-1">
                 Password
               </label>
               <input
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-2 bg-blue-900/40 text-white placeholder-white/50 border border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 type="password"
                 placeholder="Enter your password"
                 id="password"
@@ -127,14 +121,12 @@ const Login = () => {
             />
             </div>
 
-            {/* Error Message */}
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
+              <div className="p-3 bg-red-900/50 border border-red-700 rounded-lg">
+                <p className="text-sm text-white">{error}</p>
               </div>
             )}
 
-            {/* Login Button */}
             <button 
               type="submit" 
               className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
@@ -143,7 +135,6 @@ const Login = () => {
               {isSubmitting ? 'Signing in...' : 'Login'}
             </button>
 
-            {/* Sign in with Microsoft Button */}
             <button 
               type="button" 
               className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -164,11 +155,10 @@ const Login = () => {
               {isSubmitting ? 'Sending to Microsoft SSO...' : 'Sign in with Microsoft'}
             </button>
 
-            {/* Register Link */}
-            <div className="text-center text-sm text-black">
+            <div className="text-center text-sm text-white/80">
               Don't have an account?{' '}
               <Link 
-                className="text-blue-600 font-semibold hover:text-blue-700 hover:underline" 
+              className="text-blue-400 font-semibold hover:text-blue-300 hover:underline" 
                 to="/register"
               >
                 Register Here

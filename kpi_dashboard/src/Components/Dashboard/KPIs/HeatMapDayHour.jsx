@@ -49,7 +49,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
 
       const isTargetRegion = region === 'all'
         ? true
-        : (region === 'south' 
+        : (region === 'south'
           ? postalCode < 85260  // South Scottsdale urban codes
           : postalCode >= 85260); // North Scottsdale rural codes
       
@@ -80,29 +80,23 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
     if (count === 0) return 'bg-gray-50';
     const intensity = Math.ceil((count / heatData.maxCount) * 5);
     const colors = [
-      'bg-blue-100 text-blue-800',
-      'bg-blue-200 text-blue-800', 
-      'bg-blue-400 text-blue-800',
-      'bg-blue-600 text-blue-800',
-      'bg-blue-800 text-white'
+      'bg-orange-100 text-orange-800',
+      'bg-orange-300 text-orange-900',
+      'bg-orange-500 text-white',
+      'bg-red-600 text-white',
+      'bg-red-800 text-white'
     ];
     return colors[Math.min(intensity - 1, 4)];
   };
 
-  const regionLabel = region === 'south'
-    ? 'South (Urban)'
-    : (region === 'north'
-      ? 'North (Rural)'
-      : 'All Regions');
-
   return (
-    <div className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
+    <div className="cursor-default border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
-            Incident Volume Heat Map - {regionLabel}
+            Incident Volume Heat Map - {region === 'south' ? 'South (Urban)' : region === 'north' ? 'North (Rural)' : 'All Regions'}
           </h3>
-          <p className="text-sm text-gray-600">Day of Week × Hour of Day</p>
+          <p className="text-sm text-white">Hour of Day × Day of Week</p>
         </div>
 
         {heatData.source === 'incidents' && (
@@ -122,27 +116,27 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th className="border p-2 bg-gray-100 text-xs sticky left-0">Hour</th>
-              {DAYS.map(day => (
-                <th key={day} className="border p-2 bg-gray-100 text-xs font-medium">
-                  {day}
+              <th className="border p-2 bg-gray-100 text-xs sticky left-0">Day</th>
+              {HOURS.map(hour => (
+                <th key={hour} className="border p-2 bg-gray-100 text-xs font-medium">
+                  {hour.toString().padStart(2, '0')}:00
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {HOURS.map(hour => (
-              <tr key={hour}>
+            {DAYS.map((day, dayIdx) => (
+              <tr key={day}>
                 <td className="border p-2 bg-gray-50 text-xs font-medium text-right sticky left-0">
-                  {hour.toString().padStart(2, '0')}:00
+                  {day}
                 </td>
-                {DAYS.map((_, dayIdx) => {
+                {HOURS.map(hour => {
                   const count = heatData.grid[dayIdx][hour];
                   return (
                     <td
-                      key={dayIdx}
+                      key={hour}
                       className={`border p-3 ${getColor(count)} transition-colors cursor-pointer hover:opacity-60`}
-                      title={`${DAYS[dayIdx]} ${hour}:00 - ${count} incidents`}
+                      title={`${day} ${hour}:00 - ${count} incidents`}
                     >
                       <span className="text-xs font-medium">{count || ''}</span>
                     </td>
@@ -157,7 +151,7 @@ const HeatMapDayHour = ({ data, heatmapData, region = 'south', weeks = 5 }) => {
       <div className="mt-4 flex items-center gap-4 text-xs">
         <span>Low</span>
         <div className="flex gap-1">
-          {['bg-gray-50', 'bg-blue-100', 'bg-blue-200', 'bg-blue-400', 'bg-blue-600', 'bg-blue-800'].map((color, i) => (
+          {['bg-gray-50', 'bg-orange-100', 'bg-orange-300', 'bg-orange-500', 'bg-red-600', 'bg-red-800'].map((color, i) => (
             <div key={i} className={`w-6 h-4 ${color} border`}></div>
           ))}
         </div>
