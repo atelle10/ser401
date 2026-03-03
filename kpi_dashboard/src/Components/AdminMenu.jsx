@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { authClient } from '../utils/authClient'
+import { countUnverifiedUsers } from '../utils/userVerification'
 
 const roleOptions = [
   { value: 'viewer', label: 'Viewer' },
@@ -7,7 +8,7 @@ const roleOptions = [
   { value: 'admin', label: 'Admin' },
 ]
 
-const AdminMenu = () => {
+const AdminMenu = ({ onUnverifiedCountChange }) => {
   const [users, setUsers] = useState([])
   const [roleEdits, setRoleEdits] = useState({})
   const [isLoading, setIsLoading] = useState(true)
@@ -47,14 +48,16 @@ const AdminMenu = () => {
           .split(',')
           .map((value) => value.trim())
           .filter(Boolean)[0] || 'viewer'
+        const isUnverified = user.verified === false
 
         return {
           id: user.id,
           name: user.name || user.email || 'Unknown user',
           email: user.email || '',
           role: primaryRole,
+          isUnverified,
           status:
-            user.verified === false
+            isUnverified
               ? 'Unverified'
               : user.banned
                 ? 'Banned'
@@ -81,6 +84,11 @@ const AdminMenu = () => {
       })),
     [users, roleEdits]
   )
+
+  useEffect(() => {
+    if (!onUnverifiedCountChange) return
+    onUnverifiedCountChange(countUnverifiedUsers(users))
+  }, [users, onUnverifiedCountChange])
 
   const handleRoleChange = (userId, nextRole) => {
     setRoleEdits((prev) => ({
@@ -177,7 +185,7 @@ const AdminMenu = () => {
       setUsers((prev) =>
         prev.map((user) =>
           user.id === userId
-            ? { ...user, status: 'Active' }
+            ? { ...user, isUnverified: false, status: 'Active' }
             : user
         )
       )
@@ -352,7 +360,7 @@ const AdminMenu = () => {
           </div>
         ) : (
           editableUsers.map((user) => {
-            const isUnverified = user.status === 'Unverified'
+            const isUnverified = user.isUnverified
 
             return (
               <div

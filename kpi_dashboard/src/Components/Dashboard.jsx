@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
+import UnitHourUtilizationByOrigin from './Dashboard/KPIs/UnitHourUtilizationByOrigin'
+import MutualAidChart from './Dashboard/KPIs/MutualAidChart'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
@@ -8,7 +10,7 @@ import Chart from './Dashboard/Chart'
 import KPI_1 from './Dashboard/KPIs/KPI_1'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin } from '../services/incidentDataService'
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
@@ -44,6 +46,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [heatmapData, setHeatmapData] = useState(null)
   const [postalData, setPostalData] = useState(null)
   const [typeBreakdownData, setTypeBreakdownData] = useState(null)
+  const [unitOriginData, setUnitOriginData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -52,7 +55,9 @@ const Dashboard = ({ role = "viewer" }) => {
   const [unitHourUtilizationVisible, setUnitHourUtilizationVisible] = useState(true)
   const [callVolumeVisible, setCallVolumeVisible] = useState(true)
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
-  const [selectKey, setSelectKey] = useState(0)
+  const [mutualAidVisible, setMutualAidVisible] = useState(true)
+   const [selectKey, setSelectKey] = useState(0)
+
 
 
   const dateRange = useMemo(() => {
@@ -106,7 +111,7 @@ const Dashboard = ({ role = "viewer" }) => {
       return
     }
 
-    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult] = await Promise.all([
+    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult] = await Promise.all([
       fetchKPIData({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
@@ -128,6 +133,11 @@ const Dashboard = ({ role = "viewer" }) => {
         region,
       }),
       fetchTypeBreakdown({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchUnitOrigin({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
@@ -165,6 +175,12 @@ const Dashboard = ({ role = "viewer" }) => {
       setTypeBreakdownData(typeBreakdownResult.data || null)
     }
 
+    if (!unitOriginResult.success) {
+      setError((prev) => prev || unitOriginResult.error || 'Failed to load unit origin data')
+    } else {
+      setUnitOriginData(unitOriginResult.data || null)
+    }
+
     setIsLoading(false)
   }, [dateRange.endDate, dateRange.startDate, region])
 
@@ -179,8 +195,11 @@ const Dashboard = ({ role = "viewer" }) => {
             { label: 'Type Breakdown', value: 'type_breakdown' },
             { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
             { label: 'Call Volume Trend', value: 'call_volume_trend' },
+            { label: 'Mutual Aid', value: 'mutual_aid' },
           ]
   const [selectedCharts, setSelectedCharts] = useState(options)
+
+
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const isAdmin = role === "admin"
   const selectRef = React.createRef()
@@ -192,7 +211,7 @@ const Dashboard = ({ role = "viewer" }) => {
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
             value={region}
-            onChange={(e) => 
+            onChange={(e) =>
               setRegion(e.target.value)
             }
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
@@ -260,6 +279,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+              setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setSelectedCharts(selectedList)
             }
           }

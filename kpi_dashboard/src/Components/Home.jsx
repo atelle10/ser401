@@ -12,6 +12,8 @@ import AdminMenu from './AdminMenu.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
+import backgroundImage2 from './assets/background_img.png'
+import { countUnverifiedUsers } from '../utils/userVerification'
 
 const fallbackProfile = {
   name: 'User',
@@ -35,6 +37,8 @@ const Home = ({ role = "viewer" }) => {
   const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
   const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
+  const [adminNotificationCount, setAdminNotificationCount] = useState(0)
+  const [isUnverifiedBannerDismissed, setIsUnverifiedBannerDismissed] = useState(false)
   const isAdmin = role === "admin"
 
   useEffect(() => {
@@ -46,6 +50,39 @@ const Home = ({ role = "viewer" }) => {
       setCurrentView('dashboard')
     }
   }, [currentView, isAdmin])
+
+  useEffect(() => {
+    if (adminNotificationCount === 0) {
+      setIsUnverifiedBannerDismissed(false)
+    }
+  }, [adminNotificationCount])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadAdminNotificationCount = async () => {
+      if (!isAdmin) {
+        if (isMounted) setAdminNotificationCount(0)
+        return
+      }
+
+      const result = await authClient.admin.listUsers()
+      if (!isMounted) return
+
+      if (result?.error) {
+        setAdminNotificationCount(0)
+        return
+      }
+
+      setAdminNotificationCount(countUnverifiedUsers(result?.data?.users || []))
+    }
+
+    loadAdminNotificationCount()
+
+    return () => {
+      isMounted = false
+    }
+  }, [isAdmin])
 
   const renderContent = () => {
     switch(currentView) {
@@ -73,7 +110,7 @@ const Home = ({ role = "viewer" }) => {
         if (!isAdmin) {
           return <div className="p-8 text-center text-red-600">Access Denied — Admin console for admin only</div>
         }
-        return <AdminMenu />
+        return <AdminMenu onUnverifiedCountChange={setAdminNotificationCount} />
       default:
         return <Dashboard role={role} />
     }
@@ -90,6 +127,7 @@ const Home = ({ role = "viewer" }) => {
                 setCurrentView={setCurrentView}
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
+                adminNotificationCount={adminNotificationCount}
                 role={role}
               />
               <ChatBot />
@@ -115,6 +153,20 @@ const Home = ({ role = "viewer" }) => {
                 />
               </div>
             </div>
+
+            {isAdmin && adminNotificationCount > 0 && !isUnverifiedBannerDismissed && (
+              <div className="mx-1 mt-2 flex items-start justify-between gap-3 rounded-lg border border-yellow-200/70 bg-red-500/75 px-3 py-2 text-sm font-medium text-yellow-50 shadow-md">
+                <p>You have unverified users waiting for review.</p>
+                <button
+                  type="button"
+                  aria-label="Dismiss unverified users notification"
+                  className="rounded px-1 text-yellow-100 hover:bg-red-600/70 hover:text-white transition"
+                  onClick={() => setIsUnverifiedBannerDismissed(true)}
+                >
+                  X
+                </button>
+              </div>
+            )}
             
             <div className="flex-1">
               {renderContent()}
@@ -126,6 +178,7 @@ const Home = ({ role = "viewer" }) => {
                 setCurrentView={setCurrentView}
                 onAccountClick={() => setCurrentView('account')}
                 isAdmin={isAdmin}
+                adminNotificationCount={adminNotificationCount}
                 role={role}
               />
             </div>
