@@ -324,7 +324,7 @@ const Dashboard = ({ role = "viewer" }) => {
       )}
 
       {hasLoadedOnce && kpiSummary && (
-        <div data-testid="basic-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div data-testid="basic-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-6">
           <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
             <h3 className="font-semibold mb-2">Total Incidents</h3>
             <div className="text-2xl font-semibold">{kpiSummary.total_incidents ?? '-'}</div>
@@ -357,7 +357,7 @@ const Dashboard = ({ role = "viewer" }) => {
       )}
 
       {isAnalystOrAdmin && (
-        <div data-testid="advanced-analytics" className="container p-4" ref={containerRef}> 
+        <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
         <div className="slot top" data-swapy-slot="a">
           <div className="item item-a" data-swapy-item="a">
             <div className="handle" data-swapy-handle></div>
@@ -387,7 +387,6 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
-              <br />
               <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day × Hour</h3>
               <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
             </div>
@@ -422,7 +421,6 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
-              <br />
               <h3 className="font-semibold mb-3 text-center">Call Volume Trend</h3>
               <CallVolumeLinearChart
                 startDate={dateRange.startDate}
@@ -462,7 +460,6 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
-               <br />
               <h3 className="font-semibold mb-3 text-center">Unit Hour Utilization (UHU)</h3>
               <UnitHourUtilization data={incidentData} />
             </div>
@@ -497,7 +494,6 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
-                <br />
                 <h3 className="font-semibold mb-3 text-center">Incidents by Postal Code</h3>
                 <IncidentsByPostalCode data={postalData} />
               </div>
@@ -533,7 +529,6 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
-               <br />
               <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
               <IncidentTypeBreakdown data={typeBreakdownData} />
             </div>
