@@ -13,6 +13,7 @@ import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
 import { countUnverifiedUsers } from '../utils/userVerification'
+import Fire_Display from './Fire_Display.jsx'
 
 const fallbackProfile = {
   name: 'User',
@@ -32,13 +33,14 @@ const buildProfile = (user) => {
   }
 }
 
-const Home = ({ role = "viewer" }) => {  
+const Home = ({ role = "admin" }) => {  
   const { data: session } = authClient.useSession()
   const [currentView, setCurrentView] = useState('dashboard')
   const [userProfile, setUserProfile] = useState(() => buildProfile(session?.user))
   const [adminNotificationCount, setAdminNotificationCount] = useState(0)
   const [isUnverifiedBannerDismissed, setIsUnverifiedBannerDismissed] = useState(false)
   const isAdmin = role === "admin"
+  const [displayMode, setDisplayMode] = useState(true) 
 
   useEffect(() => {
     setUserProfile(buildProfile(session?.user))
@@ -87,6 +89,10 @@ const Home = ({ role = "viewer" }) => {
     switch(currentView) {
       case 'dashboard':
         return <Dashboard role={role} />
+      case 'fire':
+        return <Fire_Display />
+      case 'medical':
+        return <div className="p-8 text-center text-gray-300">Medical module coming soon...</div>
       case 'upload':
         if (!["analyst", "admin"].includes(role)) {
           return <div className="p-8 text-center text-red-600">Access Denied — Upload for analyst/admin only</div>
@@ -117,22 +123,24 @@ const Home = ({ role = "viewer" }) => {
 
   return(
       <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
-        <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-0 sm:p-3 md:p-4">
-          <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
-            <Logo />
-            <div className="flex flex-col gap-2">
-              <Sidebar
-                currentView={currentView}
-                setCurrentView={setCurrentView}
-                onAccountClick={() => setCurrentView('account')}
-                isAdmin={isAdmin}
-                adminNotificationCount={adminNotificationCount}
-                role={role}
-              />
-              <ChatBot />
+       <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-0 sm:p-3 md:p-4">
+          {displayMode && (
+            <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
+              <Logo />
+              <div className="flex flex-col gap-2">
+                <Sidebar
+                  currentView={currentView}
+                  setCurrentView={setCurrentView}
+                  onAccountClick={() => setCurrentView('account')}
+                  isAdmin={isAdmin}
+                  adminNotificationCount={adminNotificationCount}
+                  role={role}
+                />
+                  <ChatBot />
+                </div>
             </div>
-          </div>
-          
+            )
+          }
           <div className="flex-1 lg:col-span-6 flex flex-col gap-0">
             <div className="flex items-center w-full gap-2">
               <div className="lg:hidden flex-shrink-0">
