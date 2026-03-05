@@ -25,11 +25,11 @@ const NavBar = ({ currentView, setCurrentView, role = "viewer" }) => {
         </div>
         <div className="h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1">
             <img src={fireIcon} alt="Fire Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
-            <p className="hidden sm:inline text-sm md:text-base">Fire</p>
+            <p className="hidden sm:inline text-sm md:text-base" onClick={() => setCurrentView('fire')}>Fire</p>
         </div>
         <div className="h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1">
             <img src={medicalIcon} alt="Medical Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
-            <p className="hidden sm:inline text-sm md:text-base">Medical</p>
+            <p className="hidden sm:inline text-sm md:text-base" onClick={() => setCurrentView('medical')}>Medical</p>
         </div>
         {canUpload && (
           <div 
