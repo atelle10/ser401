@@ -16,14 +16,14 @@ import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
 
-const formatDateInputValue = (date) => {
+export const formatDateInputValue = (date) => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
-const buildIsoRangeFromDateInputs = ({ start, end }) => {
+export const buildIsoRangeFromDateInputs = ({ start, end }) => {
   if (!start || !end) return { startDate: null, endDate: null }
 
   const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
