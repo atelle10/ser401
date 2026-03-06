@@ -142,6 +142,25 @@ export const fetchMutualAid = async ({ startDate, endDate, region = 'all' }) => 
   }
 };
 
+export const fetchResponseTimes = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/response-times', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+
+    const data = await fetchOptional(url, {
+      overall: null,
+      per_unit: [],
+    });
+
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
 export const fetchUnitOrigin = async ({ startDate, endDate, region = 'all' }) => {
   try {
     const url = buildUrl('/incidents/unit-origin', {
@@ -173,7 +192,6 @@ const transformAPIData = (apiData) => {
     return incident.units.map(unit => ({
       ...base,
       unit_id: unit.unit_id,
-      dispatch_time: unit.dispatch_time,
       arrival_time: unit.arrival_time,
       dispatch_time: unit.dispatch_time,
       clear_time: unit.clear_time,
