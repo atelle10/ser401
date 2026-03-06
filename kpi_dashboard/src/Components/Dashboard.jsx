@@ -32,7 +32,7 @@ export const buildIsoRangeFromDateInputs = ({ start, end }) => {
 
 
 
-const Dashboard = ({ role = "viewer" }) => {
+const Dashboard = ({ role }) => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
@@ -206,7 +206,7 @@ const Dashboard = ({ role = "viewer" }) => {
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
+      <div className="flex flex-col w-fit sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
@@ -291,6 +291,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+              setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setSelectedCharts(selectedList)
             }
           }
@@ -355,7 +356,7 @@ const Dashboard = ({ role = "viewer" }) => {
           </div>
         </div>
       )}
-
+      
       {isAnalystOrAdmin && (
         <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
         <div className="slot top" data-swapy-slot="a">
@@ -531,6 +532,40 @@ const Dashboard = ({ role = "viewer" }) => {
               </div>
               <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
               <IncidentTypeBreakdown data={typeBreakdownData} />
+            </div>
+          </div>
+        </div>
+        <div className="slot bottom2" data-swapy-slot="f" >
+          <div className="item item-f" data-swapy-item="f">
+              <div className="handle" data-swapy-handle></div>
+              <div className={mutualAidVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setMutualAidVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'mutual_aid')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Mutual Aid'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
+              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (mutualAidVisible ? 'visible' : 'hidden')}>
+                <div className="right-align-button">
+                <button onClick={() => {
+                  setMutualAidVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'mutual_aid'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Mutual Aid'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <h3 className="font-semibold mb-3 text-center">Incident Mutual Aid</h3>
+              <MutualAidChart startDate={dateInputs.start} endDate={dateInputs.end} />
             </div>
           </div>
         </div>
