@@ -14,6 +14,7 @@ import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdo
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
+import motion from 'motion/react'
 
 export const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -204,8 +205,8 @@ const FireDisplay = ({ role }) => {
   const isAdmin = role === "admin"
   const selectRef = React.createRef()
 
-  return (
-    <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
+  return ( 
+    <div className="p-2 sm:p-4 space-y-4 sm:space-y-6 w-full">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
@@ -274,39 +275,20 @@ const FireDisplay = ({ role }) => {
         </div>
       )}
 
-      {hasLoadedOnce && kpiSummary && (
-        <div data-testid="basic-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-6">
-          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Total Incidents</h3>
-            <div className="text-2xl font-semibold">{kpiSummary.total_incidents ?? '-'}</div>
-          </div>
-          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Avg Response (min)</h3>
-            <div className="text-2xl font-semibold">
-              {kpiSummary.avg_response_time_minutes != null
-                ? Number(kpiSummary.avg_response_time_minutes).toFixed(1)
-                : '-'}
-            </div>
-          </div>
-          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Active Units</h3>
-            <div className="text-2xl font-semibold">{kpiSummary.active_units ?? '-'}</div>
-          </div>
-          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Peak Load Factor</h3>
-            <div className="text-2xl font-semibold">
-              {kpiSummary.peak_load_factor != null
-                ? Number(kpiSummary.peak_load_factor).toFixed(2)
-                : '-'}
-            </div>
-          </div>
-          <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Peak Hour</h3>
-            <div className="text-2xl font-semibold">{kpiSummary.peak_hour ?? '-'}</div>
-          </div>
-        </div>
-      )}
-        <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
+      <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col w-full m-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg">
+        <CallVolumeLinearChart
+          
+          startDate={dateRange.startDate}
+          endDate={dateRange.endDate}
+          region={region}
+        />
+      </div>
+
+      <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
         <div className="slot top" data-swapy-slot="a">
           <div className="item item-a" data-swapy-item="a">
             <div className="handle" data-swapy-handle></div>
