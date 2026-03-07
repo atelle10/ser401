@@ -14,7 +14,10 @@ import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdo
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
-import motion from 'motion/react'
+import { motion } from 'motion/react'
+import Dashboard from './Dashboard'
+import homeIcon from './assets/home icon.png'
+import { Link, useNavigate } from 'react-router-dom';
 
 export const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -59,7 +62,9 @@ const FireDisplay = ({ role }) => {
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
    const [selectKey, setSelectKey] = useState(0)
 
-
+   const refreshPage = () => {
+    window.location.reload();
+  };
 
   const dateRange = useMemo(() => {
     if (isCustomRange) {
@@ -263,7 +268,13 @@ const FireDisplay = ({ role }) => {
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           />
         </div>
+        <div 
+          className="ml-auto h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1"
+          onClick={refreshPage}
+        >
+            <img src={homeIcon} title='Return to Home' alt="Home Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'/>
         </div>
+      </div>
 
       {error && (
         <ErrorMessage message={error} onRetry={loadIncidentData} color="blue" />
@@ -276,17 +287,16 @@ const FireDisplay = ({ role }) => {
       )}
 
       <motion.div 
-      initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="flex flex-col w-full m-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg">
         <CallVolumeLinearChart
-          
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
           region={region}
         />
-      </div>
+      </motion.div>
 
       <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
         <div className="slot top" data-swapy-slot="a">
