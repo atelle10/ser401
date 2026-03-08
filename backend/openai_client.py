@@ -13,7 +13,21 @@ class OpenAISummaryService(OpenAISummaryClient):
         self.model = MODEL_NAME
 
     def generate_summary_prompt(self, data: pd.DataFrame, endpoint: str) -> str:
-        pass
+        columns = ", ".join(data.columns.tolist())
+        stats = data.describe().to_string()
+        sample = data.head(5).to_string()
+
+        # will paramaterize this prompt from db later on. Using this default prompt for summaries
+        # for now.
+        system_prompt = (
+            f"Here are the columns used for this dataframe and its explanations: {columns}\n\n"
+            f"Endpoint: {endpoint}\n\n"
+            f"Statistical summary:\n{stats}\n\n"
+            f"Sample data:\n{sample}\n\n"
+            f"Summarize this data into a single paragraph of key point metrics from this data."
+        )
+
+        return system_prompt  # parse to request as system prompt.
 
     def get_char_count(self, text: str) -> int:
         return len(text)
