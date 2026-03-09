@@ -1,6 +1,11 @@
-import pandas as pd
-from openai import OpenAISummaryClient
+import os
 
+import pandas as pd
+from dotenv import load_dotenv
+from openai import OpenAI
+from openai_interface import OpenAISummaryClient
+
+load_dotenv()
 MAX_ROWS = 500
 MODEL_NAME = (
     "gpt-4o-mini"  # we will stick with this model (cheapest) for the pdf summary.
@@ -45,7 +50,20 @@ class OpenAISummaryService(OpenAISummaryClient):
         return cleaned
 
     def request_summary(self, prompt: str) -> str:
-        pass
+        client = OpenAI(api_key=self.api_key)
+        response = client.chat.completions.create(
+            model=self.model, messages=[{"role": "system", "content": prompt}]
+        )
+        return response.choices[0].message.content
 
     def summarize_dashboard(self, data: dict[str, pd.DataFrame]) -> str:
         pass
+
+
+if __name__ == "__main__":
+    api_key = os.getenv("OPENAI_API_KEY")
+    service = OpenAISummaryService(api_key)
+
+    sample_df = pd.DataFrame({"incidents": [12, 45, 30], "response_time": [4, 6, 5]})
+    prompt = service.generate_summary_prompt(sample_df, "test-endpoint")
+    print(service.request_summary(prompt))
