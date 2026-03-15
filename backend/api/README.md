@@ -22,6 +22,18 @@ Query params: start_date, end_date, region (south/north/all)
 
 Returns aggregated KPI metrics for performance.
 
+### GET /api/incidents/response-times
+Query params: start_date, end_date, region (south/north/all)
+
+Returns response-time KPIs (in minutes) for:
+- call processing (PSAP → dispatch)
+- turnout (dispatch → en route)
+- travel (en route → arrival)
+
+Response shape:
+- `overall`: avg and 90th percentile for each metric.
+- `per_unit`: one row per unit with `unit_id`, `calls`, and avg / 90th percentile for each metric.
+
 ## Database
 
 Connects to PostgreSQL fire_ems schema.
