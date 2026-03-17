@@ -18,23 +18,23 @@ const NavBar = ({ currentView, setCurrentView, role = "viewer", setDisplayMode }
     <div className='text-white flex justify-center items-center gap-6 text-center font-bold h-10 shadow-blue-500/30 shadow-md rounded-2xl bg-blue-500/40 w-full'>
         <div 
           className={getItemClass('dashboard')}
-          onClick={() => {setCurrentView('dashboard'); setDisplayMode(true)}}
+          onClick={() => {setCurrentView('dashboard'); setDisplayMode(false)}}
         >
             <img src={homeIcon} alt="Home Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
             <p className="hidden sm:inline text-sm md:text-base">Home</p>
         </div>
-        <div onClick={() => {setCurrentView('fire'); setDisplayMode(false)}} className="h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1">
+        <div onClick={() => {setCurrentView('fire'); setDisplayMode(true)}} className="h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1">
             <img src={fireIcon} alt="Fire Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
             <p className="hidden sm:inline text-sm md:text-base">Fire</p>
         </div>
-        <div onClick={() => {setCurrentView('medical'); setDisplayMode(false)}} className="h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1">
+        <div onClick={() => {setCurrentView('medical'); setDisplayMode(true)}} className="h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1">
             <img src={medicalIcon} alt="Medical Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
             <p className="hidden sm:inline text-sm md:text-base">Medical</p>
         </div>
         {canUpload && (
           <div 
             className={getItemClass('upload')}
-            onClick={() => {setCurrentView('upload'); setDisplayMode(true)}}
+            onClick={() => {setCurrentView('upload'); setDisplayMode(false)}}
           >
               <img src={uploadIcon} alt="Upload Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-1 sm:mr-2'/>
               <p className="hidden sm:inline text-sm md:text-base">Upload</p>
