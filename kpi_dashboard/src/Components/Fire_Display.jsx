@@ -210,6 +210,41 @@ const FireDisplay = ({ role }) => {
   const isAdmin = role === "admin"
   const selectRef = React.createRef()
 
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const titles = [
+    "Call Volume Trend",
+    "Heat Map: Incidents by Day × Hour",
+    "Unit Hour Utilization",
+    "Incident Type Breakdown",
+    "Incidents by Postal Code",
+    "Mutual Aid"
+  ]
+  const components = [
+    CallVolumeLinearChart, 
+    HeatMapDayHour, 
+    UnitHourUtilization,
+    IncidentTypeBreakdown,
+    IncidentsByPostalCode,
+    MutualAidChart
+  ];
+
+  const displayTitle = titles[currentIndex]
+  const CurrentComponent = components[currentIndex]; // Store the active component
+  // Function to cycle to the next component
+  const goToNextComponent = () => {
+    setCurrentIndex((prevIndex) =>
+      (prevIndex + 1) % components.length // Loop back to the start if at the end
+    );
+  };
+
+  // Function to go back (optional)
+  const goToPreviousComponent = () => {
+    setCurrentIndex((prevIndex) =>
+      (prevIndex - 1 + components.length) % components.length
+    );
+  };
+
   return ( 
     <div className="sm:p-4 space-y-4 sm:space-y-6 w-screen h-screen">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
@@ -275,22 +310,39 @@ const FireDisplay = ({ role }) => {
             <img src={homeIcon} title='Return to Home' alt="Home Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'/>
         </div>
       </div>
+    
+      <div className='flex flex-row'>
+        <motion.button 
+          whileHover={{scale: 1.05, y: -3}}
+          whileTap={{scale:0.9, y: 1}}
+          className="h-8 p-4 w-fit bg-blue-500/40 text-white font-semibold hover:bg-blue-700 cursor-pointer rounded-xl flex justify-center items-center my-1"
+          onClick={goToPreviousComponent}
+        > Previous 
+        </motion.button>
+
+        <motion.button 
+          whileHover={{scale: 1.05, y: -3}}
+          whileTap={{scale:0.9, y: 1}}
+          className="ml-auto h-8 p-4 w-fit bg-blue-500/40 text-white font-semibold hover:bg-blue-700 cursor-pointer rounded-xl flex justify-center items-center my-1"
+          onClick={goToNextComponent}
+        > Next 
+        </motion.button>
+      </div>
 
       <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className=" bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg">
-        <CallVolumeLinearChart
+          className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg p-2">
+        <span className="font-semibold justify-center">{displayTitle}</span>
+        <CurrentComponent 
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
           region={region}
+          data={currentIndex === 4 ? postalData : incidentData} 
+          heatmapData={heatmapData}
+          weeks={1}
         />
-        {/* <HeatMapDayHour 
-          data={incidentData} 
-          heatmapData={heatmapData} 
-          region={region} 
-          weeks={1} /> */}
       </motion.div>
 
       {/* <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
