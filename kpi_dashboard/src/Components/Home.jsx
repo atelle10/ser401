@@ -14,6 +14,7 @@ import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
 import { countUnverifiedUsers } from '../utils/userVerification'
 import Fire_Display from './Fire_Display.jsx'
+import homeIcon from './assets/home icon.png'
 
 const fallbackProfile = {
   name: 'User',
@@ -40,7 +41,11 @@ const Home = ({ role = "admin" }) => {
   const [adminNotificationCount, setAdminNotificationCount] = useState(0)
   const [isUnverifiedBannerDismissed, setIsUnverifiedBannerDismissed] = useState(false)
   const isAdmin = role === "admin"
-  const [displayMode, setDisplayMode] = useState(true) 
+  const [displayMode, setDisplayMode] = useState(false) 
+
+  const refreshPage = () => {
+    window.location.reload();
+  };
 
   useEffect(() => {
     setUserProfile(buildProfile(session?.user))
@@ -123,7 +128,7 @@ const Home = ({ role = "admin" }) => {
 
   return(
       <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
-        {displayMode && (
+        {!displayMode && (
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-0 sm:p-3 md:p-4">
               <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
                 <Logo />
@@ -131,6 +136,7 @@ const Home = ({ role = "admin" }) => {
                   <Sidebar
                     currentView={currentView}
                     setCurrentView={setCurrentView}
+                    setDisplayMode={setDisplayMode}
                     onAccountClick={() => setCurrentView('account')}
                     isAdmin={isAdmin}
                     adminNotificationCount={adminNotificationCount}
@@ -183,6 +189,7 @@ const Home = ({ role = "admin" }) => {
                 <Sidebar
                   currentView={currentView}
                   setCurrentView={setCurrentView}
+                  setDisplayMode={setDisplayMode}
                   onAccountClick={() => setCurrentView('account')}
                   isAdmin={isAdmin}
                   adminNotificationCount={adminNotificationCount}
@@ -192,13 +199,19 @@ const Home = ({ role = "admin" }) => {
             </div>
           </div>       
         )}
-        {!displayMode && currentView == 'fire' && (
+        {displayMode && currentView == 'fire' && (
           <div className="w-full h-full flex items-center justify-center p-4">
             <Fire_Display role={role} />
           </div>
         )}
-        {!displayMode && currentView === 'medical' && (
-          <div className="w-full h-full flex items-center justify-center p-4">
+        {displayMode && currentView === 'medical' && (
+          <div className="w-full h-full flex flex-col items-center justify-center p-4">
+            <div 
+              className="ml-auto h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1"
+              onClick={refreshPage}
+            >
+              <img src={homeIcon} title='Return to Home' alt="Home Icon" className='w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'/>
+          </div>
             <div className="p-8 text-center text-gray-300">Medical module coming soon...</div>
           </div>
         )}
