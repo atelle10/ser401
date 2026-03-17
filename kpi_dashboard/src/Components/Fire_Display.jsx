@@ -60,9 +60,9 @@ const FireDisplay = ({ role }) => {
   const [callVolumeVisible, setCallVolumeVisible] = useState(true)
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
-   const [selectKey, setSelectKey] = useState(0)
+  const [selectKey, setSelectKey] = useState(0)
 
-   const refreshPage = () => {
+  const refreshPage = () => {
     window.location.reload();
   };
 
@@ -211,7 +211,7 @@ const FireDisplay = ({ role }) => {
   const selectRef = React.createRef()
 
   return ( 
-    <div className="p-2 sm:p-4 space-y-4 sm:space-y-6 w-full">
+    <div className="sm:p-4 space-y-4 sm:space-y-6 w-screen h-screen">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
@@ -276,29 +276,24 @@ const FireDisplay = ({ role }) => {
         </div>
       </div>
 
-      {error && (
-        <ErrorMessage message={error} onRetry={loadIncidentData} color="blue" />
-      )}
-
-      {isLoading && !hasLoadedOnce && (
-        <div className="py-6">
-          <LoadingSpinner color="blue" />
-        </div>
-      )}
-
       <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col w-full m-2 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg">
+          className=" bg-blue-500/40 shadow-blue-500/20 shadow-md text-white rounded-lg">
         <CallVolumeLinearChart
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
           region={region}
         />
+        {/* <HeatMapDayHour 
+          data={incidentData} 
+          heatmapData={heatmapData} 
+          region={region} 
+          weeks={1} /> */}
       </motion.div>
 
-      <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
+      {/* <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
         <div className="slot top" data-swapy-slot="a">
           <div className="item item-a" data-swapy-item="a">
             <div className="handle" data-swapy-handle></div>
@@ -329,7 +324,7 @@ const FireDisplay = ({ role }) => {
                 </button>
               </div>
               <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day × Hour</h3>
-              <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
+              
             </div>
           </div> 
         </div>
@@ -508,8 +503,8 @@ const FireDisplay = ({ role }) => {
               <MutualAidChart startDate={dateInputs.start} endDate={dateInputs.end} />
             </div>
           </div>
-        </div>
-  </div>
+        </div> 
+    </div>*/}
   </div>)
 }
 
