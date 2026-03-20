@@ -449,8 +449,7 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         </div>
-        <div className="middle">
-          <div className="slot middle-left" data-swapy-slot="b" >
+          <div className="slot middle-top" data-swapy-slot="b" >
             <div className="item item-b" data-swapy-item="b">
               <div className="handle" data-swapy-handle></div>
               <div className={unitHourUtilizationVisible ? 'hidden' : 'visible'  }>
@@ -496,7 +495,7 @@ const Dashboard = ({ role }) => {
             </div>
             </div>
           </div>
-          <div className="slot middle-right" data-swapy-slot="c" >
+          <div className="slot middle-bottom" data-swapy-slot="c" >
             <div className="item item-c" data-swapy-item="c">
               <div className="handle" data-swapy-handle></div>
               <div className={postalCodeVisible ? 'hidden' : 'visible'  }>
@@ -528,7 +527,6 @@ const Dashboard = ({ role }) => {
                 <h3 className="font-semibold mb-3 text-center">Incidents by Postal Code</h3>
                 <IncidentsByPostalCode data={postalData} />
               </div>
-            </div>
           </div>
         </div>
         <div className="middle">
