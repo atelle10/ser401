@@ -246,8 +246,8 @@ const FireDisplay = ({ role }) => {
   };
 
   return ( 
-    <div className="sm:p-4 space-y-4 sm:space-y-6 w-screen h-screen">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
+    <div className="sm:p-4 space-y-2 sm:space-y-4 w-screen h-screen">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-1 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
