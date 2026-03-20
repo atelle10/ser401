@@ -1,34 +1,6 @@
 .container {
   display: flex;
   flex-direction: column;
-  width: 100%;
-}
-
-.slot.top {
-  width: 100%;
-}
-
-.slot.top2 {
-  width: 100%;
-}
-
-.middle {
-  display: flex;
-  gap: 10px;
-  width: 100%;
-
-}
-
-.slot.middle-left {
-  width: 50%;
-}
-
-.slot.middle-right {
-  width: 50%;
-}
-
-.slot.bottom {
-  width: 100%;
 }
 
 .slot {
@@ -49,13 +21,9 @@
 
 .item {
   border-radius: 10px;
-  width: 100%;
-  height: 100%;
 }
 
 .card {
-  width: 100%;
-  height: 100%;
   border-radius: 10px;
   display: flex;
   align-items: center;

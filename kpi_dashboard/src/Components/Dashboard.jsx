@@ -206,7 +206,7 @@ const Dashboard = ({ role }) => {
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
-      <div className="flex flex-col w-fit sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
+      <div className="flex flex-col justify-center sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
@@ -431,8 +431,7 @@ const Dashboard = ({ role }) => {
             </div>
           </div> 
         </div>
-        <div className="middle">
-          <div className="slot middle-left" data-swapy-slot="b" >
+          <div className="slot middle-top" data-swapy-slot="b" >
             <div className="item item-b" data-swapy-item="b">
               <div className="handle" data-swapy-handle></div>
               <div className={unitHourUtilizationVisible ? 'hidden' : 'visible'  }>
@@ -466,7 +465,7 @@ const Dashboard = ({ role }) => {
             </div>
             </div>
           </div>
-          <div className="slot middle-right" data-swapy-slot="c" >
+          <div className="slot middle-bottom" data-swapy-slot="c" >
             <div className="item item-c" data-swapy-item="c">
               <div className="handle" data-swapy-handle></div>
               <div className={postalCodeVisible ? 'hidden' : 'visible'  }>
@@ -499,7 +498,6 @@ const Dashboard = ({ role }) => {
                 <IncidentsByPostalCode data={postalData} />
               </div>
             </div>
-          </div>
         </div>
         <div className="slot bottom" data-swapy-slot="d" >
           <div className="item item-d" data-swapy-item="d">
