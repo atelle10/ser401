@@ -76,7 +76,7 @@ const Dashboard = ({ role = "viewer" }) => {
           swapyRef.current = createSwapy(containerRef.current, {
             animation: 'spring',
           })
-          swapyRef.current.onBeforeSwap((event) => {
+          swapyRef.current.onBeforeSwap(() => {
             return true
           })
         }
@@ -196,7 +196,6 @@ const Dashboard = ({ role = "viewer" }) => {
             { label: 'Mutual Aid', value: 'mutual_aid' },
           ]
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
-  const isAdmin = role === "admin"
   const selectRef = React.createRef()
 
   return (
