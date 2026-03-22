@@ -25,6 +25,8 @@ Returns aggregated KPI metrics for performance.
 ### GET /api/incidents/response-times
 Query params: start_date, end_date, region (south/north/all)
 
+Only unit responses with `apparatus_resource_id` in `fire_ems.scottsdale_units` (overall and per_unit use the same rows).
+
 Returns response-time KPIs (in minutes) for:
 - call processing (PSAP → dispatch)
 - turnout (dispatch → en route)

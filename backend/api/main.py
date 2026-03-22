@@ -308,6 +308,7 @@ async def get_response_times(
                 ) / 60.0 AS travel_minutes
             FROM fire_ems.incident i
             JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+            JOIN fire_ems.scottsdale_units su ON su.unit_id = ur.apparatus_resource_id
             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
             {region_filter}
             AND ur.apparatus_resource_id IS NOT NULL
