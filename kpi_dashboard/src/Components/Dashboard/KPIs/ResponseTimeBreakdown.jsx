@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+
+const PAGE_SIZE = 10
 
 const formatMinutes = (value, suffix = true) => {
   if (value == null || Number.isNaN(value)) return '—'
@@ -29,6 +31,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
     key: 'travel_p90',
     direction: 'desc',
   })
+  const [currentPage, setCurrentPage] = useState(1)
   const [cardTooltip, setCardTooltip] = useState(null)
 
   const sortedRows = useMemo(() => {
@@ -47,6 +50,15 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
 
     return rows
   }, [perUnit, sortConfig])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [perUnit, sortConfig])
+
+  const totalPages = Math.ceil(sortedRows.length / PAGE_SIZE) || 0
+  const startIndex = (currentPage - 1) * PAGE_SIZE
+  const paginatedRows = sortedRows.slice(startIndex, startIndex + PAGE_SIZE)
+  const rangeEnd = sortedRows.length === 0 ? 0 : Math.min(startIndex + PAGE_SIZE, sortedRows.length)
 
   const handleSort = (key) => {
     setSortConfig((current) => {
@@ -136,7 +148,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
       </div>
 
       <div className="text-xs text-gray-500 space-y-0.5">
-        <p>Per unit: each row is one unit; P90 is the time 90% of that unit&apos;s trips met or beat.</p>
+        <p>Per unit (Scottsdale units only): each row is one unit; P90 is the time 90% of that unit&apos;s trips met or beat.</p>
         <p>Click a column header to reorder the rows by that column: <strong>▼</strong> = slowest at top, <strong>▲</strong> = fastest at top. Click again to flip.</p>
         <p><strong>0.0 min</strong> means the source system did not record a separate time for that step (e.g. en route same as dispatch), so the real time for that step is not available—treat as missing data, not zero.</p>
       </div>
@@ -170,7 +182,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
             </tr>
           </thead>
           <tbody>
-            {sortedRows.map((row) => (
+            {paginatedRows.map((row) => (
               <tr key={row.unit_id} className="odd:bg-white even:bg-gray-50">
                 <td className="px-3 py-1.5 border-b text-sm font-medium text-gray-800">
                   {row.unit_id}
@@ -194,6 +206,32 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-gray-50 transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+            {' · '}
+            Showing {sortedRows.length === 0 ? 0 : startIndex + 1}–{rangeEnd} of {sortedRows.length}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-gray-50 transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   )
 }
