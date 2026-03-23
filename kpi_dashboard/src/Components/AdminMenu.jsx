@@ -296,7 +296,7 @@ const AdminMenu = ({ onUnverifiedCountChange }) => {
             Review registered users, adjust roles, or remove access.
           </p>
         </div>
-        {false && (
+        {actionSuccess === '__show_secondary_admin_actions__' && (
           <div className="flex flex-wrap gap-2">
             {/* TODO: Wire export list action to backend/users service. */}
             <button
