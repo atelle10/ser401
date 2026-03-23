@@ -150,7 +150,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
       <div className="text-xs text-gray-500 space-y-0.5">
         <p>Per unit (Scottsdale units only): each row is one unit; P90 is the time 90% of that unit&apos;s trips met or beat.</p>
         <p>Click a column header to reorder the rows by that column: <strong>▼</strong> = slowest at top, <strong>▲</strong> = fastest at top. Click again to flip.</p>
-        <p><strong>0.0 min</strong> means the source system did not record a separate time for that step (e.g. en route same as dispatch), so the real time for that step is not available—treat as missing data, not zero.</p>
+        <p>Rows with non-positive or out-of-order timestamps are excluded from response-time KPI calculations.</p>
       </div>
       <div className="flex-1 overflow-auto">
         <table className="min-w-full text-xs border rounded-lg overflow-hidden">

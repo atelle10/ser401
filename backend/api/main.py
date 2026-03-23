@@ -311,10 +311,14 @@ async def get_response_times(
             JOIN fire_ems.scottsdale_units su ON su.unit_id = ur.apparatus_resource_id
             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
             {region_filter}
+            AND i.basic_incident_psap_date_time IS NOT NULL
             AND ur.apparatus_resource_id IS NOT NULL
             AND ur.apparatus_resource_dispatch_date_time IS NOT NULL
             AND ur.apparatus_resource_en_route_date_time IS NOT NULL
             AND ur.apparatus_resource_arrival_date_time IS NOT NULL
+            AND ur.apparatus_resource_dispatch_date_time > i.basic_incident_psap_date_time
+            AND ur.apparatus_resource_en_route_date_time > ur.apparatus_resource_dispatch_date_time
+            AND ur.apparatus_resource_arrival_date_time > ur.apparatus_resource_en_route_date_time
         )
         """
 
