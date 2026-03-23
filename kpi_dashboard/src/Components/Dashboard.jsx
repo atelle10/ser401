@@ -271,7 +271,7 @@ const Dashboard = ({ role = "viewer" }) => {
         </div>
 
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
           ref={selectRef}
@@ -317,6 +317,12 @@ const Dashboard = ({ role = "viewer" }) => {
               }
           }}
         />
+          <button
+            type="button"
+            className="px-3 py-2 text-sm font-medium border border-white/60 rounded bg-white text-blue-700 hover:bg-blue-50 transition-colors"
+          >
+            Export PDF
+          </button>
         </div>
       </div>
 
