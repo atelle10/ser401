@@ -245,6 +245,20 @@ const FireDisplay = ({ role }) => {
     );
   };
 
+  // Slide duration  
+  const [activateSlideShow, setActivateSlideShow] = useState(true)
+  const [timer, setTimer] = useState(6000) //Set timer to 1 seconds for testing
+
+  const togglePlayButton = () => {
+    setActivateSlideShow(prevToggle => !prevToggle);
+  }
+
+  {activateSlideShow && setInterval(() => {
+        console.log("Starting slide show");
+        goToNextComponent();
+      }, timer )
+  };
+
   return ( 
     <div className="sm:p-4 space-y-2 sm:space-y-4 w-screen h-screen">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-1 sm:p-4 rounded-lg">
@@ -319,6 +333,15 @@ const FireDisplay = ({ role }) => {
           onClick={goToPreviousComponent}
         > Previous 
         </motion.button>
+
+        <motion.button 
+          whileHover={{scale: 1.05, y: -3}}
+          whileTap={{scale:0.9, y: 1}}
+          className={"h-8 p-4 ml-auto w-fit bg-blue-500/40 text-white font-semibold hover:bg-blue-700 cursor-pointer rounded-xl flex justify-center items-center my-1" +(activateSlideShow ? 'visible' : 'hidden')}
+          onClick={togglePlayButton}
+          >
+            <span>{activateSlideShow ? 'Pause' :  'Play'}</span>
+          </motion.button>
 
         <motion.button 
           whileHover={{scale: 1.05, y: -3}}
