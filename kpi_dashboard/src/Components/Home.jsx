@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { authClient } from '../utils/authClient'
 import NavBar from './NavBar.jsx'
 import Sidebar from './Sidebar.jsx'
@@ -12,23 +12,34 @@ import AdminMenu from './AdminMenu.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
-import backgroundImage2 from './assets/background_img.png'
+import TVModeSettings from './TVModeSettings.jsx'
 import { countUnverifiedUsers } from '../utils/userVerification'
 
 const fallbackProfile = {
   name: 'User',
   email: '',
+  username: '',
+  phone: '',
   role: 'viewer',
+  verificationStatus: 'Verified',
   avatar: accountIcon,
 }
 
 const buildProfile = (user) => {
   if (!user) return fallbackProfile
   const name = user.name || user.username || user.email || fallbackProfile.name
+  const username =
+    user.username && !user.username.startsWith('pending_')
+      ? user.username
+      : ''
+  const phone = user.phone && user.phone !== '__pending__' ? user.phone : ''
   return {
     name,
     email: user.email || '',
+    username,
+    phone,
     role: user.role || fallbackProfile.role,
+    verificationStatus: user.verified === false ? 'Pending approval' : 'Verified',
     avatar: user.image || user.avatar || fallbackProfile.avatar,
   }
 }
@@ -46,7 +57,7 @@ const Home = ({ role = "viewer" }) => {
   }, [session?.user])
 
   useEffect(() => {
-    if (!isAdmin && currentView === 'admin') {
+    if (!isAdmin && ['admin', 'settings', 'tv-mode-settings'].includes(currentView)) {
       setCurrentView('dashboard')
     }
   }, [currentView, isAdmin])
