@@ -7,6 +7,7 @@ import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
+import ExportPdfModal from './Dashboard/ExportPdfModal'
 import Chart from './Dashboard/Chart'
 import KPI_1 from './Dashboard/KPIs/KPI_1'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
@@ -30,6 +31,22 @@ const buildIsoRangeFromDateInputs = ({ start, end }) => {
   const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
   return { startDate, endDate }
 }
+
+const regionOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'South Scottsdale', value: 'south' },
+  { label: 'North Scottsdale', value: 'north' },
+]
+
+const options = [
+  { label: 'Heatmap', value: 'heatmap' },
+  { label: 'Postal Code', value: 'postal_code' },
+  { label: 'Type Breakdown', value: 'type_breakdown' },
+  { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
+  { label: 'Call Volume Trend', value: 'call_volume_trend' },
+  { label: 'Mutual Aid', value: 'mutual_aid' },
+  { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
+]
 
 
 
@@ -59,6 +76,8 @@ const Dashboard = ({ role = "viewer" }) => {
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
   const [responseTimeVisible, setResponseTimeVisible] = useState(true)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [exportSettings, setExportSettings] = useState(null)
 
 
   const dateRange = useMemo(() => {
@@ -198,16 +217,50 @@ const Dashboard = ({ role = "viewer" }) => {
     loadIncidentData()
   }, [loadIncidentData])
 
+  const openExportModal = () => {
+    const selectedCharts = [
+      heatmapVisible && 'heatmap',
+      postalCodeVisible && 'postal_code',
+      typeBreakdownVisible && 'type_breakdown',
+      unitHourUtilizationVisible && 'unit_hour_utilization',
+      callVolumeVisible && 'call_volume_trend',
+      mutualAidVisible && 'mutual_aid',
+      responseTimeVisible && 'response_time_breakdown',
+    ].filter(Boolean)
 
-  const options = [
-            { label: 'Heatmap', value: 'heatmap' },
-            { label: 'Postal Code', value: 'postal_code' },
-            { label: 'Type Breakdown', value: 'type_breakdown' },
-            { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
-            { label: 'Call Volume Trend', value: 'call_volume_trend' },
-            { label: 'Mutual Aid', value: 'mutual_aid' },
-            { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
-          ]
+    setExportSettings({
+      region,
+      startDate: dateInputs.start,
+      endDate: dateInputs.end,
+      selectedCharts,
+    })
+    setIsExportModalOpen(true)
+  }
+
+  const closeExportModal = () => {
+    setIsExportModalOpen(false)
+  }
+
+  const handleExportFieldChange = (field, value) => {
+    setExportSettings((prev) => {
+      if (!prev) return prev
+
+      return { ...prev, [field]: value }
+    })
+  }
+
+  const handleExportChartToggle = (chartValue) => {
+    setExportSettings((prev) => {
+      if (!prev) return prev
+
+      const selectedCharts = prev.selectedCharts.includes(chartValue)
+        ? prev.selectedCharts.filter((value) => value !== chartValue)
+        : [...prev.selectedCharts, chartValue]
+
+      return { ...prev, selectedCharts }
+    })
+  }
+
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const selectRef = React.createRef()
 
@@ -319,6 +372,7 @@ const Dashboard = ({ role = "viewer" }) => {
         />
           <button
             type="button"
+            onClick={openExportModal}
             className="px-3 py-2 text-sm font-medium border border-white/60 rounded bg-white text-blue-700 hover:bg-blue-50 transition-colors"
           >
             Export PDF
@@ -492,6 +546,16 @@ const Dashboard = ({ role = "viewer" }) => {
           <p>Basic dashboard view. Contact admin for elevated access.</p>
         </div>
       )}
+
+      <ExportPdfModal
+        isOpen={isExportModalOpen}
+        onClose={closeExportModal}
+        settings={exportSettings}
+        onFieldChange={handleExportFieldChange}
+        onToggleChart={handleExportChartToggle}
+        chartOptions={options}
+        regionOptions={regionOptions}
+      />
     </div>
   )
 }
