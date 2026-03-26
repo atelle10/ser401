@@ -2,6 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 const PAGE_SIZE = 10
 
+const RESPONSE_TIME_TARGETS = {
+  call_processing: { national: 2.0, local: 2.5 },
+  turnout: { national: 1.5, local: 2.0 },
+  travel: { national: 4.0, local: 5.0 },
+}
+
 const formatMinutes = (value, suffix = true) => {
   if (value == null || Number.isNaN(value)) return '—'
   const num = value.toFixed(1)
@@ -97,6 +103,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {Object.entries(METRIC_LABELS).map(([key, meta]) => {
           const metric = overall?.[key] || {}
+          const targets = RESPONSE_TIME_TARGETS[key]
           const showTooltip = cardTooltip === key
           return (
             <div
@@ -142,6 +149,12 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
                 P90 means 90% of {meta.title.toLowerCase()} is{' '}
                 {formatMinutes(metric.p90, false)} min or faster.
               </div>
+              {metric.p90 != null && !Number.isNaN(metric.p90) && targets && (
+                <div className="mt-1 text-[0.65rem] text-gray-600">
+                  P90 vs national ({targets.national}): {(metric.p90 - targets.national).toFixed(1)} min · vs local ({targets.local}):{' '}
+                  {(metric.p90 - targets.local).toFixed(1)} min (Δ; lower target is better).
+                </div>
+              )}
             </div>
           )
         })}
