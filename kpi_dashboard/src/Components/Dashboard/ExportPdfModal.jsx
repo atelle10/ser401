@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { chartOptions, regionOptions } from './exportConfig'
 
 const ExportPdfModal = ({
   isOpen,
@@ -7,8 +8,7 @@ const ExportPdfModal = ({
   settings,
   onFieldChange,
   onToggleChart,
-  chartOptions,
-  regionOptions,
+  onPreview,
 }) => {
   useEffect(() => {
     if (!isOpen) return undefined
@@ -146,6 +146,7 @@ const ExportPdfModal = ({
           </button>
           <button
             type="button"
+            onClick={onPreview}
             className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-md transition-colors hover:bg-blue-50"
           >
             Preview PDF

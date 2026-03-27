@@ -16,6 +16,7 @@ import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdo
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
+import { buildExportSettings, chartOptions, regionOptions } from './Dashboard/exportConfig'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -31,24 +32,6 @@ const buildIsoRangeFromDateInputs = ({ start, end }) => {
   const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
   return { startDate, endDate }
 }
-
-const regionOptions = [
-  { label: 'All', value: 'all' },
-  { label: 'South Scottsdale', value: 'south' },
-  { label: 'North Scottsdale', value: 'north' },
-]
-
-const options = [
-  { label: 'Heatmap', value: 'heatmap' },
-  { label: 'Postal Code', value: 'postal_code' },
-  { label: 'Type Breakdown', value: 'type_breakdown' },
-  { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
-  { label: 'Call Volume Trend', value: 'call_volume_trend' },
-  { label: 'Mutual Aid', value: 'mutual_aid' },
-  { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
-]
-
-
 
 const Dashboard = ({ role = "viewer" }) => {
   const [region, setRegion] = useState('south')
@@ -218,28 +201,25 @@ const Dashboard = ({ role = "viewer" }) => {
   }, [loadIncidentData])
 
   const openExportModal = () => {
-    const selectedCharts = [
-      heatmapVisible && 'heatmap',
-      postalCodeVisible && 'postal_code',
-      typeBreakdownVisible && 'type_breakdown',
-      unitHourUtilizationVisible && 'unit_hour_utilization',
-      callVolumeVisible && 'call_volume_trend',
-      mutualAidVisible && 'mutual_aid',
-      responseTimeVisible && 'response_time_breakdown',
-    ].filter(Boolean)
-
-    setExportSettings({
+    setExportSettings(buildExportSettings({
       region,
-      startDate: dateInputs.start,
-      endDate: dateInputs.end,
-      selectedCharts,
-    })
+      dateInputs,
+      heatmapVisible,
+      postalCodeVisible,
+      typeBreakdownVisible,
+      unitHourUtilizationVisible,
+      callVolumeVisible,
+      mutualAidVisible,
+      responseTimeVisible,
+    }))
     setIsExportModalOpen(true)
   }
 
   const closeExportModal = () => {
     setIsExportModalOpen(false)
   }
+
+  const handlePreviewExport = () => undefined
 
   const handleExportFieldChange = (field, value) => {
     setExportSettings((prev) => {
@@ -328,8 +308,8 @@ const Dashboard = ({ role = "viewer" }) => {
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
           ref={selectRef}
-          selectedValues={options}
-          options={options}
+          selectedValues={chartOptions}
+          options={chartOptions}
           onSelect={
             selectedList => {
               const selectedValues = selectedList.map(opt => opt.value)
@@ -433,8 +413,8 @@ const Dashboard = ({ role = "viewer" }) => {
               <button onClick={() => {
                 setHeatmapVisible(true);
                 console.log(selectRef.current.getSelectedItems());
-                selectRef.current.selectedValues = [...selectRef.current.getSelectedItems(), options.filter(value => value.value === 'heatmap')[0]];
-                console.log(options.filter(item => item.value === 'heatmap')[0]);
+                selectRef.current.selectedValues = [...selectRef.current.getSelectedItems(), chartOptions.filter(value => value.value === 'heatmap')[0]];
+                console.log(chartOptions.filter(item => item.value === 'heatmap')[0]);
                 console.log(selectRef.current.selectedValues);
                 selectRef.current.onSelect();
                 console.log(selectRef.current.selectedValues)
@@ -553,8 +533,7 @@ const Dashboard = ({ role = "viewer" }) => {
         settings={exportSettings}
         onFieldChange={handleExportFieldChange}
         onToggleChart={handleExportChartToggle}
-        chartOptions={options}
-        regionOptions={regionOptions}
+        onPreview={handlePreviewExport}
       />
     </div>
   )
