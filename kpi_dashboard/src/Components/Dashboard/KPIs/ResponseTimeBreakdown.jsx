@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { fetchResponseTimeTargets, saveResponseTimeTargets } from '../../../services/responseTimeTargetsService'
 
 const PAGE_SIZE = 10
 
@@ -46,17 +47,46 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
   const [isEditingTargets, setIsEditingTargets] = useState(false)
 
   useEffect(() => {
-    try {
-      const savedTargets = window.localStorage.getItem(TARGETS_STORAGE_KEY)
-      if (!savedTargets) return
-      const parsed = JSON.parse(savedTargets)
-      if (parsed?.call_processing && parsed?.turnout && parsed?.travel) {
-        setTargets(parsed)
-        setDraftTargets(parsed)
+    let cancelled = false
+
+    const loadLocal = () => {
+      try {
+        const savedTargets = window.localStorage.getItem(TARGETS_STORAGE_KEY)
+        if (!savedTargets) return
+        const parsed = JSON.parse(savedTargets)
+        if (parsed?.call_processing && parsed?.turnout && parsed?.travel && !cancelled) {
+          setTargets(parsed)
+          setDraftTargets(parsed)
+        }
+      } catch {
+        if (!cancelled) {
+          setTargets(DEFAULT_RESPONSE_TIME_TARGETS)
+          setDraftTargets(DEFAULT_RESPONSE_TIME_TARGETS)
+        }
       }
-    } catch {
-      setTargets(DEFAULT_RESPONSE_TIME_TARGETS)
-      setDraftTargets(DEFAULT_RESPONSE_TIME_TARGETS)
+    }
+
+    ;(async () => {
+      try {
+        const data = await fetchResponseTimeTargets()
+        if (
+          cancelled ||
+          !data?.call_processing ||
+          !data?.turnout ||
+          !data?.travel
+        ) {
+          return
+        }
+        setTargets(data)
+        setDraftTargets(data)
+        window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(data))
+      } catch {
+        loadLocal()
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -109,10 +139,16 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
     }))
   }
 
-  const handleSaveTargets = () => {
-    setTargets(draftTargets)
+  const handleSaveTargets = async () => {
     setIsEditingTargets(false)
+    setTargets(draftTargets)
     window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(draftTargets))
+    try {
+      const saved = await saveResponseTimeTargets(draftTargets)
+      setTargets(saved)
+      setDraftTargets(saved)
+      window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(saved))
+    } catch {}
   }
 
   const handleCancelTargets = () => {

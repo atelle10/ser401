@@ -22,6 +22,12 @@ Query params: start_date, end_date, region (south/north/all)
 
 Returns aggregated KPI metrics for performance.
 
+### GET /api/admin/response-time-targets
+Returns national/local target minutes for call processing, turnout, and travel.
+
+### PUT /api/admin/response-time-targets
+Body JSON with `call_processing`, `turnout`, `travel`, each `{ national, local }`. Persists targets to `backend/api/data/response_time_targets.json`.
+
 ### GET /api/incidents/response-times
 Query params: start_date, end_date, region (south/north/all)
 
