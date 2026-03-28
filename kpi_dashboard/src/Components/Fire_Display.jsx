@@ -5,6 +5,7 @@ import MutualAidChart from './Dashboard/KPIs/MutualAidChart'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
+import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
 import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin } from '../services/incidentDataService'
 import { createSwapy } from 'swapy'
 import './assets/style.css'
@@ -180,7 +181,8 @@ const FireDisplay = ({ role }) => {
     "Unit Hour Utilization",
     "Incident Type Breakdown",
     "Incidents by Postal Code",
-    "Mutual Aid"
+    "Mutual Aid",
+    "Response Time Breakdown"
   ]
   const components = [
     CallVolumeLinearChart, 
@@ -188,7 +190,8 @@ const FireDisplay = ({ role }) => {
     UnitHourUtilization,
     IncidentTypeBreakdown,
     IncidentsByPostalCode,
-    MutualAidChart
+    MutualAidChart,
+    ResponseTimeBreakdown
   ];
 
   const displayTitle = titles[currentIndex]
@@ -359,6 +362,8 @@ const FireDisplay = ({ role }) => {
           data={currentIndex === 4 ? postalData : incidentData} 
           heatmapData={heatmapData}
           weeks={1}
+          overall={responseTimeData?.overall}
+          perUnit={responseTimeData?.per_unit}
         />
       </motion.div>
   </div>)

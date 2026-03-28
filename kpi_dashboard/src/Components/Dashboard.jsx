@@ -627,6 +627,29 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         </div>
+        <div className="slot bottom" data-swapy-slot="g">
+          <div className="item item-g" data-swapy-item="g">
+            <div className="handle" data-swapy-handle></div>
+            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (responseTimeVisible ? 'visible' : 'hidden')}>
+              <div className="right-align-button">
+                <button onClick={() => {
+                  setResponseTimeVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'response_time_breakdown'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Response Time Breakdown'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <ResponseTimeBreakdown
+                overall={responseTimeData?.overall}
+                perUnit={responseTimeData?.per_unit}
+              />
+            </div>
+          </div>
+        </div>
         </div>
       )}
 
@@ -635,8 +658,7 @@ const Dashboard = ({ role }) => {
           <p>Basic dashboard view. Contact admin for elevated access.</p>
         </div>
       )}
-    </div>
-  )
+  </div>)
 }
 
 export default Dashboard
