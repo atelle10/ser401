@@ -14,6 +14,10 @@ export const chartOptions = [
   { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
 ]
 
+const defaultRegionValue = regionOptions[0]?.value || 'all'
+const validChartValues = new Set(chartOptions.map(({ value }) => value))
+const validRegionValues = new Set(regionOptions.map(({ value }) => value))
+
 export const getSelectedChartValues = ({
   heatmapVisible,
   postalCodeVisible,
@@ -60,3 +64,46 @@ export const buildExportSettings = ({
     responseTimeVisible,
   }),
 })
+
+export const buildExportPreviewSearch = ({
+  region,
+  startDate,
+  endDate,
+  selectedCharts = [],
+}) => {
+  const params = new URLSearchParams()
+  const normalizedRegion = validRegionValues.has(region) ? region : defaultRegionValue
+  const normalizedCharts = selectedCharts.filter((value) => validChartValues.has(value))
+
+  params.set('region', normalizedRegion)
+
+  if (startDate) params.set('startDate', startDate)
+  if (endDate) params.set('endDate', endDate)
+  if (normalizedCharts.length > 0) {
+    params.set('charts', normalizedCharts.join(','))
+  }
+
+  return params.toString()
+}
+
+export const parseExportPreviewSearch = (search) => {
+  const params = new URLSearchParams(search)
+  const region = params.get('region')
+  const chartsParam = params.get('charts') || ''
+
+  return {
+    region: validRegionValues.has(region) ? region : defaultRegionValue,
+    startDate: params.get('startDate') || '',
+    endDate: params.get('endDate') || '',
+    selectedCharts: chartsParam
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value) => validChartValues.has(value)),
+  }
+}
+
+export const getRegionLabel = (regionValue) =>
+  regionOptions.find(({ value }) => value === regionValue)?.label || regionValue
+
+export const getSelectedChartOptions = (selectedCharts = []) =>
+  chartOptions.filter(({ value }) => selectedCharts.includes(value))

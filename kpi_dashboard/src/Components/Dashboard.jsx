@@ -16,7 +16,12 @@ import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdo
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
-import { buildExportSettings, chartOptions, regionOptions } from './Dashboard/exportConfig'
+import {
+  buildExportPreviewSearch,
+  buildExportSettings,
+  chartOptions,
+  regionOptions,
+} from './Dashboard/exportConfig'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -219,7 +224,13 @@ const Dashboard = ({ role = "viewer" }) => {
     setIsExportModalOpen(false)
   }
 
-  const handlePreviewExport = () => undefined
+  const handlePreviewExport = () => {
+    if (!exportSettings) return
+
+    const previewUrl = new URL('/export-preview', window.location.origin)
+    previewUrl.search = buildExportPreviewSearch(exportSettings)
+    window.open(previewUrl.toString(), '_blank', 'noopener,noreferrer')
+  }
 
   const handleExportFieldChange = (field, value) => {
     setExportSettings((prev) => {
