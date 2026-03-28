@@ -231,16 +231,22 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Time Window:</label>
           <select
-            value={timeWindow}
+            value={isCustomRange ? 'custom' : String(timeWindow)}
             onChange={(e) => {
+              const v = e.target.value
+              if (v === 'custom') {
+                setIsCustomRange(true)
+                return
+              }
               setIsCustomRange(false)
-              setTimeWindow(Number(e.target.value))
+              setTimeWindow(Number(v))
             }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           >
-            <option value={7}>Last 7 Days</option>
-            <option value={14}>Last 14 Days</option>
-            <option value={30}>Last 30 Days</option>
+            <option value="7">Last 7 Days</option>
+            <option value="14">Last 14 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="custom">Custom (start/end below)</option>
           </select>
         </div>
 
