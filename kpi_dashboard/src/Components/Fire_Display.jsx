@@ -254,9 +254,14 @@ const FireDisplay = ({ role }) => {
     setActivateSlideShow(prevToggle => !prevToggle);
   }
 
+  const stopSlideShow = () => {
+    setActivateSlideShow(false)
+  };
+
   const handleTimerChange = (inputValue) => {
-    inputValue === 0 ? setActivateSlideShow(false) : () => {setActivateSlideShow(true), setTimer(inputValue)}
-    };
+    setActivateSlideShow(true) 
+    setTimer(inputValue)
+  }
 
 
   useEffect(() => {
@@ -326,6 +331,26 @@ const FireDisplay = ({ role }) => {
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           />
         </div>
+        <div className="flex flex-col ml-auto sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Slide Duration:</label>
+          <select
+            value={timer}
+            onChange={(e) => {
+              const newValue = Number(e.target.value);
+              console.log("Changing timer value to:", newValue); 
+              newValue === 0 ? stopSlideShow() : handleTimerChange(newValue);
+            }}
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
+          >
+            <option value={0} >Manual</option>
+            <option value={5}>5 Seconds</option>
+            <option value={10}>10 Seconds</option>
+            <option value={30}>30 Seconds</option>
+            <option value={60}>1 Minute</option>
+            <option value={300}>5 Minutes</option>
+            <option value={600}>10 Minutes</option>
+          </select>
+        </div>
         <div 
           className="ml-auto h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1"
           onClick={refreshPage}
@@ -351,21 +376,6 @@ const FireDisplay = ({ role }) => {
           >
             <span>{activateSlideShow ? 'Pause' :  'Play'}</span>
         </motion.button>
-        
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-          <label className="text-xs sm:text-sm font-medium">Slide Duration:</label>
-          <select
-            value={timer}
-            onChange={(e) => {console.log("Changing timer value to:", e.target.value); handleTimerChange(e.target.value);}}
-            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
-          >
-            <option value={0}>Manual</option>
-            <option value={30}>30 Seconds</option>
-            <option value={60}>1 Minute</option>
-            <option value={300}>5 Minutes</option>
-            <option value={600}>10 Minutes</option>
-          </select>
-        </div>
 
         <motion.button 
           whileHover={{scale: 1.05, y: -3}}
