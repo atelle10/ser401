@@ -6,6 +6,7 @@ import MutualAidChart from './Dashboard/KPIs/MutualAidChart'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
+import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
 import Chart from './Dashboard/Chart'
 import KPI_1 from './Dashboard/KPIs/KPI_1'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
@@ -56,6 +57,7 @@ const Dashboard = ({ role }) => {
   const [callVolumeVisible, setCallVolumeVisible] = useState(true)
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
+  const [responseTimeVisible,setResponseTimeVisible] = useState(true)
    const [selectKey, setSelectKey] = useState(0)
 
 
@@ -196,6 +198,7 @@ const Dashboard = ({ role }) => {
             { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
             { label: 'Call Volume Trend', value: 'call_volume_trend' },
             { label: 'Mutual Aid', value: 'mutual_aid' },
+            { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
           ]
   const [selectedCharts, setSelectedCharts] = useState(options)
 
@@ -280,6 +283,7 @@ const Dashboard = ({ role }) => {
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
+              setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
               setSelectedCharts(selectedList)
             }
           }
@@ -292,6 +296,7 @@ const Dashboard = ({ role }) => {
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
+              setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
               setSelectedCharts(selectedList)
             }
           }
@@ -567,9 +572,37 @@ const Dashboard = ({ role }) => {
             </div>
           </div>
         </div>
-  </div>
-  )
-}
+        <div className="slot bottom" data-swapy-slot="g">
+          <div className="item item-g" data-swapy-item="g">
+            <div className="handle" data-swapy-handle></div>
+            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (responseTimeVisible ? 'visible' : 'hidden')}>
+              <div className="right-align-button">
+                <button onClick={() => {
+                  setResponseTimeVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'response_time_breakdown'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Response Time Breakdown'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <ResponseTimeBreakdown
+                overall={responseTimeData?.overall}
+                perUnit={responseTimeData?.per_unit}
+              />
+            </div>
+          </div>
+        </div>
+        </div>
+      )}
+
+      {role === "viewer" && (
+        <div data-testid="viewer-message" className="mt-8 text-center text-gray-600">
+          <p>Basic dashboard view. Contact admin for elevated access.</p>
+        </div>
+      )}
   </div>)
 }
 
