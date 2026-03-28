@@ -116,7 +116,12 @@ const Home = ({ role = "viewer" }) => {
         if (role !== "admin") {
           return <div className="p-8 text-center text-red-600">Access Denied — Settings for admin only</div>
         }
-        return <Settings />
+        return <Settings onOpenTVMode={() => setCurrentView('tv-mode-settings')} />
+      case 'tv-mode-settings':
+        if (!isAdmin) {
+          return <div className="p-8 text-center text-red-600">Access Denied — TV mode settings for admin only</div>
+        }
+        return <TVModeSettings onBack={() => setCurrentView('settings')} />
       case 'admin':
         if (!isAdmin) {
           return <div className="p-8 text-center text-red-600">Access Denied — Admin console for admin only</div>
