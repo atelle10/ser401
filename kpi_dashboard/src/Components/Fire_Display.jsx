@@ -1,23 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
-import UnitHourUtilizationByOrigin from './Dashboard/KPIs/UnitHourUtilizationByOrigin'
 import MutualAidChart from './Dashboard/KPIs/MutualAidChart'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
-import Chart from './Dashboard/Chart'
-import KPI_1 from './Dashboard/KPIs/KPI_1'
-import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
-import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
 import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin } from '../services/incidentDataService'
 import { createSwapy } from 'swapy'
 import './assets/style.css'
-import { Multiselect } from 'multiselect-react-dropdown'
 import { motion } from 'motion/react'
-import Dashboard from './Dashboard'
 import homeIcon from './assets/home icon.png'
-import { Link, useNavigate } from 'react-router-dom';
 
 export const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -46,21 +38,8 @@ const FireDisplay = ({ role }) => {
     return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
   })
   const [incidentData, setIncidentData] = useState([])
-  const [kpiSummary, setKpiSummary] = useState(null)
   const [heatmapData, setHeatmapData] = useState(null)
   const [postalData, setPostalData] = useState(null)
-  const [typeBreakdownData, setTypeBreakdownData] = useState(null)
-  const [unitOriginData, setUnitOriginData] = useState(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
-  const [heatmapVisible, setHeatmapVisible] = useState(true)
-  const [postalCodeVisible, setPostalCodeVisible] = useState(true)
-  const [unitHourUtilizationVisible, setUnitHourUtilizationVisible] = useState(true)
-  const [callVolumeVisible, setCallVolumeVisible] = useState(true)
-  const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
-  const [mutualAidVisible, setMutualAidVisible] = useState(true)
-  const [selectKey, setSelectKey] = useState(0)
 
   const refreshPage = () => {
     window.location.reload();
@@ -194,23 +173,6 @@ const FireDisplay = ({ role }) => {
     loadIncidentData()
   }, [loadIncidentData])
 
-
-  const options = [
-            { label: 'Heatmap', value: 'heatmap' },
-            { label: 'Postal Code', value: 'postal_code' },
-            { label: 'Type Breakdown', value: 'type_breakdown' },
-            { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
-            { label: 'Call Volume Trend', value: 'call_volume_trend' },
-            { label: 'Mutual Aid', value: 'mutual_aid' },
-          ]
-  const [selectedCharts, setSelectedCharts] = useState(options)
-
-
-  const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
-  const isAdmin = role === "admin"
-  const selectRef = React.createRef()
-
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const titles = [
     "Call Volume Trend",
@@ -245,9 +207,9 @@ const FireDisplay = ({ role }) => {
     );
   };
 
-  // Slide duration  
+  // Slide duration and activation 
   const [activateSlideShow, setActivateSlideShow] = useState(false)
-  const [timer, setTimer] = useState(2) //Set timer to 2 seconds for testing
+  const [timer, setTimer] = useState(5) //Set initial timer duration to 5 seconds 
 
 
   const togglePlayButton = () => {
@@ -263,12 +225,11 @@ const FireDisplay = ({ role }) => {
     setTimer(inputValue)
   }
 
-
+  // useEffect to handle the slideshow functionality
   useEffect(() => {
     let interval = null;
     if (activateSlideShow) {
-      interval = setInterval(goToNextComponent, (timer * 1000)); // Change slide every 3 seconds
-      console.log("Current chart number: " + currentIndex + ", Duration: " + timer + " seconds");
+      interval = setInterval(goToNextComponent, (timer * 1000)); 
     }
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [currentIndex, timer, activateSlideShow]);
@@ -337,7 +298,6 @@ const FireDisplay = ({ role }) => {
             value={timer}
             onChange={(e) => {
               const newValue = Number(e.target.value);
-              console.log("Changing timer value to:", newValue); 
               newValue === 0 ? stopSlideShow() : handleTimerChange(newValue);
             }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
