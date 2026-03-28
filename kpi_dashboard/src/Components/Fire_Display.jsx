@@ -246,18 +246,22 @@ const FireDisplay = ({ role }) => {
   };
 
   // Slide duration  
-  const [activateSlideShow, setActivateSlideShow] = useState(true)
-  const [timer, setTimer] = useState(6000) //Set timer to 1 seconds for testing
+  const [activateSlideShow, setActivateSlideShow] = useState(false)
+  const [timer, setTimer] = useState(2) //Set timer to 2 seconds for testing
+
 
   const togglePlayButton = () => {
     setActivateSlideShow(prevToggle => !prevToggle);
   }
 
-  {activateSlideShow && setInterval(() => {
-        console.log("Starting slide show");
-        goToNextComponent();
-      }, timer )
-  };
+  useEffect(() => {
+    let interval = null;
+    if (activateSlideShow) {
+      interval = setInterval(goToNextComponent, (timer * 1000)); // Change slide every 3 seconds
+      console.log("Current chart number: " + currentIndex + ", Duration: " + timer + " seconds");
+    }
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, [currentIndex, timer, activateSlideShow]);
 
   return ( 
     <div className="sm:p-4 space-y-2 sm:space-y-4 w-screen h-screen">
@@ -341,7 +345,24 @@ const FireDisplay = ({ role }) => {
           onClick={togglePlayButton}
           >
             <span>{activateSlideShow ? 'Pause' :  'Play'}</span>
-          </motion.button>
+        </motion.button>
+        
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <label className="text-xs sm:text-sm font-medium">Slide Duration:</label>
+          <select
+            value={timer}
+            onChange={(e) => {
+              e.target.value === 0 ? setActivateSlideShow(false) : () => {setActivateSlideShow(true), setTimer(Number(e.target.value))}
+            }}
+            className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
+          >
+            <option value={0}>Manual</option>
+            <option value={30}>30 Seconds</option>
+            <option value={60}>1 Minute</option>
+            <option value={300}>5 Minutes</option>
+            <option value={600}>10 Minutes</option>
+          </select>
+        </div>
 
         <motion.button 
           whileHover={{scale: 1.05, y: -3}}
