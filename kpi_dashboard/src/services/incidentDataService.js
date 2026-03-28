@@ -14,6 +14,7 @@ const buildUrl = (path, params) => {
 const fetchJson = async (url) => {
   const response = await fetch(url, {
     method: 'GET',
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
   });
 
@@ -57,6 +58,7 @@ export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) =>
 const fetchOptional = async (url, emptyData) => {
   const response = await fetch(url, {
     method: 'GET',
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
   });
   if (response.status === 404) {
@@ -135,6 +137,7 @@ export const fetchMutualAid = async ({ startDate, endDate, region = 'all' }) => 
     const data = await fetchOptional(url, {
       scottsdale_units_outside: 0,
       other_units_in_scottsdale: 0,
+      other_units_in_scottsdale_detail: [],
     });
     return { success: true, data, error: null };
   } catch (error) {

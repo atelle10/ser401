@@ -54,6 +54,7 @@ class UnitOriginHelper:
 
         scottsdale_units_outside = 0
         other_units_in_scottsdale = 0
+        other_units_in_scottsdale_by_unit = {}
 
         for _, row in df.iterrows():
             unit_id = row.get("unit_id")
@@ -61,6 +62,9 @@ class UnitOriginHelper:
             if not unit_id or str(unit_id) == "None":
                 continue
             unit_id = str(unit_id)
+            u = unit_id.strip()
+            if len(u) >= 2 and u[0].upper() == "M" and u[1] == "-":
+                continue
 
             try:
                 p = int(str(postal_code).strip())
@@ -73,10 +77,21 @@ class UnitOriginHelper:
                 scottsdale_units_outside += 1
             elif not is_scottsdale and in_scottsdale:
                 other_units_in_scottsdale += 1
+                other_units_in_scottsdale_by_unit[unit_id] = (
+                    other_units_in_scottsdale_by_unit.get(unit_id, 0) + 1
+                )
+
+        other_units_in_scottsdale_detail = [
+            {"unit_id": uid, "response_count": cnt}
+            for uid, cnt in sorted(
+                other_units_in_scottsdale_by_unit.items(), key=lambda x: (-x[1], x[0])
+            )
+        ]
 
         return {
             "scottsdale_units_outside": scottsdale_units_outside,
             "other_units_in_scottsdale": other_units_in_scottsdale,
+            "other_units_in_scottsdale_detail": other_units_in_scottsdale_detail,
         }
 
     @staticmethod
