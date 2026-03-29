@@ -59,6 +59,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
   const [responseTimeVisible, setResponseTimeVisible] = useState(true)
+  const [selectKey, setSelectKey] = useState(0) 
 
 
   const dateRange = useMemo(() => {
