@@ -16,14 +16,14 @@ import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
 
-export const formatDateInputValue = (date) => {
+const formatDateInputValue = (date) => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
-export const buildIsoRangeFromDateInputs = ({ start, end }) => {
+const buildIsoRangeFromDateInputs = ({ start, end }) => {
   if (!start || !end) return { startDate: null, endDate: null }
 
   const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
@@ -33,7 +33,7 @@ export const buildIsoRangeFromDateInputs = ({ start, end }) => {
 
 
 
-const Dashboard = ({ role }) => {
+const Dashboard = ({ role = "viewer" }) => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
@@ -201,14 +201,14 @@ const Dashboard = ({ role }) => {
 
 
   const options = [
-            { label: 'Heatmap', value: 'heatmap' },
-            { label: 'Postal Code', value: 'postal_code' },
-            { label: 'Type Breakdown', value: 'type_breakdown' },
-            { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
-            { label: 'Call Volume Trend', value: 'call_volume_trend' },
-            { label: 'Mutual Aid', value: 'mutual_aid' },
-            { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
-          ]
+    { label: 'Heatmap', value: 'heatmap' },
+    { label: 'Postal Code', value: 'postal_code' },
+    { label: 'Type Breakdown', value: 'type_breakdown' },
+    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
+    { label: 'Call Volume Trend', value: 'call_volume_trend' },
+    { label: 'Mutual Aid', value: 'mutual_aid' },
+    { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
+  ]
   const [selectedCharts, setSelectedCharts] = useState(options)
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const selectRef = React.createRef()
