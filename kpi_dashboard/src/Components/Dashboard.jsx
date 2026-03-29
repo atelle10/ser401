@@ -11,19 +11,19 @@ import Chart from './Dashboard/Chart'
 import KPI_1 from './Dashboard/KPIs/KPI_1'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin, fetchResponseTimes } from '../services/incidentDataService'
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
 
-export const formatDateInputValue = (date) => {
+const formatDateInputValue = (date) => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
-export const buildIsoRangeFromDateInputs = ({ start, end }) => {
+const buildIsoRangeFromDateInputs = ({ start, end }) => {
   if (!start || !end) return { startDate: null, endDate: null }
 
   const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
@@ -33,7 +33,7 @@ export const buildIsoRangeFromDateInputs = ({ start, end }) => {
 
 
 
-const Dashboard = ({ role }) => {
+const Dashboard = ({ role = "viewer" }) => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
@@ -48,6 +48,7 @@ const Dashboard = ({ role }) => {
   const [postalData, setPostalData] = useState(null)
   const [typeBreakdownData, setTypeBreakdownData] = useState(null)
   const [unitOriginData, setUnitOriginData] = useState(null)
+  const [responseTimeData, setResponseTimeData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -57,9 +58,7 @@ const Dashboard = ({ role }) => {
   const [callVolumeVisible, setCallVolumeVisible] = useState(true)
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
-  const [responseTimeVisible,setResponseTimeVisible] = useState(true)
-   const [selectKey, setSelectKey] = useState(0)
-
+  const [responseTimeVisible, setResponseTimeVisible] = useState(true)
 
 
   const dateRange = useMemo(() => {
@@ -75,19 +74,17 @@ const Dashboard = ({ role }) => {
   const swapyRef = useRef(null)
   const containerRef = useRef(null)
 
-   useEffect(() => {
-        if (containerRef.current) {
-          swapyRef.current = createSwapy(containerRef.current, {
-            animation: 'spring',
-          })
-          swapyRef.current.onBeforeSwap((event) => {
-            return true
-          })
-        }
-        return () => {
-          swapyRef.current?.destroy()
-        }
-      }, [])
+  useEffect(() => {
+    if (containerRef.current) {
+      swapyRef.current = createSwapy(containerRef.current, {
+        animation: 'spring',
+      })
+      swapyRef.current.onBeforeSwap(() => true)
+    }
+    return () => {
+      swapyRef.current?.destroy()
+    }
+  }, [])
 
   useEffect(() => {
     if (isCustomRange) return
@@ -113,7 +110,7 @@ const Dashboard = ({ role }) => {
       return
     }
 
-    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult] = await Promise.all([
+    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult, responseTimesResult] = await Promise.all([
       fetchKPIData({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
@@ -140,6 +137,11 @@ const Dashboard = ({ role }) => {
         region,
       }),
       fetchUnitOrigin({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchResponseTimes({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
@@ -183,6 +185,12 @@ const Dashboard = ({ role }) => {
       setUnitOriginData(unitOriginResult.data || null)
     }
 
+    if (!responseTimesResult.success) {
+      setError((prev) => prev || responseTimesResult.error || 'Failed to load response time data')
+    } else {
+      setResponseTimeData(responseTimesResult.data || null)
+    }
+
     setIsLoading(false)
   }, [dateRange.endDate, dateRange.startDate, region])
 
@@ -192,14 +200,14 @@ const Dashboard = ({ role }) => {
 
 
   const options = [
-            { label: 'Heatmap', value: 'heatmap' },
-            { label: 'Postal Code', value: 'postal_code' },
-            { label: 'Type Breakdown', value: 'type_breakdown' },
-            { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
-            { label: 'Call Volume Trend', value: 'call_volume_trend' },
-            { label: 'Mutual Aid', value: 'mutual_aid' },
-            { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
-          ]
+    { label: 'Heatmap', value: 'heatmap' },
+    { label: 'Postal Code', value: 'postal_code' },
+    { label: 'Type Breakdown', value: 'type_breakdown' },
+    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
+    { label: 'Call Volume Trend', value: 'call_volume_trend' },
+    { label: 'Mutual Aid', value: 'mutual_aid' },
+    { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
+  ]
   const [selectedCharts, setSelectedCharts] = useState(options)
 
 
