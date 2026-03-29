@@ -31,16 +31,20 @@ export const buildIsoRangeFromDateInputs = ({ start, end }) => {
 
 const FireDisplay = ({ role }) => {
   const [region, setRegion] = useState('south')
-  const [timeWindow, setTimeWindow] = useState(7)
-  const [isCustomRange, setIsCustomRange] = useState(false)
-  const [dateInputs, setDateInputs] = useState(() => {
-    const end = new Date()
-    const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
-    return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
-  })
-  const [incidentData, setIncidentData] = useState([])
-  const [heatmapData, setHeatmapData] = useState(null)
-  const [postalData, setPostalData] = useState(null)
+    const [timeWindow, setTimeWindow] = useState(7)
+    const [isCustomRange, setIsCustomRange] = useState(false)
+    const [dateInputs, setDateInputs] = useState(() => {
+      const end = new Date()
+      const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
+      return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
+    })
+    const [incidentData, setIncidentData] = useState([])
+    const [kpiSummary, setKpiSummary] = useState(null)
+    const [heatmapData, setHeatmapData] = useState(null)
+    const [postalData, setPostalData] = useState(null)
+    const [typeBreakdownData, setTypeBreakdownData] = useState(null)
+    const [unitOriginData, setUnitOriginData] = useState(null)
+    const [responseTimeData, setResponseTimeData] = useState(null)
 
   const refreshPage = () => {
     window.location.reload();
