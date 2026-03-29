@@ -6,11 +6,10 @@ import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
-import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin } from '../services/incidentDataService'
-import { createSwapy } from 'swapy'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin, fetchResponseTimes } from '../services/incidentDataService'
 import './assets/style.css'
-import { motion } from 'motion/react'
 import homeIcon from './assets/home icon.png'
+import { motion } from 'framer-motion'
 
 export const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -31,148 +30,148 @@ export const buildIsoRangeFromDateInputs = ({ start, end }) => {
 
 const FireDisplay = ({ role }) => {
   const [region, setRegion] = useState('south')
-    const [timeWindow, setTimeWindow] = useState(7)
-    const [isCustomRange, setIsCustomRange] = useState(false)
-    const [dateInputs, setDateInputs] = useState(() => {
+  const [timeWindow, setTimeWindow] = useState(7)
+  const [isCustomRange, setIsCustomRange] = useState(false)
+  const [dateInputs, setDateInputs] = useState(() => {
+  const end = new Date()
+  const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
+    return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
+  })
+  const [incidentData, setIncidentData] = useState([])
+  const [heatmapData, setHeatmapData] = useState(null)
+  const [postalData, setPostalData] = useState(null)
+  const [typeBreakdownData, setTypeBreakdownData] = useState(null)
+  const [responseTimeData, setResponseTimeData] = useState(null)
+  const [unitOriginData, setUnitOriginData] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+  const [kpiSummary, setKpiSummary] = useState(null)
+
+
+  
+  
+    const dateRange = useMemo(() => {
+      if (isCustomRange) {
+        return buildIsoRangeFromDateInputs(dateInputs)
+      }
+  
       const end = new Date()
-      const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
-      return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
-    })
-    const [incidentData, setIncidentData] = useState([])
-    const [kpiSummary, setKpiSummary] = useState(null)
-    const [heatmapData, setHeatmapData] = useState(null)
-    const [postalData, setPostalData] = useState(null)
-    const [typeBreakdownData, setTypeBreakdownData] = useState(null)
-    const [unitOriginData, setUnitOriginData] = useState(null)
-    const [responseTimeData, setResponseTimeData] = useState(null)
+      const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+      return { startDate: start.toISOString(), endDate: end.toISOString() }
+    }, [dateInputs, isCustomRange, timeWindow])
+  
+    useEffect(() => {
+      if (isCustomRange) return
+  
+      const end = new Date()
+      const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+      setDateInputs({ start: formatDateInputValue(start), end: formatDateInputValue(end) })
+    }, [isCustomRange, timeWindow])
+  
+    const loadIncidentData = useCallback(async () => {
+      setIsLoading(true)
+      setError(null)
+  
+      if (!dateRange.startDate || !dateRange.endDate) {
+        setError('Please select a start and end date')
+        setIsLoading(false)
+        return
+      }
+  
+      if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
+        setError('Start date must be on or before end date')
+        setIsLoading(false)
+        return
+      }
+  
+      const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult, responseTimesResult] = await Promise.all([
+        fetchKPIData({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region,
+        }),
+        fetchKPISummary({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region,
+        }),
+        fetchIncidentHeatmap({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region,
+        }),
+        fetchPostalBreakdown({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region,
+        }),
+        fetchTypeBreakdown({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region,
+        }),
+        fetchUnitOrigin({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region,
+        }),
+        fetchResponseTimes({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region,
+        }),
+      ])
+  
+      if (!incidentResult.success) {
+        setError(incidentResult.error || 'Failed to load incident data')
+      } else {
+        setIncidentData(incidentResult.data || [])
+        setHasLoadedOnce(true)
+      }
+  
+      if (!summaryResult.success) {
+        setError((prev) => prev || summaryResult.error || 'Failed to load KPI summary')
+      } else {
+        setKpiSummary(summaryResult.data || null)
+      }
+  
+      if (!heatmapResult.success) {
+        setError((prev) => prev || heatmapResult.error || 'Failed to load heatmap data')
+      } else {
+        setHeatmapData(heatmapResult.data?.heatmap_data || [])
+      }
+  
+      if (!postalResult.success) {
+        setError((prev) => prev || postalResult.error || 'Failed to load postal breakdown')
+      } else {
+        setPostalData(postalResult.data?.postal_data || [])
+      }
+  
+      if (!typeBreakdownResult.success) {
+        setError((prev) => prev || typeBreakdownResult.error || 'Failed to load type breakdown')
+      } else {
+        setTypeBreakdownData(typeBreakdownResult.data || null)
+      }
+  
+      if (!unitOriginResult.success) {
+        setError((prev) => prev || unitOriginResult.error || 'Failed to load unit origin data')
+      } else {
+        setUnitOriginData(unitOriginResult.data || null)
+      }
+  
+      if (!responseTimesResult.success) {
+        setError((prev) => prev || responseTimesResult.error || 'Failed to load response time data')
+      } else {
+        setResponseTimeData(responseTimesResult.data || null)
+      }
+  
+      setIsLoading(false)
+    }, [dateRange.endDate, dateRange.startDate, region])
 
   const refreshPage = () => {
     window.location.reload();
   };
-
-  const dateRange = useMemo(() => {
-    if (isCustomRange) {
-      return buildIsoRangeFromDateInputs(dateInputs)
-    }
-
-    const end = new Date()
-    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
-    return { startDate: start.toISOString(), endDate: end.toISOString() }
-  }, [dateInputs, isCustomRange, timeWindow])
-
-  const swapyRef = useRef(null)
-  const containerRef = useRef(null)
-
-   useEffect(() => {
-        if (containerRef.current) {
-          swapyRef.current = createSwapy(containerRef.current, {
-            animation: 'spring',
-          })
-          swapyRef.current.onBeforeSwap((event) => {
-            return true
-          })
-        }
-        return () => {
-          swapyRef.current?.destroy()
-        }
-      }, [])
-
-  useEffect(() => {
-    if (isCustomRange) return
-
-    const end = new Date()
-    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
-    setDateInputs({ start: formatDateInputValue(start), end: formatDateInputValue(end) })
-  }, [isCustomRange, timeWindow])
-
-  const loadIncidentData = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-
-    if (!dateRange.startDate || !dateRange.endDate) {
-      setError('Please select a start and end date')
-      setIsLoading(false)
-      return
-    }
-
-    if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
-      setError('Start date must be on or before end date')
-      setIsLoading(false)
-      return
-    }
-
-    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult] = await Promise.all([
-      fetchKPIData({
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        region,
-      }),
-      fetchKPISummary({
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        region,
-      }),
-      fetchIncidentHeatmap({
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        region,
-      }),
-      fetchPostalBreakdown({
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        region,
-      }),
-      fetchTypeBreakdown({
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        region,
-      }),
-      fetchUnitOrigin({
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-        region,
-      }),
-    ])
-
-    if (!incidentResult.success) {
-      setError(incidentResult.error || 'Failed to load incident data')
-    } else {
-      setIncidentData(incidentResult.data || [])
-      setHasLoadedOnce(true)
-    }
-
-    if (!summaryResult.success) {
-      setError((prev) => prev || summaryResult.error || 'Failed to load KPI summary')
-    } else {
-      setKpiSummary(summaryResult.data || null)
-    }
-
-    if (!heatmapResult.success) {
-      setError((prev) => prev || heatmapResult.error || 'Failed to load heatmap data')
-    } else {
-      setHeatmapData(heatmapResult.data?.heatmap_data || [])
-    }
-
-    if (!postalResult.success) {
-      setError((prev) => prev || postalResult.error || 'Failed to load postal breakdown')
-    } else {
-      setPostalData(postalResult.data?.postal_data || [])
-    }
-
-    if (!typeBreakdownResult.success) {
-      setError((prev) => prev || typeBreakdownResult.error || 'Failed to load type breakdown')
-    } else {
-      setTypeBreakdownData(typeBreakdownResult.data || null)
-    }
-
-    if (!unitOriginResult.success) {
-      setError((prev) => prev || unitOriginResult.error || 'Failed to load unit origin data')
-    } else {
-      setUnitOriginData(unitOriginResult.data || null)
-    }
-
-    setIsLoading(false)
-  }, [dateRange.endDate, dateRange.startDate, region])
 
   useEffect(() => {
     loadIncidentData()
@@ -363,7 +362,7 @@ const FireDisplay = ({ role }) => {
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
           region={region}
-          data={currentIndex === 4 ? postalData : incidentData} 
+          data={currentIndex === 4 ? postalData : currentIndex === 5 ? incidentData : typeBreakdownData} 
           heatmapData={heatmapData}
           weeks={1}
           overall={responseTimeData?.overall}
