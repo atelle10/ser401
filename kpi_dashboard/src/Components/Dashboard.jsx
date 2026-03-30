@@ -18,6 +18,7 @@ import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
 import {
   buildExportPreviewSearch,
+  buildIsoRangeFromDateInputs,
   buildExportSettings,
   chartOptions,
   regionOptions,
@@ -28,14 +29,6 @@ const formatDateInputValue = (date) => {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
-}
-
-const buildIsoRangeFromDateInputs = ({ start, end }) => {
-  if (!start || !end) return { startDate: null, endDate: null }
-
-  const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
-  const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
-  return { startDate, endDate }
 }
 
 const Dashboard = ({ role = "viewer" }) => {

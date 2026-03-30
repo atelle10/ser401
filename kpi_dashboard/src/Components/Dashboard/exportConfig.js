@@ -65,6 +65,14 @@ export const buildExportSettings = ({
   }),
 })
 
+export const buildIsoRangeFromDateInputs = ({ start, end }) => {
+  if (!start || !end) return { startDate: null, endDate: null }
+
+  const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
+  const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
+  return { startDate, endDate }
+}
+
 export const buildExportPreviewSearch = ({
   region,
   startDate,
