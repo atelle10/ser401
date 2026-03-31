@@ -196,7 +196,6 @@ const transformAPIData = (apiData) => {
       ...base,
       unit_id: unit.unit_id,
       arrival_time: unit.arrival_time,
-      dispatch_time: unit.dispatch_time,
       clear_time: unit.clear_time,
     }));
   });
