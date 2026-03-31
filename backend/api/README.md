@@ -31,7 +31,7 @@ Body JSON with `call_processing`, `turnout`, `travel`, each `{ national, local }
 ### GET /api/incidents/response-times
 Query params: start_date, end_date, region (south/north/all)
 
-Only unit responses with `apparatus_resource_id` in `fire_ems.scottsdale_units` are included (overall and per_unit use the same rows). Records with non-positive or out-of-order response-time timestamps are excluded from these KPIs.
+Only unit responses with `apparatus_resource_id` in `fire_ems.scottsdale_units` are included (overall and per_unit use the same rows). Records with non-positive, out-of-order, or >24-hour segment response-time timestamps are excluded from these KPIs.
 
 Returns response-time KPIs (in minutes) for:
 - call processing (PSAP → dispatch)

@@ -363,6 +363,9 @@ async def get_response_times(
             AND ur.apparatus_resource_dispatch_date_time > i.basic_incident_psap_date_time
             AND ur.apparatus_resource_en_route_date_time > ur.apparatus_resource_dispatch_date_time
             AND ur.apparatus_resource_arrival_date_time > ur.apparatus_resource_en_route_date_time
+            AND ur.apparatus_resource_dispatch_date_time - i.basic_incident_psap_date_time <= INTERVAL '24 hours'
+            AND ur.apparatus_resource_en_route_date_time - ur.apparatus_resource_dispatch_date_time <= INTERVAL '24 hours'
+            AND ur.apparatus_resource_arrival_date_time - ur.apparatus_resource_en_route_date_time <= INTERVAL '24 hours'
         )
         """
 

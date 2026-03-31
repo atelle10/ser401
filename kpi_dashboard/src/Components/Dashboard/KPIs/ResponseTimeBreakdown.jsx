@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { fetchResponseTimeTargets, saveResponseTimeTargets } from '../../../services/responseTimeTargetsService'
+import { fetchResponseTimeTargets } from '../../../services/responseTimeTargetsService'
 
 const PAGE_SIZE = 10
 
@@ -15,6 +15,12 @@ const formatMinutes = (value, suffix = true) => {
   if (value == null || Number.isNaN(value)) return '—'
   const num = value.toFixed(1)
   return suffix ? `${num} min` : num
+}
+
+const formatDelta = (value) => {
+  if (value == null || Number.isNaN(value)) return '—'
+  if (Math.abs(value) < 0.05) return 'on P90 target'
+  return `${Math.abs(value).toFixed(1)} min ${value > 0 ? 'above P90 target' : 'below P90 target'}`
 }
 
 const METRIC_LABELS = {
@@ -35,7 +41,7 @@ const METRIC_LABELS = {
   },
 }
 
-const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
+const ResponseTimeBreakdown = ({ overall, perUnit }) => {
   const [sortConfig, setSortConfig] = useState({
     key: 'travel_p90',
     direction: 'desc',
@@ -43,8 +49,6 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [cardTooltip, setCardTooltip] = useState(null)
   const [targets, setTargets] = useState(DEFAULT_RESPONSE_TIME_TARGETS)
-  const [draftTargets, setDraftTargets] = useState(DEFAULT_RESPONSE_TIME_TARGETS)
-  const [isEditingTargets, setIsEditingTargets] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -56,12 +60,10 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
         const parsed = JSON.parse(savedTargets)
         if (parsed?.call_processing && parsed?.turnout && parsed?.travel && !cancelled) {
           setTargets(parsed)
-          setDraftTargets(parsed)
         }
       } catch {
         if (!cancelled) {
           setTargets(DEFAULT_RESPONSE_TIME_TARGETS)
-          setDraftTargets(DEFAULT_RESPONSE_TIME_TARGETS)
         }
       }
     }
@@ -78,7 +80,6 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
           return
         }
         setTargets(data)
-        setDraftTargets(data)
         window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(data))
       } catch {
         loadLocal()
@@ -128,34 +129,6 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
     })
   }
 
-  const handleTargetInput = (metricKey, targetKey, value) => {
-    const numericValue = Number(value)
-    setDraftTargets((current) => ({
-      ...current,
-      [metricKey]: {
-        ...current[metricKey],
-        [targetKey]: Number.isFinite(numericValue) ? numericValue : 0,
-      },
-    }))
-  }
-
-  const handleSaveTargets = async () => {
-    setIsEditingTargets(false)
-    setTargets(draftTargets)
-    window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(draftTargets))
-    try {
-      const saved = await saveResponseTimeTargets(draftTargets)
-      setTargets(saved)
-      setDraftTargets(saved)
-      window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(saved))
-    } catch {}
-  }
-
-  const handleCancelTargets = () => {
-    setDraftTargets(targets)
-    setIsEditingTargets(false)
-  }
-
   const hasData = overall && perUnit && perUnit.length > 0
 
   if (!hasData) {
@@ -172,57 +145,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
   return (
     <div className="border rounded-lg p-4 bg-white h-full flex flex-col gap-4">
       <div>
-        <h3 className="text-lg font-semibold mb-1">Response Time Breakdown</h3>
-        <p className="text-xs text-gray-500">
-          Times are in minutes. P90 means 90% of trips are this fast or faster.
-        </p>
-      </div>
-      <div className="text-xs text-gray-600 border rounded-md p-2 bg-gray-50">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span>National/local targets (minutes).</span>
-          {role === 'admin' && !isEditingTargets && (
-            <button
-              type="button"
-              className="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100"
-              onClick={() => setIsEditingTargets(true)}
-            >
-              Edit targets
-            </button>
-          )}
-        </div>
-        {isEditingTargets ? (
-          <div className="mt-2 space-y-2">
-            {Object.entries(METRIC_LABELS).map(([key, meta]) => (
-              <div key={key} className="grid grid-cols-[1fr_auto_auto] gap-2 items-center">
-                <span>{meta.title}</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  className="w-20 px-2 py-1 border rounded"
-                  value={draftTargets[key].national}
-                  onChange={(e) => handleTargetInput(key, 'national', e.target.value)}
-                />
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  className="w-20 px-2 py-1 border rounded"
-                  value={draftTargets[key].local}
-                  onChange={(e) => handleTargetInput(key, 'local', e.target.value)}
-                />
-              </div>
-            ))}
-            <div className="flex gap-2">
-              <button type="button" className="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100" onClick={handleSaveTargets}>Save</button>
-              <button type="button" className="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-100" onClick={handleCancelTargets}>Cancel</button>
-            </div>
-          </div>
-        ) : (
-          <p className="mt-1">
-            Call processing {targets.call_processing.national}/{targets.call_processing.local} · Turnout {targets.turnout.national}/{targets.turnout.local} · Travel {targets.travel.national}/{targets.travel.local}
-          </p>
-        )}
+        <h3 className="text-lg font-semibold">Response Time Breakdown</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -275,9 +198,11 @@ const ResponseTimeBreakdown = ({ overall, perUnit, role = 'viewer' }) => {
                 {formatMinutes(metric.p90, false)} min or faster.
               </div>
               {metric.p90 != null && !Number.isNaN(metric.p90) && metricTargets && (
-                <div className="mt-1 text-[0.65rem] text-gray-600">
-                  P90 vs national ({metricTargets.national}): {(metric.p90 - metricTargets.national).toFixed(1)} min · vs local ({metricTargets.local}):{' '}
-                  {(metric.p90 - metricTargets.local).toFixed(1)} min (Δ; lower target is better).
+                <div className="mt-1 text-xs font-semibold text-gray-700 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
+                  <span className="text-gray-600">National ({metricTargets.national})</span>
+                  <span>{formatDelta(metric.p90 - metricTargets.national)}</span>
+                  <span className="text-gray-600">Local ({metricTargets.local})</span>
+                  <span>{formatDelta(metric.p90 - metricTargets.local)}</span>
                 </div>
               )}
             </div>
