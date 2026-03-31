@@ -1,9 +1,26 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { fetchResponseTimeTargets } from '../../../services/responseTimeTargetsService'
+
+const PAGE_SIZE = 10
+
+const TARGETS_STORAGE_KEY = 'response-time-targets-v1'
+
+const DEFAULT_RESPONSE_TIME_TARGETS = {
+  call_processing: { national: 2.0, local: 2.5 },
+  turnout: { national: 1.5, local: 2.0 },
+  travel: { national: 4.0, local: 5.0 },
+}
 
 const formatMinutes = (value, suffix = true) => {
   if (value == null || Number.isNaN(value)) return '—'
   const num = value.toFixed(1)
   return suffix ? `${num} min` : num
+}
+
+const formatDelta = (value) => {
+  if (value == null || Number.isNaN(value)) return '—'
+  if (Math.abs(value) < 0.05) return 'on P90 target'
+  return `${Math.abs(value).toFixed(1)} min ${value > 0 ? 'above P90 target' : 'below P90 target'}`
 }
 
 const METRIC_LABELS = {
@@ -29,7 +46,50 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
     key: 'travel_p90',
     direction: 'desc',
   })
+  const [currentPage, setCurrentPage] = useState(1)
   const [cardTooltip, setCardTooltip] = useState(null)
+  const [targets, setTargets] = useState(DEFAULT_RESPONSE_TIME_TARGETS)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadLocal = () => {
+      try {
+        const savedTargets = window.localStorage.getItem(TARGETS_STORAGE_KEY)
+        if (!savedTargets) return
+        const parsed = JSON.parse(savedTargets)
+        if (parsed?.call_processing && parsed?.turnout && parsed?.travel && !cancelled) {
+          setTargets(parsed)
+        }
+      } catch {
+        if (!cancelled) {
+          setTargets(DEFAULT_RESPONSE_TIME_TARGETS)
+        }
+      }
+    }
+
+    ;(async () => {
+      try {
+        const data = await fetchResponseTimeTargets()
+        if (
+          cancelled ||
+          !data?.call_processing ||
+          !data?.turnout ||
+          !data?.travel
+        ) {
+          return
+        }
+        setTargets(data)
+        window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(data))
+      } catch {
+        loadLocal()
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const sortedRows = useMemo(() => {
     if (!perUnit?.length) return []
@@ -47,6 +107,15 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
 
     return rows
   }, [perUnit, sortConfig])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [perUnit, sortConfig])
+
+  const totalPages = Math.ceil(sortedRows.length / PAGE_SIZE) || 0
+  const startIndex = (currentPage - 1) * PAGE_SIZE
+  const paginatedRows = sortedRows.slice(startIndex, startIndex + PAGE_SIZE)
+  const rangeEnd = sortedRows.length === 0 ? 0 : Math.min(startIndex + PAGE_SIZE, sortedRows.length)
 
   const handleSort = (key) => {
     setSortConfig((current) => {
@@ -76,15 +145,13 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
   return (
     <div className="border rounded-lg p-4 bg-white h-full flex flex-col gap-4">
       <div>
-        <h3 className="text-lg font-semibold mb-1">Response Time Breakdown</h3>
-        <p className="text-xs text-gray-500">
-          Times are in minutes. P90 means 90% of trips are this fast or faster.
-        </p>
+        <h3 className="text-lg font-semibold">Response Time Breakdown</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {Object.entries(METRIC_LABELS).map(([key, meta]) => {
           const metric = overall?.[key] || {}
+          const metricTargets = targets[key]
           const showTooltip = cardTooltip === key
           return (
             <div
@@ -130,15 +197,23 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
                 P90 means 90% of {meta.title.toLowerCase()} is{' '}
                 {formatMinutes(metric.p90, false)} min or faster.
               </div>
+              {metric.p90 != null && !Number.isNaN(metric.p90) && metricTargets && (
+                <div className="mt-1 text-xs font-semibold text-gray-700 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
+                  <span className="text-gray-600">National ({metricTargets.national})</span>
+                  <span>{formatDelta(metric.p90 - metricTargets.national)}</span>
+                  <span className="text-gray-600">Local ({metricTargets.local})</span>
+                  <span>{formatDelta(metric.p90 - metricTargets.local)}</span>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
 
       <div className="text-xs text-gray-500 space-y-0.5">
-        <p>Per unit: each row is one unit; P90 is the time 90% of that unit&apos;s trips met or beat.</p>
+        <p>Per unit (Scottsdale units only): each row is one unit; P90 is the time 90% of that unit&apos;s trips met or beat.</p>
         <p>Click a column header to reorder the rows by that column: <strong>▼</strong> = slowest at top, <strong>▲</strong> = fastest at top. Click again to flip.</p>
-        <p><strong>0.0 min</strong> means the source system did not record a separate time for that step (e.g. en route same as dispatch), so the real time for that step is not available—treat as missing data, not zero.</p>
+        <p>Rows with non-positive or out-of-order timestamps are excluded from response-time KPI calculations.</p>
       </div>
       <div className="flex-1 overflow-auto">
         <table className="min-w-full text-xs border rounded-lg overflow-hidden">
@@ -170,7 +245,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
             </tr>
           </thead>
           <tbody>
-            {sortedRows.map((row) => (
+            {paginatedRows.map((row) => (
               <tr key={row.unit_id} className="odd:bg-white even:bg-gray-50">
                 <td className="px-3 py-1.5 border-b text-sm font-medium text-gray-800">
                   {row.unit_id}
@@ -194,6 +269,32 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-gray-50 transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+            {' · '}
+            Showing {sortedRows.length === 0 ? 0 : startIndex + 1}–{rangeEnd} of {sortedRows.length}
+          </span>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 rounded border border-gray-300 bg-white text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-gray-50 transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   )
 }

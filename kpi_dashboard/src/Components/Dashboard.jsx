@@ -474,6 +474,7 @@ const Dashboard = ({ role = "viewer" }) => {
               <ResponseTimeBreakdown
                 overall={responseTimeData?.overall}
                 perUnit={responseTimeData?.per_unit}
+                role={role}
               />
             </div>
           </div>
