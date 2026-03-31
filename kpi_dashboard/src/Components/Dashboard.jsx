@@ -213,12 +213,11 @@ const Dashboard = ({ role = "viewer" }) => {
 
 
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
-  const isAdmin = role === "admin"
   const selectRef = React.createRef()
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
-      <div className="flex flex-col justify-center sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
+      <div className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg backdrop-blur-sm">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
@@ -597,6 +596,18 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
+              <ResponseTimeBreakdown
+                overall={responseTimeData?.overall}
+                perUnit={responseTimeData?.per_unit}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="slot bottom" data-swapy-slot="g">
+          <div className="item item-g" data-swapy-item="g">
+            <div className="handle" data-swapy-handle></div>
+            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (responseTimeVisible ? 'visible' : 'hidden')}>
+              <br />
               <ResponseTimeBreakdown
                 overall={responseTimeData?.overall}
                 perUnit={responseTimeData?.per_unit}
