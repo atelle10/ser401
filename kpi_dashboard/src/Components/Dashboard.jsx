@@ -6,11 +6,12 @@ import MutualAidChart from './Dashboard/KPIs/MutualAidChart'
 import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
+import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
 import Chart from './Dashboard/Chart'
 import KPI_1 from './Dashboard/KPIs/KPI_1'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
 import ErrorMessage from './Dashboard/KPIs/ErrorMessage'
-import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin } from '../services/incidentDataService'
+import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin, fetchResponseTimes } from '../services/incidentDataService'
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
@@ -47,6 +48,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [postalData, setPostalData] = useState(null)
   const [typeBreakdownData, setTypeBreakdownData] = useState(null)
   const [unitOriginData, setUnitOriginData] = useState(null)
+  const [responseTimeData, setResponseTimeData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
@@ -56,6 +58,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [callVolumeVisible, setCallVolumeVisible] = useState(true)
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
+  const [responseTimeVisible, setResponseTimeVisible] = useState(true)
 
 
   const dateRange = useMemo(() => {
@@ -71,19 +74,17 @@ const Dashboard = ({ role = "viewer" }) => {
   const swapyRef = useRef(null)
   const containerRef = useRef(null)
 
-   useEffect(() => {
-        if (containerRef.current) {
-          swapyRef.current = createSwapy(containerRef.current, {
-            animation: 'spring',
-          })
-          swapyRef.current.onBeforeSwap((event) => {
-            return true
-          })
-        }
-        return () => {
-          swapyRef.current?.destroy()
-        }
-      }, [])
+  useEffect(() => {
+    if (containerRef.current) {
+      swapyRef.current = createSwapy(containerRef.current, {
+        animation: 'spring',
+      })
+      swapyRef.current.onBeforeSwap(() => true)
+    }
+    return () => {
+      swapyRef.current?.destroy()
+    }
+  }, [])
 
   useEffect(() => {
     if (isCustomRange) return
@@ -109,7 +110,7 @@ const Dashboard = ({ role = "viewer" }) => {
       return
     }
 
-    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult] = await Promise.all([
+    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult, responseTimesResult] = await Promise.all([
       fetchKPIData({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
@@ -136,6 +137,11 @@ const Dashboard = ({ role = "viewer" }) => {
         region,
       }),
       fetchUnitOrigin({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchResponseTimes({
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
         region,
@@ -179,6 +185,12 @@ const Dashboard = ({ role = "viewer" }) => {
       setUnitOriginData(unitOriginResult.data || null)
     }
 
+    if (!responseTimesResult.success) {
+      setError((prev) => prev || responseTimesResult.error || 'Failed to load response time data')
+    } else {
+      setResponseTimeData(responseTimesResult.data || null)
+    }
+
     setIsLoading(false)
   }, [dateRange.endDate, dateRange.startDate, region])
 
@@ -194,14 +206,14 @@ const Dashboard = ({ role = "viewer" }) => {
             { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
             { label: 'Call Volume Trend', value: 'call_volume_trend' },
             { label: 'Mutual Aid', value: 'mutual_aid' },
+            { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
           ]
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
-  const isAdmin = role === "admin"
   const selectRef = React.createRef()
 
   return (
     <div className="p-2 sm:p-4 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg">
+      <div className="sticky top-0 z-30 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-3 sm:p-4 rounded-lg backdrop-blur-sm">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
@@ -274,6 +286,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
+              setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
             }
           }
           onRemove={
@@ -285,6 +298,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
+              setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
             }
           }
           avoidHighlightFirstOption={true}
@@ -449,6 +463,18 @@ const Dashboard = ({ role = "viewer" }) => {
                 <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
                 <IncidentTypeBreakdown data={typeBreakdownData} />
               </div>
+            </div>
+          </div>
+        </div>
+        <div className="slot bottom" data-swapy-slot="g">
+          <div className="item item-g" data-swapy-item="g">
+            <div className="handle" data-swapy-handle></div>
+            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (responseTimeVisible ? 'visible' : 'hidden')}>
+              <br />
+              <ResponseTimeBreakdown
+                overall={responseTimeData?.overall}
+                perUnit={responseTimeData?.per_unit}
+              />
             </div>
           </div>
         </div>

@@ -263,6 +263,171 @@ async def get_kpi_summary(
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
 
 
+@app.get("/api/incidents/response-times")
+async def get_response_times(
+    start_date: str = Query(...), end_date: str = Query(...), region: str = Query("all")
+):
+    """
+    Compute response-time KPIs (call processing, turnout, travel) for unit responses.
+    Returns overall averages and 90th percentiles plus per-unit aggregates.
+    """
+    try:
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date: {str(e)}")
+
+    try:
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+
+        region_filter = ""
+        if region == "south":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+        elif region == "north":
+            region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+
+        base_cte = f"""
+        WITH base AS (
+            SELECT
+                ur.apparatus_resource_id AS unit_id,
+                EXTRACT(
+                    EPOCH FROM (
+                        ur.apparatus_resource_dispatch_date_time - i.basic_incident_psap_date_time
+                    )
+                ) / 60.0 AS call_processing_minutes,
+                EXTRACT(
+                    EPOCH FROM (
+                        ur.apparatus_resource_en_route_date_time - ur.apparatus_resource_dispatch_date_time
+                    )
+                ) / 60.0 AS turnout_minutes,
+                EXTRACT(
+                    EPOCH FROM (
+                        ur.apparatus_resource_arrival_date_time - ur.apparatus_resource_en_route_date_time
+                    )
+                ) / 60.0 AS travel_minutes
+            FROM fire_ems.incident i
+            JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+            WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+            {region_filter}
+            AND ur.apparatus_resource_id IS NOT NULL
+            AND ur.apparatus_resource_dispatch_date_time IS NOT NULL
+            AND ur.apparatus_resource_en_route_date_time IS NOT NULL
+            AND ur.apparatus_resource_arrival_date_time IS NOT NULL
+        )
+        """
+
+        overall_query = (
+            base_cte
+            + """
+        SELECT
+            AVG(call_processing_minutes) AS call_processing_avg,
+            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY call_processing_minutes) AS call_processing_p90,
+            AVG(turnout_minutes) AS turnout_avg,
+            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY turnout_minutes) AS turnout_p90,
+            AVG(travel_minutes) AS travel_avg,
+            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY travel_minutes) AS travel_p90
+        FROM base
+        """
+        )
+
+        per_unit_query = (
+            base_cte
+            + """
+        SELECT
+            unit_id,
+            COUNT(*) AS calls,
+            AVG(call_processing_minutes) AS call_processing_avg,
+            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY call_processing_minutes) AS call_processing_p90,
+            AVG(turnout_minutes) AS turnout_avg,
+            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY turnout_minutes) AS turnout_p90,
+            AVG(travel_minutes) AS travel_avg,
+            PERCENTILE_DISC(0.9) WITHIN GROUP (ORDER BY travel_minutes) AS travel_p90
+        FROM base
+        GROUP BY unit_id
+        """
+        )
+
+        overall_df = db.read_table(f"({overall_query}) as subquery")
+        per_unit_df = db.read_table(f"({per_unit_query}) as subquery")
+
+        db.disconnect()
+
+        overall = None
+        if not overall_df.empty:
+            row = overall_df.iloc[0]
+            # If all aggregates are null, treat as no data
+            if not (
+                row["call_processing_avg"] is None
+                and row["turnout_avg"] is None
+                and row["travel_avg"] is None
+            ):
+                overall = {
+                    "call_processing": {
+                        "avg": float(row["call_processing_avg"])
+                        if row["call_processing_avg"] is not None
+                        else None,
+                        "p90": float(row["call_processing_p90"])
+                        if row["call_processing_p90"] is not None
+                        else None,
+                    },
+                    "turnout": {
+                        "avg": float(row["turnout_avg"])
+                        if row["turnout_avg"] is not None
+                        else None,
+                        "p90": float(row["turnout_p90"])
+                        if row["turnout_p90"] is not None
+                        else None,
+                    },
+                    "travel": {
+                        "avg": float(row["travel_avg"])
+                        if row["travel_avg"] is not None
+                        else None,
+                        "p90": float(row["travel_p90"])
+                        if row["travel_p90"] is not None
+                        else None,
+                    },
+                }
+
+        per_unit = []
+        if not per_unit_df.empty:
+            for _, row in per_unit_df.iterrows():
+                per_unit.append(
+                    {
+                        "unit_id": str(row["unit_id"]),
+                        "calls": int(row["calls"]),
+                        "call_processing_avg": float(row["call_processing_avg"])
+                        if row["call_processing_avg"] is not None
+                        else None,
+                        "call_processing_p90": float(row["call_processing_p90"])
+                        if row["call_processing_p90"] is not None
+                        else None,
+                        "turnout_avg": float(row["turnout_avg"])
+                        if row["turnout_avg"] is not None
+                        else None,
+                        "turnout_p90": float(row["turnout_p90"])
+                        if row["turnout_p90"] is not None
+                        else None,
+                        "travel_avg": float(row["travel_avg"])
+                        if row["travel_avg"] is not None
+                        else None,
+                        "travel_p90": float(row["travel_p90"])
+                        if row["travel_p90"] is not None
+                        else None,
+                    }
+                )
+
+        return {
+            "overall": overall,
+            "per_unit": per_unit,
+            "region": region,
+            "time_window": {"start": start_date, "end": end_date},
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
 @app.get("/api/incidents/heatmap")
 async def get_incident_heatmap(
     start_date: str = Query(...), end_date: str = Query(...), region: str = Query("all")
