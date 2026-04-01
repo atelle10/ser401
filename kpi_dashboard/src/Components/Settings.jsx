@@ -47,7 +47,9 @@ export default function Settings() {
         if (parsed?.call_processing && parsed?.turnout && parsed?.travel && !cancelled) {
           setTargets(parsed)
         }
-      } catch {}
+      } catch {
+        // Ignore invalid localStorage JSON
+      }
     }
 
     ;(async () => {
