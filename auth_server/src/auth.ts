@@ -3,12 +3,45 @@ import { admin } from "better-auth/plugins"
 import { Pool } from "pg";
 import crypto from "node:crypto";
 
-const trustedOrigins = (
+const configuredTrustedOrigins = (
   process.env.BETTER_AUTH_TRUSTED_ORIGINS || "http://localhost:5173" //TODO: change from hardcoded origin
 )
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+const isLoopbackOrigin = (origin: string) => {
+  try {
+    const url = new URL(origin);
+    return url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
+const trustedOrigins = async (request?: Request) => {
+  const requestOrigin = request?.headers.get("origin")?.trim();
+  const forwardedHost = request?.headers.get("x-forwarded-host")?.trim();
+  const forwardedProto = request?.headers.get("x-forwarded-proto")?.trim() || "http";
+  const requestUrlOrigin = request ? new URL(request.url).origin : undefined;
+
+  return Array.from(
+    new Set(
+      [
+        ...configuredTrustedOrigins,
+        requestOrigin,
+        forwardedHost ? `${forwardedProto}://${forwardedHost}` : undefined,
+        requestUrlOrigin,
+      ].filter((origin): origin is string => {
+        if (!origin) {
+          return false;
+        }
+
+        return configuredTrustedOrigins.includes(origin) || isLoopbackOrigin(origin);
+      })
+    )
+  );
+};
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5173",
