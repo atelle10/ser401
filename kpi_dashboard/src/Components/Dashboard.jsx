@@ -364,7 +364,7 @@ const Dashboard = ({ role = "viewer" }) => {
           <button
             type="button"
             onClick={openExportModal}
-            className="px-3 py-2 text-sm font-medium border border-white/60 rounded bg-white text-blue-700 hover:bg-blue-50 transition-colors"
+            className="shrink-0 whitespace-nowrap px-4 py-2 text-sm font-medium border border-white/60 rounded bg-white text-blue-700 hover:bg-blue-50 transition-colors"
           >
             Export PDF
           </button>

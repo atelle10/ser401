@@ -41,7 +41,7 @@ const METRIC_LABELS = {
   },
 }
 
-const ResponseTimeBreakdown = ({ overall, perUnit, printView = false }) => {
+const ResponseTimeBreakdown = ({ overall, perUnit, printView = false, onReadyChange }) => {
   const [sortConfig, setSortConfig] = useState({
     key: 'travel_p90',
     direction: 'desc',
@@ -52,6 +52,13 @@ const ResponseTimeBreakdown = ({ overall, perUnit, printView = false }) => {
 
   useEffect(() => {
     let cancelled = false
+    onReadyChange?.(false)
+
+    const finalizeReady = () => {
+      if (!cancelled) {
+        onReadyChange?.(true)
+      }
+    }
 
     const loadLocal = () => {
       try {
@@ -77,19 +84,23 @@ const ResponseTimeBreakdown = ({ overall, perUnit, printView = false }) => {
           !data?.turnout ||
           !data?.travel
         ) {
+          loadLocal()
+          finalizeReady()
           return
         }
         setTargets(data)
         window.localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(data))
+        finalizeReady()
       } catch {
         loadLocal()
+        finalizeReady()
       }
     })()
 
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [onReadyChange])
 
   const sortedRows = useMemo(() => {
     if (!perUnit?.length) return []
@@ -171,7 +182,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit, printView = false }) => {
                 </span>
               </div>
               {showTooltip && (
-                <div className="absolute left-2 right-2 top-full mt-1 z-10 px-2 py-1.5 bg-gray-800 text-white text-xs rounded shadow-lg">
+                <div className="response-time-tooltip absolute left-2 right-2 top-full mt-1 z-10 px-2 py-1.5 bg-gray-800 text-white text-xs rounded shadow-lg">
                   {meta.tooltip}
                 </div>
               )}

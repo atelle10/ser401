@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import HeatMapDayHour from './Dashboard/KPIs/HeatMapDayHour'
 import UnitHourUtilization from './Dashboard/KPIs/UnitHourUtilization'
@@ -22,6 +22,7 @@ import {
   getSelectedChartOptions,
   parseExportPreviewSearch,
 } from './Dashboard/exportConfig'
+import { authClient } from '../utils/authClient'
 import './ExportPreview.css'
 
 const EMPTY_PREVIEW_DATA = {
@@ -32,6 +33,21 @@ const EMPTY_PREVIEW_DATA = {
   unitOriginData: null,
   responseTimeData: null,
 }
+
+const PRINT_READY_CHARTS = new Set([
+  'call_volume_trend',
+  'mutual_aid',
+  'response_time_breakdown',
+])
+
+const buildAsyncChartStatus = (selectedCharts = []) =>
+  selectedCharts.reduce((status, chartKey) => {
+    if (PRINT_READY_CHARTS.has(chartKey)) {
+      status[chartKey] = false
+    }
+
+    return status
+  }, {})
 
 const formatDateDisplay = (value) => {
   if (!value) return 'Not provided'
@@ -48,6 +64,7 @@ const formatDateDisplay = (value) => {
 
 const ExportPreview = () => {
   const { search } = useLocation()
+  const { data: session } = authClient.useSession()
   const settings = useMemo(() => parseExportPreviewSearch(search), [search])
   const autoPrintEnabled = useMemo(
     () => new URLSearchParams(search).get('autoprint') === '1',
@@ -65,11 +82,30 @@ const ExportPreview = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [hasTriggeredPrint, setHasTriggeredPrint] = useState(false)
+  const [generatedAt] = useState(() => new Date())
+  const [asyncChartStatus, setAsyncChartStatus] = useState(() =>
+    buildAsyncChartStatus(settings.selectedCharts)
+  )
   const selectedChartSet = useMemo(() => new Set(settings.selectedCharts), [settings.selectedCharts])
   const regionLabel = useMemo(() => getRegionLabel(settings.region), [settings.region])
-  const hasDeferredChartLoad = useMemo(
-    () => selectedChartSet.has('call_volume_trend') || selectedChartSet.has('mutual_aid'),
-    [selectedChartSet]
+  const generatedBy = useMemo(
+    () => session?.user?.name || session?.user?.username || session?.user?.email || 'Unknown user',
+    [session?.user?.email, session?.user?.name, session?.user?.username]
+  )
+  const generatedAtLabel = useMemo(
+    () =>
+      generatedAt.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      }),
+    [generatedAt]
+  )
+  const areAsyncChartsReady = useMemo(
+    () => Object.values(asyncChartStatus).every(Boolean),
+    [asyncChartStatus]
   )
   const needsSharedPreviewData = useMemo(() => ({
     incidentData:
@@ -195,7 +231,8 @@ const ExportPreview = () => {
 
   useEffect(() => {
     setHasTriggeredPrint(false)
-  }, [search])
+    setAsyncChartStatus(buildAsyncChartStatus(settings.selectedCharts))
+  }, [search, settings.selectedCharts])
 
   useEffect(() => {
     const dateLabel = [settings.startDate, settings.endDate]
@@ -214,28 +251,60 @@ const ExportPreview = () => {
       isLoading ||
       !dateRange.startDate ||
       !dateRange.endDate ||
-      selectedChartOptions.length === 0
+      selectedChartOptions.length === 0 ||
+      !areAsyncChartsReady
     ) {
       return undefined
     }
 
-    const timeoutId = window.setTimeout(() => {
-      window.print()
-      setHasTriggeredPrint(true)
-    }, hasDeferredChartLoad ? 1500 : 500)
+    let firstFrameId = 0
+    let secondFrameId = 0
+
+    firstFrameId = window.requestAnimationFrame(() => {
+      secondFrameId = window.requestAnimationFrame(() => {
+        window.print()
+        setHasTriggeredPrint(true)
+      })
+    })
 
     return () => {
-      window.clearTimeout(timeoutId)
+      window.cancelAnimationFrame(firstFrameId)
+      window.cancelAnimationFrame(secondFrameId)
     }
   }, [
     autoPrintEnabled,
+    areAsyncChartsReady,
     dateRange.endDate,
     dateRange.startDate,
-    hasDeferredChartLoad,
     hasTriggeredPrint,
     isLoading,
     selectedChartOptions.length,
   ])
+
+  const handleAsyncChartReadyChange = useCallback((chartKey, isReady) => {
+    setAsyncChartStatus((current) => {
+      if (!(chartKey in current) || current[chartKey] === isReady) {
+        return current
+      }
+
+      return {
+        ...current,
+        [chartKey]: isReady,
+      }
+    })
+  }, [])
+  const handleCallVolumeReadyChange = useCallback(
+    (isReady) => handleAsyncChartReadyChange('call_volume_trend', isReady),
+    [handleAsyncChartReadyChange]
+  )
+  const handleMutualAidReadyChange = useCallback(
+    (isReady) => handleAsyncChartReadyChange('mutual_aid', isReady),
+    [handleAsyncChartReadyChange]
+  )
+  const handleResponseTimeReadyChange = useCallback(
+    (isReady) => handleAsyncChartReadyChange('response_time_breakdown', isReady),
+    [handleAsyncChartReadyChange]
+  )
 
   const timePeriodHours = useMemo(() => {
     if (!dateRange.startDate || !dateRange.endDate) return 24
@@ -286,6 +355,7 @@ const ExportPreview = () => {
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
           region={settings.region}
+          onReadyChange={handleCallVolumeReadyChange}
         />
       ),
     },
@@ -296,6 +366,7 @@ const ExportPreview = () => {
           startDate={dateRange.startDate}
           endDate={dateRange.endDate}
           region={settings.region}
+          onReadyChange={handleMutualAidReadyChange}
         />
       ),
     },
@@ -306,6 +377,7 @@ const ExportPreview = () => {
           overall={previewData.responseTimeData?.overall}
           perUnit={previewData.responseTimeData?.per_unit}
           printView
+          onReadyChange={handleResponseTimeReadyChange}
         />
       ),
     },
@@ -318,6 +390,9 @@ const ExportPreview = () => {
     previewData.responseTimeData,
     previewData.typeBreakdownData,
     previewData.unitOriginData,
+    handleCallVolumeReadyChange,
+    handleMutualAidReadyChange,
+    handleResponseTimeReadyChange,
     settings.region,
     timePeriodHours,
   ])
@@ -403,6 +478,11 @@ const ExportPreview = () => {
             ))}
           </div>
         )}
+
+        <footer className="export-preview-footer">
+          <span>Generated {generatedAtLabel}</span>
+          <span>Prepared by {generatedBy}</span>
+        </footer>
       </div>
     </div>
   )
