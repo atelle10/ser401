@@ -683,13 +683,12 @@ const Dashboard = ({ role = "viewer" }) => {
               <ResponseTimeBreakdown
                 overall={responseTimeData?.overall}
                 perUnit={responseTimeData?.per_unit}
-                role={role}
               />
             </div>
           </div>
         </div>
-        </div>
-        )}
+      </div>
+      )}
 
       {role === "viewer" && (
         <div data-testid="viewer-message" className="mt-8 text-center text-gray-600">
