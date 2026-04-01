@@ -1,9 +1,11 @@
+import json
 import os
 import sys
 import tempfile
 from datetime import datetime
+from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -23,6 +25,48 @@ app.add_middleware(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://michael@localhost/famar_db")
+
+RESPONSE_TIME_TARGETS_PATH = (
+    Path(__file__).resolve().parent / "data" / "response_time_targets.json"
+)
+DEFAULT_RESPONSE_TIME_TARGETS = {
+    "call_processing": {"national": 2.0, "local": 2.5},
+    "turnout": {"national": 1.5, "local": 2.0},
+    "travel": {"national": 4.0, "local": 5.0},
+}
+
+
+def _merge_response_time_targets_payload(payload: dict) -> dict:
+    merged = json.loads(json.dumps(DEFAULT_RESPONSE_TIME_TARGETS))
+    for metric in ("call_processing", "turnout", "travel"):
+        block = payload.get(metric)
+        if not isinstance(block, dict):
+            continue
+        for key in ("national", "local"):
+            if key not in block:
+                continue
+            try:
+                val = float(block[key])
+            except (TypeError, ValueError):
+                continue
+            if val >= 0:
+                merged[metric][key] = val
+    return merged
+
+
+def _read_response_time_targets() -> dict:
+    if not RESPONSE_TIME_TARGETS_PATH.exists():
+        return json.loads(json.dumps(DEFAULT_RESPONSE_TIME_TARGETS))
+    try:
+        raw = json.loads(RESPONSE_TIME_TARGETS_PATH.read_text())
+        return _merge_response_time_targets_payload(raw)
+    except Exception:
+        return json.loads(json.dumps(DEFAULT_RESPONSE_TIME_TARGETS))
+
+
+def _write_response_time_targets(data: dict) -> None:
+    RESPONSE_TIME_TARGETS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    RESPONSE_TIME_TARGETS_PATH.write_text(json.dumps(data, indent=2) + "\n")
 
 UPLOAD_POLICY = DQPolicy(
     policy_id="dq_001", name="BASIC_POLICY", rules=[DQRule.NAN, DQRule.NON_NUMERIC]
@@ -308,12 +352,20 @@ async def get_response_times(
                 ) / 60.0 AS travel_minutes
             FROM fire_ems.incident i
             JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+            JOIN fire_ems.scottsdale_units su ON su.unit_id = ur.apparatus_resource_id
             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
             {region_filter}
+            AND i.basic_incident_psap_date_time IS NOT NULL
             AND ur.apparatus_resource_id IS NOT NULL
             AND ur.apparatus_resource_dispatch_date_time IS NOT NULL
             AND ur.apparatus_resource_en_route_date_time IS NOT NULL
             AND ur.apparatus_resource_arrival_date_time IS NOT NULL
+            AND ur.apparatus_resource_dispatch_date_time > i.basic_incident_psap_date_time
+            AND ur.apparatus_resource_en_route_date_time > ur.apparatus_resource_dispatch_date_time
+            AND ur.apparatus_resource_arrival_date_time > ur.apparatus_resource_en_route_date_time
+            AND ur.apparatus_resource_dispatch_date_time - i.basic_incident_psap_date_time <= INTERVAL '24 hours'
+            AND ur.apparatus_resource_en_route_date_time - ur.apparatus_resource_dispatch_date_time <= INTERVAL '24 hours'
+            AND ur.apparatus_resource_arrival_date_time - ur.apparatus_resource_en_route_date_time <= INTERVAL '24 hours'
         )
         """
 
@@ -426,6 +478,18 @@ async def get_response_times(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+@app.get("/api/admin/response-time-targets")
+async def get_response_time_targets_admin():
+    return _read_response_time_targets()
+
+
+@app.put("/api/admin/response-time-targets")
+async def put_response_time_targets_admin(payload: dict = Body(...)):
+    merged = _merge_response_time_targets_payload(payload)
+    _write_response_time_targets(merged)
+    return merged
 
 
 @app.get("/api/incidents/heatmap")

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { authClient } from '../utils/authClient'
 import NavBar from './NavBar.jsx'
 import Sidebar from './Sidebar.jsx'
@@ -12,7 +12,6 @@ import AdminMenu from './AdminMenu.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
-import backgroundImage2 from './assets/background_img.png'
 import { countUnverifiedUsers } from '../utils/userVerification'
 
 const fallbackProfile = {
