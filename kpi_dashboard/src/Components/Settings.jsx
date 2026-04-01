@@ -1,4 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { fetchResponseTimeTargets, saveResponseTimeTargets } from '../services/responseTimeTargetsService'
+
+const TARGETS_STORAGE_KEY = 'response-time-targets-v1'
+const DEFAULT_RESPONSE_TIME_TARGETS = {
+  call_processing: { national: 2.0, local: 2.5 },
+  turnout: { national: 1.5, local: 2.0 },
+  travel: { national: 4.0, local: 5.0 },
+}
 
 export default function Settings({ onOpenTVMode }) {
   const [settings, setSettings] = useState({
@@ -18,6 +26,9 @@ export default function Settings({ onOpenTVMode }) {
     rotationIntervalSeconds: 30,
     selectedCharts: [],
   })
+  const [targets, setTargets] = useState(DEFAULT_RESPONSE_TIME_TARGETS)
+  const [targetsSaved, setTargetsSaved] = useState(false)
+  const [targetsError, setTargetsError] = useState('')
 
   useEffect(() => {
     const stored = localStorage.getItem('userSettings')
@@ -46,6 +57,38 @@ export default function Settings({ onOpenTVMode }) {
     }
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+
+    const loadLocal = () => {
+      try {
+        const savedTargets = localStorage.getItem(TARGETS_STORAGE_KEY)
+        if (!savedTargets) return
+        const parsed = JSON.parse(savedTargets)
+        if (parsed?.call_processing && parsed?.turnout && parsed?.travel && !cancelled) {
+          setTargets(parsed)
+        }
+      } catch (error) {
+        void error
+      }
+    }
+
+    ;(async () => {
+      try {
+        const data = await fetchResponseTimeTargets()
+        if (cancelled || !data?.call_processing || !data?.turnout || !data?.travel) return
+        setTargets(data)
+        localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(data))
+      } catch {
+        loadLocal()
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const handleChange = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }))
     setSaved(false)
@@ -70,6 +113,33 @@ export default function Settings({ onOpenTVMode }) {
     }
     setSettings(defaults)
     setSaved(false)
+  }
+
+  const handleTargetChange = (metricKey, targetKey, value) => {
+    const parsed = Number(value)
+    setTargets((prev) => ({
+      ...prev,
+      [metricKey]: {
+        ...prev[metricKey],
+        [targetKey]: Number.isFinite(parsed) ? parsed : 0,
+      },
+    }))
+    setTargetsSaved(false)
+    setTargetsError('')
+  }
+
+  const handleSaveTargets = async () => {
+    try {
+      const savedTargets = await saveResponseTimeTargets(targets)
+      setTargets(savedTargets)
+      localStorage.setItem(TARGETS_STORAGE_KEY, JSON.stringify(savedTargets))
+      setTargetsError('')
+      setTargetsSaved(true)
+      setTimeout(() => setTargetsSaved(false), 3000)
+    } catch {
+      setTargetsSaved(false)
+      setTargetsError('Could not save targets. Please try again.')
+    }
   }
 
   return (
@@ -234,6 +304,53 @@ export default function Settings({ onOpenTVMode }) {
               <p className="text-xs text-white/70 mt-1">
                 Trigger alerts when utilization exceeds this threshold
               </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6">
+          <h2 className="font-medium text-base sm:text-lg mb-3 sm:mb-4">Response Time Targets</h2>
+          <p className="text-xs text-white/70 mb-3">Set national benchmark and local target minutes for each metric.</p>
+          <div className="space-y-3">
+            <div className="hidden sm:grid sm:grid-cols-[1fr_7rem_7rem] gap-3 items-center text-xs text-white/70">
+              <span></span>
+              <span className="text-center">National</span>
+              <span className="text-center">Local</span>
+            </div>
+            {[
+              ['call_processing', 'Call processing'],
+              ['turnout', 'Turnout'],
+              ['travel', 'Travel'],
+            ].map(([metricKey, label]) => (
+              <div key={metricKey} className="grid grid-cols-1 sm:grid-cols-[1fr_7rem_7rem] gap-2 sm:gap-3 items-center">
+                <span className="text-sm">{label}</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={targets[metricKey].national}
+                  onChange={(e) => handleTargetChange(metricKey, 'national', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={targets[metricKey].local}
+                  onChange={(e) => handleTargetChange(metricKey, 'local', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md bg-white text-gray-900"
+                />
+              </div>
+            ))}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSaveTargets}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base"
+              >
+                Save Targets
+              </button>
+              {targetsSaved && <span className="text-sm text-green-200">Targets saved</span>}
+              {targetsError && <span className="text-sm text-red-200">{targetsError}</span>}
             </div>
           </div>
         </div>

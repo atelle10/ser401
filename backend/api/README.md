@@ -22,6 +22,26 @@ Query params: start_date, end_date, region (south/north/all)
 
 Returns aggregated KPI metrics for performance.
 
+### GET /api/admin/response-time-targets
+Returns national/local target minutes for call processing, turnout, and travel.
+
+### PUT /api/admin/response-time-targets
+Body JSON with `call_processing`, `turnout`, `travel`, each `{ national, local }`. Persists targets to `backend/api/data/response_time_targets.json`.
+
+### GET /api/incidents/response-times
+Query params: start_date, end_date, region (south/north/all)
+
+Only unit responses with `apparatus_resource_id` in `fire_ems.scottsdale_units` are included (overall and per_unit use the same rows). Records with non-positive, out-of-order, or >24-hour segment response-time timestamps are excluded from these KPIs.
+
+Returns response-time KPIs (in minutes) for:
+- call processing (PSAP → dispatch)
+- turnout (dispatch → en route)
+- travel (en route → arrival)
+
+Response shape:
+- `overall`: avg and 90th percentile for each metric.
+- `per_unit`: one row per unit with `unit_id`, `calls`, and avg / 90th percentile for each metric.
+
 ## Database
 
 Connects to PostgreSQL fire_ems schema.

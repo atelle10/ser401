@@ -22,6 +22,8 @@ const AdminMenu = ({ onUnverifiedCountChange }) => {
   const [confirmApproveUser, setConfirmApproveUser] = useState(null)
   const { data: session } = authClient.useSession()
 
+  const showFutureActions = false
+
   useEffect(() => {
     let isMounted = true
 
@@ -296,7 +298,7 @@ const AdminMenu = ({ onUnverifiedCountChange }) => {
             Review registered users, adjust roles, or remove access.
           </p>
         </div>
-        {actionSuccess === '__show_secondary_admin_actions__' && (
+        {showFutureActions && (
           <div className="flex flex-wrap gap-2">
             {/* TODO: Wire export list action to backend/users service. */}
             <button
