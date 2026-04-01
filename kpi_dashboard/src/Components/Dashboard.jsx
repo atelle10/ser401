@@ -222,6 +222,7 @@ const Dashboard = ({ role = "viewer" }) => {
 
     const previewUrl = new URL('/export-preview', window.location.origin)
     previewUrl.search = buildExportPreviewSearch(exportSettings)
+    previewUrl.searchParams.set('autoprint', '1')
     window.open(previewUrl.toString(), '_blank', 'noopener,noreferrer')
   }
 

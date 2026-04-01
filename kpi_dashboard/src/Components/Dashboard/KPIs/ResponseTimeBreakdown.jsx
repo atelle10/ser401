@@ -41,7 +41,7 @@ const METRIC_LABELS = {
   },
 }
 
-const ResponseTimeBreakdown = ({ overall, perUnit }) => {
+const ResponseTimeBreakdown = ({ overall, perUnit, printView = false }) => {
   const [sortConfig, setSortConfig] = useState({
     key: 'travel_p90',
     direction: 'desc',
@@ -115,6 +115,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
   const totalPages = Math.ceil(sortedRows.length / PAGE_SIZE) || 0
   const startIndex = (currentPage - 1) * PAGE_SIZE
   const paginatedRows = sortedRows.slice(startIndex, startIndex + PAGE_SIZE)
+  const visibleRows = printView ? sortedRows : paginatedRows
   const rangeEnd = sortedRows.length === 0 ? 0 : Math.min(startIndex + PAGE_SIZE, sortedRows.length)
 
   const handleSort = (key) => {
@@ -245,7 +246,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
             </tr>
           </thead>
           <tbody>
-            {paginatedRows.map((row) => (
+            {visibleRows.map((row) => (
               <tr key={row.unit_id} className="odd:bg-white even:bg-gray-50">
                 <td className="px-3 py-1.5 border-b text-sm font-medium text-gray-800">
                   {row.unit_id}
@@ -270,7 +271,7 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {!printView && totalPages > 1 && (
         <div className="flex flex-wrap items-center justify-center gap-4">
           <button
             type="button"
@@ -300,4 +301,3 @@ const ResponseTimeBreakdown = ({ overall, perUnit }) => {
 }
 
 export default ResponseTimeBreakdown
-

@@ -132,10 +132,6 @@ const ExportPdfModal = ({
           </div>
         </div>
 
-        <div className="mt-6 rounded-xl border border-blue-800 bg-blue-950 px-4 py-3 text-sm text-blue-50/80">
-          The preview route is now connected. Selected export settings will be displayed in the preview page.
-        </div>
-
         <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"

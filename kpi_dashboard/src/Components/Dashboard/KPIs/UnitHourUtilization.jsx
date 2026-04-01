@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 
 const PAGE_SIZE = 10;
 
-const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
+const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   
   const UNIT_TYPES = {
@@ -58,6 +58,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
   const paginatedRows = uhuByUnit
     ? uhuByUnit.slice(startIndex, startIndex + PAGE_SIZE)
     : [];
+  const visibleRows = printView ? (uhuByUnit || []) : paginatedRows;
 
   if (!uhuByUnit?.length) {
     return (
@@ -87,7 +88,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
       </div>
 
       <div className="space-y-2">
-        {paginatedRows.map(({ unit, type, uhu, busyHours, incidents }) => {
+        {visibleRows.map(({ unit, type, uhu, busyHours, incidents }) => {
           const unitType = UNIT_TYPES[type] || UNIT_TYPES.R;
           
           return (
@@ -115,7 +116,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24 }) => {
         })}
       </div>
 
-      {totalPages > 1 && (
+      {!printView && totalPages > 1 && (
         <div className="mt-4 flex items-center justify-center gap-4">
           <button
             type="button"

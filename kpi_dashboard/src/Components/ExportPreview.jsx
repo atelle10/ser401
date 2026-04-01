@@ -22,6 +22,7 @@ import {
   getSelectedChartOptions,
   parseExportPreviewSearch,
 } from './Dashboard/exportConfig'
+import './ExportPreview.css'
 
 const EMPTY_PREVIEW_DATA = {
   incidentData: [],
@@ -32,9 +33,26 @@ const EMPTY_PREVIEW_DATA = {
   responseTimeData: null,
 }
 
+const formatDateDisplay = (value) => {
+  if (!value) return 'Not provided'
+
+  const parsed = new Date(`${value}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return value
+
+  return parsed.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 const ExportPreview = () => {
   const { search } = useLocation()
   const settings = useMemo(() => parseExportPreviewSearch(search), [search])
+  const autoPrintEnabled = useMemo(
+    () => new URLSearchParams(search).get('autoprint') === '1',
+    [search]
+  )
   const selectedChartOptions = useMemo(
     () => getSelectedChartOptions(settings.selectedCharts),
     [settings.selectedCharts]
@@ -46,7 +64,13 @@ const ExportPreview = () => {
   const [previewData, setPreviewData] = useState(EMPTY_PREVIEW_DATA)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [hasTriggeredPrint, setHasTriggeredPrint] = useState(false)
   const selectedChartSet = useMemo(() => new Set(settings.selectedCharts), [settings.selectedCharts])
+  const regionLabel = useMemo(() => getRegionLabel(settings.region), [settings.region])
+  const hasDeferredChartLoad = useMemo(
+    () => selectedChartSet.has('call_volume_trend') || selectedChartSet.has('mutual_aid'),
+    [selectedChartSet]
+  )
   const needsSharedPreviewData = useMemo(() => ({
     incidentData:
       selectedChartSet.has('heatmap') || selectedChartSet.has('unit_hour_utilization'),
@@ -169,6 +193,50 @@ const ExportPreview = () => {
     settings.region,
   ])
 
+  useEffect(() => {
+    setHasTriggeredPrint(false)
+  }, [search])
+
+  useEffect(() => {
+    const dateLabel = [settings.startDate, settings.endDate]
+      .filter(Boolean)
+      .join(' to ')
+
+    document.title = dateLabel
+      ? `KPI Analytics Report - ${regionLabel} - ${dateLabel}`
+      : 'KPI Analytics Report'
+  }, [regionLabel, settings.endDate, settings.startDate])
+
+  useEffect(() => {
+    if (
+      !autoPrintEnabled ||
+      hasTriggeredPrint ||
+      isLoading ||
+      !dateRange.startDate ||
+      !dateRange.endDate ||
+      selectedChartOptions.length === 0
+    ) {
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      window.print()
+      setHasTriggeredPrint(true)
+    }, hasDeferredChartLoad ? 1500 : 500)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [
+    autoPrintEnabled,
+    dateRange.endDate,
+    dateRange.startDate,
+    hasDeferredChartLoad,
+    hasTriggeredPrint,
+    isLoading,
+    selectedChartOptions.length,
+  ])
+
   const timePeriodHours = useMemo(() => {
     if (!dateRange.startDate || !dateRange.endDate) return 24
 
@@ -202,6 +270,7 @@ const ExportPreview = () => {
           <UnitHourUtilization
             data={previewData.incidentData}
             timePeriodHours={timePeriodHours}
+            printView
           />
           <UnitHourUtilizationByOrigin
             scottsdaleUhu={previewData.unitOriginData?.scottsdale_uhu}
@@ -236,6 +305,7 @@ const ExportPreview = () => {
         <ResponseTimeBreakdown
           overall={previewData.responseTimeData?.overall}
           perUnit={previewData.responseTimeData?.per_unit}
+          printView
         />
       ),
     },
@@ -252,37 +322,88 @@ const ExportPreview = () => {
     timePeriodHours,
   ])
 
+  const handlePrint = () => {
+    window.print()
+  }
+
   return (
-    <div className="space-y-6 p-4 text-sm text-black">
-      <div>
-        <h1>Export Preview</h1>
-        <p>Region: {getRegionLabel(settings.region)}</p>
-        <p>Start Date: {settings.startDate || 'Not provided'}</p>
-        <p>End Date: {settings.endDate || 'Not provided'}</p>
+    <div className="export-preview-page">
+      <div className="export-preview-toolbar">
+        <div className="export-preview-toolbar-copy">
+          <strong>Print preview</strong>
+          <p>
+            This page is formatted for the browser print dialog. Use it to print or save as PDF.
+          </p>
+        </div>
+        <div className="export-preview-toolbar-actions">
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="export-preview-toolbar-button"
+          >
+            Print / Save as PDF
+          </button>
+        </div>
       </div>
 
-      {error && (
-        <p className="text-red-600">
-          Some preview data could not be loaded: {error}
-        </p>
-      )}
+      <div className="export-preview-document export-preview-root">
+        <header className="export-preview-header">
+          <p className="export-preview-eyebrow">FAMAR KPI analytics</p>
+          <h1 className="export-preview-title">KPI Data Analytics Report</h1>
 
-      {isLoading && <p>Loading chart preview...</p>}
+          <div className="export-preview-meta">
+            <div className="export-preview-meta-item">
+              <span className="export-preview-meta-label">Region</span>
+              <span className="export-preview-meta-value">{regionLabel}</span>
+            </div>
+            <div className="export-preview-meta-item">
+              <span className="export-preview-meta-label">Start date</span>
+              <span className="export-preview-meta-value">
+                {formatDateDisplay(settings.startDate)}
+              </span>
+            </div>
+            <div className="export-preview-meta-item">
+              <span className="export-preview-meta-label">End date</span>
+              <span className="export-preview-meta-value">
+                {formatDateDisplay(settings.endDate)}
+              </span>
+            </div>
+            <div className="export-preview-meta-item">
+              <span className="export-preview-meta-label">Charts included</span>
+              <span className="export-preview-meta-value">{selectedChartOptions.length}</span>
+            </div>
+          </div>
+        </header>
 
-      {!isLoading && selectedChartOptions.length === 0 && (
-        <p>No charts selected.</p>
-      )}
+        {error && (
+          <div className="export-preview-feedback">
+            Some preview data could not be loaded: {error}
+          </div>
+        )}
 
-      {!isLoading && selectedChartOptions.length > 0 && (
-        <div className="space-y-6">
-          {selectedChartOptions.map((option) => (
-            <section key={option.value} className="space-y-2">
-              <h2 className="text-base font-semibold">{chartSections[option.value].title}</h2>
-              {chartSections[option.value].content}
-            </section>
-          ))}
-        </div>
-      )}
+        {isLoading && (
+          <div className="export-preview-state">
+            Preparing charts for print…
+          </div>
+        )}
+
+        {!isLoading && selectedChartOptions.length === 0 && (
+          <div className="export-preview-state">No charts selected.</div>
+        )}
+
+        {!isLoading && selectedChartOptions.length > 0 && (
+          <div>
+            {selectedChartOptions.map((option) => (
+              <section key={option.value} className="export-preview-section">
+                <h2 className="export-preview-section-title">
+                  {chartSections[option.value].title}
+                </h2>
+                {chartSections[option.value].content}
+              </section>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
