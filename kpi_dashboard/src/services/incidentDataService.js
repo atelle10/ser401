@@ -14,6 +14,7 @@ const buildUrl = (path, params) => {
 const fetchJson = async (url) => {
   const response = await fetch(url, {
     method: 'GET',
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
   });
 
@@ -57,6 +58,7 @@ export const fetchKPISummary = async ({ startDate, endDate, region = 'all' }) =>
 const fetchOptional = async (url, emptyData) => {
   const response = await fetch(url, {
     method: 'GET',
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
   });
   if (response.status === 404) {
@@ -135,7 +137,27 @@ export const fetchMutualAid = async ({ startDate, endDate, region = 'all' }) => 
     const data = await fetchOptional(url, {
       scottsdale_units_outside: 0,
       other_units_in_scottsdale: 0,
+      other_units_in_scottsdale_detail: [],
     });
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
+export const fetchResponseTimes = async ({ startDate, endDate, region = 'all' }) => {
+  try {
+    const url = buildUrl('/incidents/response-times', {
+      start_date: startDate,
+      end_date: endDate,
+      region,
+    });
+
+    const data = await fetchOptional(url, {
+      overall: null,
+      per_unit: [],
+    });
+
     return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };
@@ -175,7 +197,6 @@ const transformAPIData = (apiData) => {
       unit_id: unit.unit_id,
       dispatch_time: unit.dispatch_time,
       arrival_time: unit.arrival_time,
-      dispatch_time: unit.dispatch_time,
       clear_time: unit.clear_time,
     }));
   });
