@@ -7,6 +7,7 @@ from pathlib import Path
 
 from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.db_ops.relational_data_store import RelationalDataStore
@@ -849,3 +850,24 @@ async def get_mutual_aid(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+# Chatbot models - adding these for the new chat feature
+class ChatRequest(BaseModel):
+    question: str = Field(..., min_length=1, max_length=500)
+    context: dict = Field(default_factory=dict)
+
+
+class ChatResponse(BaseModel):
+    answer: str
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    """
+    Chatbot endpoint for asking questions about KPI data.
+    This is a work in progress - just setting up the structure for now.
+    """
+    # TODO: actually fetch KPI data and call OpenAI
+    # For now just echo back to test the endpoint works
+    return ChatResponse(answer=f"You asked: {request.question}. Chatbot coming soon!")
