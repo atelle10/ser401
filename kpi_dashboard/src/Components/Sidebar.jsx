@@ -6,7 +6,7 @@ import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
 import adminIcon from './assets/admin icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0, role = "viewer", setDisplayMode}) => {
+const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0, role = "viewer" }) => {
   const getItemClass = (view) => {
     const baseClass = "h-8 p-2 hover:text-blue-800 cursor-pointer hover:bg-white rounded-full flex justify-left items-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
     return currentView === view
@@ -29,31 +29,27 @@ const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNo
       <div className='flex lg:flex-col gap-2 lg:gap-4 overflow-x-auto lg:overflow-x-visible'>
         <div 
           className={getItemClass('dashboard')}
-          onClick={() => {setCurrentView('dashboard'); setDisplayMode(false)}}
+          onClick={() => setCurrentView('dashboard')}
         >
             <img src={dashboardIcon} alt="Dashboard Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2'/>
             <p className="hidden lg:inline whitespace-nowrap">Dashboard</p>
         </div>
-        <div 
-          className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-white transition-all hover:text-blue-800 duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
-          onClick={() => {setCurrentView('fire'); setDisplayMode(true)}} >
+        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-white transition-all hover:text-blue-800 duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
             <img src={whiteFireIcon} alt="White Fire Icon" className='inline w-5 h-5 lg:mr-2'/>
             <p className="hidden lg:inline whitespace-nowrap">Fire Department</p>
         </div>
-        <div 
-          className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-white transition-all hover:text-blue-800 duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto"
-          onClick={() => {setCurrentView('medical'); setDisplayMode(true)}}>
-            <img src={whiteMedicalIcon} alt="Medical Icon" className='inline w-5 h-5 lg:mr-2'/>
+        <div className="h-8 p-2 cursor-pointer rounded-full flex justify-left items-center hover:bg-white transition-all hover:text-blue-800 duration-500 ease-in-out hover:-translate-y-1 hover:scale-105 pointer-events-auto">
+            <img src={whiteMedicalIcon} alt="Medical Icon" className='inline w-5 h-5 lg:mr-2 center'/>
             <p className="hidden lg:inline whitespace-nowrap">Medical (EMS)</p>
         </div>
-        <div className={getItemClass('account')} onClick={() => {handleAccountClick(); setDisplayMode(false)}}>
+        <div className={getItemClass('account')} onClick={handleAccountClick}>
             <img src={accountIcon} alt="Account Icon" className='inline w-5 h-5 lg:mr-2'/>
             <p className="hidden lg:inline whitespace-nowrap">Account</p>
         </div>
         {isAdmin && (
           <div 
             className={getItemClass('admin')}
-            onClick={() => {setCurrentView('admin'); setDisplayMode(false)}}
+            onClick={() => setCurrentView('admin')}
           >
               <img src={adminIcon} alt="Admin Icon" className='inline w-5 h-5 lg:w-6 lg:h-6 lg:mr-2 -ml-0.5'/>
               <p className="hidden lg:inline whitespace-nowrap">Admin</p>
