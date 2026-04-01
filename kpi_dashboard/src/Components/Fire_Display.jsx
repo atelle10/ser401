@@ -9,7 +9,7 @@ import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
 import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdown, fetchTypeBreakdown, fetchUnitOrigin, fetchResponseTimes } from '../services/incidentDataService'
 import './assets/style.css'
 import homeIcon from './assets/home icon.png'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 export const formatDateInputValue = (date) => {
   const year = date.getFullYear()
