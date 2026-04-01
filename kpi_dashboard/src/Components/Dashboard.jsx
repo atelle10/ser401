@@ -602,6 +602,7 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
+              <h3 className="font-semibold mb-3 text-center">Response Time Breakdown</h3>
               <ResponseTimeBreakdown
                 overall={responseTimeData?.overall}
                 perUnit={responseTimeData?.per_unit}
@@ -609,20 +610,7 @@ const Dashboard = ({ role = "viewer" }) => {
             </div>
           </div>
         </div>
-        <div className="slot bottom" data-swapy-slot="g">
-          <div className="item item-g" data-swapy-item="g">
-            <div className="handle" data-swapy-handle></div>
-            <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (responseTimeVisible ? 'visible' : 'hidden')}>
-              <br />
-              <ResponseTimeBreakdown
-                overall={responseTimeData?.overall}
-                perUnit={responseTimeData?.per_unit}
-                role={role}
-              />
-            </div>
-          </div>
-        </div>
-        </div>
+      </div>
       )}
 
       {role === "viewer" && (
