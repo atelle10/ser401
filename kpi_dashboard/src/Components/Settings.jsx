@@ -8,7 +8,7 @@ const DEFAULT_RESPONSE_TIME_TARGETS = {
   travel: { national: 4.0, local: 5.0 },
 }
 
-export default function Settings() {
+export default function Settings({ onOpenTVMode }) {
   const [settings, setSettings] = useState({
     theme: 'light',
     defaultView: 'dashboard',
@@ -21,6 +21,11 @@ export default function Settings() {
   })
 
   const [saved, setSaved] = useState(false)
+  const [tvModeSummary, setTvModeSummary] = useState({
+    enabled: false,
+    rotationIntervalSeconds: 30,
+    selectedCharts: [],
+  })
   const [targets, setTargets] = useState(DEFAULT_RESPONSE_TIME_TARGETS)
   const [targetsSaved, setTargetsSaved] = useState(false)
   const [targetsError, setTargetsError] = useState('')
@@ -32,6 +37,22 @@ export default function Settings() {
         setSettings(JSON.parse(stored))
       } catch (e) {
         console.error('Failed to load settings:', e)
+      }
+    }
+
+    const storedTvMode = localStorage.getItem('tvModeSettings')
+    if (storedTvMode) {
+      try {
+        const parsedTvMode = JSON.parse(storedTvMode)
+        setTvModeSummary({
+          enabled: Boolean(parsedTvMode.enabled),
+          rotationIntervalSeconds: parsedTvMode.rotationIntervalSeconds || 30,
+          selectedCharts: Array.isArray(parsedTvMode.selectedCharts)
+            ? parsedTvMode.selectedCharts
+            : [],
+        })
+      } catch (e) {
+        console.error('Failed to load TV mode settings:', e)
       }
     }
   }, [])
@@ -47,8 +68,8 @@ export default function Settings() {
         if (parsed?.call_processing && parsed?.turnout && parsed?.travel && !cancelled) {
           setTargets(parsed)
         }
-      } catch {
-        // Ignore invalid localStorage JSON
+      } catch (error) {
+        void error
       }
     }
 
@@ -183,6 +204,39 @@ export default function Settings() {
                 <option value="America/New_York">Eastern (EST)</option>
               </select>
             </div>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="font-medium text-base sm:text-lg mb-1">TV Mode</h2>
+              <p className="text-sm text-white/80">
+                Configure the rotating dashboard display, chart selection, and playback timing for in-office display mode.
+              </p>
+              <p className="text-xs text-white/60 mt-2">
+                Access is restricted to administrators.
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 min-w-[240px]">
+              <div className="font-medium">Current TV Mode Profile</div>
+              <div className="mt-2 space-y-1 text-white/75">
+                <p>Status: {tvModeSummary.enabled ? 'Enabled' : 'Disabled'}</p>
+                <p>Rotation interval: {tvModeSummary.rotationIntervalSeconds} seconds</p>
+                <p>Selected charts: {tvModeSummary.selectedCharts.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex justify-start">
+            <button
+              type="button"
+              onClick={onOpenTVMode}
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={!onOpenTVMode}
+            >
+              Manage TV Mode
+            </button>
           </div>
         </div>
 

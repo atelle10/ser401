@@ -12,22 +12,34 @@ import AdminMenu from './AdminMenu.jsx'
 import famarLogo from './assets/famar_logo.png'
 import Account from './Account.jsx'
 import accountIcon from './assets/account.png'
+import TVModeSettings from './TVModeSettings.jsx'
 import { countUnverifiedUsers } from '../utils/userVerification'
 
 const fallbackProfile = {
   name: 'User',
   email: '',
+  username: '',
+  phone: '',
   role: 'viewer',
+  verificationStatus: 'Verified',
   avatar: accountIcon,
 }
 
 const buildProfile = (user) => {
   if (!user) return fallbackProfile
   const name = user.name || user.username || user.email || fallbackProfile.name
+  const username =
+    user.username && !user.username.startsWith('pending_')
+      ? user.username
+      : ''
+  const phone = user.phone && user.phone !== '__pending__' ? user.phone : ''
   return {
     name,
     email: user.email || '',
+    username,
+    phone,
     role: user.role || fallbackProfile.role,
+    verificationStatus: user.verified === false ? 'Pending approval' : 'Verified',
     avatar: user.image || user.avatar || fallbackProfile.avatar,
   }
 }
@@ -45,7 +57,7 @@ const Home = ({ role = "viewer" }) => {
   }, [session?.user])
 
   useEffect(() => {
-    if (!isAdmin && currentView === 'admin') {
+    if (!isAdmin && ['admin', 'settings', 'tv-mode-settings'].includes(currentView)) {
       setCurrentView('dashboard')
     }
   }, [currentView, isAdmin])
@@ -104,7 +116,12 @@ const Home = ({ role = "viewer" }) => {
         if (role !== "admin") {
           return <div className="p-8 text-center text-red-600">Access Denied — Settings for admin only</div>
         }
-        return <Settings />
+        return <Settings onOpenTVMode={() => setCurrentView('tv-mode-settings')} />
+      case 'tv-mode-settings':
+        if (!isAdmin) {
+          return <div className="p-8 text-center text-red-600">Access Denied — TV mode settings for admin only</div>
+        }
+        return <TVModeSettings onBack={() => setCurrentView('settings')} />
       case 'admin':
         if (!isAdmin) {
           return <div className="p-8 text-center text-red-600">Access Denied — Admin console for admin only</div>
