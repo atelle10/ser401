@@ -405,7 +405,6 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
-              <br />
               <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day x Hour</h3>
               <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
             </div>
@@ -584,85 +583,8 @@ const Dashboard = ({ role = "viewer" }) => {
               <MutualAidChart startDate={dateInputs.start} endDate={dateInputs.end} />
             </div>
           </div>
-          <div className="slot middle-right" data-swapy-slot="d" >
-            <div className="item item-d" data-swapy-item="d">
-              <div className="handle" data-swapy-handle></div>
-              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (typeBreakdownVisible ? 'visible' : 'hidden')}>
-                <br />
-                <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
-                <IncidentTypeBreakdown data={typeBreakdownData} />
-              </div>
-            </div>
           </div>
-        </div>
-        <div className="slot bottom" data-swapy-slot="d" >
-          <div className="item item-d" data-swapy-item="d">
-              <div className="handle" data-swapy-handle></div>
-              <div className={typeBreakdownVisible ? 'hidden' : 'visible'  }>
-              <br />
-              <button onClick={() => {
-                setTypeBreakdownVisible(true);
-                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'type_breakdown')[0]]); 
-                setSelectKey(prevKey => prevKey + 1);
-                }} 
-                title='Display Type Breakdown'>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg> 
-              </button>
-            </div>
-              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (typeBreakdownVisible ? 'visible' : 'hidden')}>
-                <div className="right-align-button">
-                <button onClick={() => {
-                  setTypeBreakdownVisible(false);
-                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'type_breakdown'));
-                  setSelectKey(prevKey => prevKey + 1);
-                  }} 
-                  title='Minimize Type Breakdown'>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
-              <IncidentTypeBreakdown data={typeBreakdownData} />
-            </div>
-          </div>
-        </div>
-        <div className="slot bottom2" data-swapy-slot="f" >
-          <div className="item item-f" data-swapy-item="f">
-              <div className="handle" data-swapy-handle></div>
-              <div className={mutualAidVisible ? 'hidden' : 'visible'  }>
-              <br />
-              <button onClick={() => {
-                setMutualAidVisible(true);
-                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'mutual_aid')[0]]); 
-                setSelectKey(prevKey => prevKey + 1);
-                }} 
-                title='Display Mutual Aid'>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg> 
-              </button>
-            </div>
-              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (mutualAidVisible ? 'visible' : 'hidden')}>
-                <div className="right-align-button">
-                <button onClick={() => {
-                  setMutualAidVisible(false);
-                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'mutual_aid'));
-                  setSelectKey(prevKey => prevKey + 1);
-                  }} 
-                  title='Minimize Mutual Aid'>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <h3 className="font-semibold mb-3 text-center">Incident Mutual Aid</h3>
-              <MutualAidChart startDate={dateInputs.start} endDate={dateInputs.end} />
-            </div>
-          </div>
-        </div>
+        
         <div className="slot bottom" data-swapy-slot="g">
           <div className="item item-g" data-swapy-item="g">
             <div className="handle" data-swapy-handle></div>
