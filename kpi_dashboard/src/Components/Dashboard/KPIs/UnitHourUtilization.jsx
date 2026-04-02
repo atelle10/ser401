@@ -62,9 +62,13 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) 
 
   if (!uhuByUnit?.length) {
     return (
-      <div className=" w-fit border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
+      <div 
+        className=" w-fit border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md"
+        role="region"
+        aria-label="Unit Hour Utilization"
+      >
         <h3 className="text-lg font-semibold mb-2">Unit Hour Utilization (UHU)</h3>
-        <p className="text-gray-300">No unit data available for the selected period</p>
+        <p className="text-gray-300" role="status">No unit data available for the selected period</p>
       </div>
     );
   }
@@ -76,9 +80,13 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) 
   };
 
   return (
-    <div className="rounded-lg p-4 bg-blue-500/40 backdrop-blur-md">
+    <div 
+      className="rounded-lg p-4 bg-blue-500/40 backdrop-blur-md"
+      role="region"
+      aria-label="Unit Hour Utilization metrics"
+    >
       <div className="mb-4">
-        <h3 className="text-lg font-semibold">Unit Hour Utilization (UHU)</h3>
+        <h3 id="uhu-heading" className="text-lg font-semibold">Unit Hour Utilization (UHU)</h3>
         <p className="text-sm text-gray-300">
           UHU = (dispatch-to-clear busy time / {timePeriodHours}h period) * 100
         </p>
@@ -87,16 +95,18 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) 
         </p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" role="list" aria-labelledby="uhu-heading">
         {visibleRows.map(({ unit, type, uhu, busyHours, incidents }) => {
           const unitType = UNIT_TYPES[type] || UNIT_TYPES.R;
           
           return (
             <div 
               key={unit}
+              role="listitem"
+              aria-label={`${unit}: ${uhu.toFixed(1)}% utilization`}
               className="flex items-center gap-3 p-3 border rounded hover:bg-blue-900/80 transition-colors"
             >
-              <span className="text-2xl">{unitType.icon}</span>
+              <span className="text-2xl" aria-hidden="true">{unitType.icon}</span>
               
               <div className="flex-1">
                 <div className="flex items-baseline gap-2">
@@ -108,7 +118,10 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) 
                 </div>
               </div>
 
-              <div className={`px-3 py-1.5 rounded font-bold text-lg ${getUHUColor(uhu)}`}>
+              <div 
+                className={`px-3 py-1.5 rounded font-bold text-lg ${getUHUColor(uhu)}`}
+                aria-label={`Utilization: ${uhu.toFixed(1)} percent`}
+              >
                 {uhu.toFixed(1)}%
               </div>
             </div>
@@ -117,30 +130,36 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) 
       </div>
 
       {!printView && totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-center gap-4">
+        <nav 
+          className="mt-4 flex items-center justify-center gap-4"
+          role="navigation"
+          aria-label="UHU pagination"
+        >
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
+            aria-label="Go to previous page"
             className="px-3 py-1.5 rounded border bg-blue-900/60 text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-blue-900/80 transition-colors"
           >
             Previous
           </button>
-          <span className="text-sm text-gray-300">
+          <span className="text-sm text-gray-300" aria-live="polite">
             Page {currentPage} of {totalPages}
           </span>
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
+            aria-label="Go to next page"
             className="px-3 py-1.5 rounded border bg-blue-900/60 text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-blue-900/80 transition-colors"
           >
             Next
           </button>
-        </div>
+        </nav>
       )}
 
-      <div className="mt-4 pt-4 border-t">
+      <div className="mt-4 pt-4 border-t" role="group" aria-label="UHU threshold legend">
         <div className="grid grid-cols-3 gap-2 text-xs">
           <div className="text-center">
             <div className="font-bold text-gray-300">&lt; 10%</div>
