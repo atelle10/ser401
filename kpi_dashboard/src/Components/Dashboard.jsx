@@ -59,7 +59,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
   const [responseTimeVisible, setResponseTimeVisible] = useState(true)
-  const [selectKey, setSelectKey] = useState(0)
+  const [selectKey, setSelectKey] = useState(0) 
 
 
   const dateRange = useMemo(() => {
@@ -210,6 +210,8 @@ const Dashboard = ({ role = "viewer" }) => {
     { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
   ]
   const [selectedCharts, setSelectedCharts] = useState(options)
+
+
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const selectRef = React.createRef()
 
@@ -405,7 +407,7 @@ const Dashboard = ({ role = "viewer" }) => {
                   </svg>
                 </button>
               </div>
-              <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day x Hour</h3>
+              <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day × Hour</h3>
               <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
             </div>
           </div> 
