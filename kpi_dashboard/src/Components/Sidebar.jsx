@@ -6,7 +6,7 @@ import accountIcon from './assets/account_icon.png'
 import settingsIcon from './assets/settings_icon.png'
 import adminIcon from './assets/admin icon.png'
 
-const Sidebar = ({ currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0, role = "viewer" }) => {
+const Sidebar = ({ setDisplayMode, currentView, setCurrentView, onAccountClick, isAdmin, adminNotificationCount = 0, role = "viewer" }) => {
   const isActiveView = (view) => {
     if (view === 'settings') {
       return ['settings', 'tv-mode-settings'].includes(currentView)
