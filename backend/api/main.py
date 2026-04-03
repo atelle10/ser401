@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from openai import OpenAI
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.db_ops.relational_data_store import RelationalDataStore
@@ -26,6 +27,10 @@ app.add_middleware(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://michael@localhost/famar_db")
+
+# OpenAI config for chatbot
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+CHATBOT_MODEL = "gpt-4o-mini"  # cheapest model, good enough for our use case
 
 RESPONSE_TIME_TARGETS_PATH = (
     Path(__file__).resolve().parent / "data" / "response_time_targets.json"
@@ -951,13 +956,52 @@ async def chat_endpoint(request: ChatRequest):
                 "peak_hour": int(row["peak_hour"]) if row["peak_hour"] is not None else None
             }
 
-        # For now just return a placeholder response with the data
-        # We'll connect to OpenAI in the next step
-        avg_text = f"{data_summary['avg_response_time']:.1f} minutes" if data_summary['avg_response_time'] else "N/A"
+        # Build the system prompt for OpenAI
+        avg_text = f"{data_summary['avg_response_time']:.1f} minutes" if data_summary['avg_response_time'] else "not available"
+        peak_text = f"hour {data_summary['peak_hour']}" if data_summary['peak_hour'] is not None else "not available"
 
-        return ChatResponse(
-            answer=f"Data: {data_summary['total_incidents']} incidents, avg response {avg_text}, {data_summary['active_units']} active units. (AI integration coming next)"
-        )
+        system_prompt = f"""You are Fammy, a helpful assistant for the FAMAR Fire/EMS KPI Dashboard.
+Answer questions about the current dashboard data based on the context provided.
+
+Current Dashboard Context:
+- Date range: {start_date[:10]} to {end_date[:10]}
+- Region: {region}
+- Total incidents: {data_summary['total_incidents']}
+- Average response time: {avg_text}
+- Active units: {data_summary['active_units']}
+- Peak activity: {peak_text}
+
+Keep responses short (2-3 sentences). Be helpful and direct.
+If asked about something not in the data, say you don't have that information."""
+
+        # Check if we have an API key
+        if not OPENAI_API_KEY:
+            # Fallback response without AI - useful for testing
+            return ChatResponse(
+                answer=f"There were {data_summary['total_incidents']} incidents with an average response time of {avg_text}. Peak activity was at {peak_text}. (AI responses disabled - no API key)"
+            )
+
+        try:
+            # Call OpenAI
+            client = OpenAI(api_key=OPENAI_API_KEY)
+            response = client.chat.completions.create(
+                model=CHATBOT_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": request.question}
+                ],
+                temperature=0.7,
+                max_tokens=150
+            )
+
+            ai_answer = response.choices[0].message.content
+            return ChatResponse(answer=ai_answer)
+
+        except Exception as ai_error:
+            # If AI fails, return data summary as fallback
+            return ChatResponse(
+                answer=f"Based on the data: {data_summary['total_incidents']} incidents, avg response {avg_text}. (AI service temporarily unavailable)"
+            )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Chat DB error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
