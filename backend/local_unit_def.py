@@ -5,14 +5,15 @@ logger = logging.getLogger(__name__)
 
 
 class UnitOriginHelper:
-    SCOTTSDALE_PREFIXES = ["LT", "BC", "BR", "BE", "HM", "E", "L", "R", "S", "U", "T"]
+    SCOTTSDALE_PREFIXES = ["LT", "BC", "BR", "BE", "HM", "MC", "WT", "BT", "E", "F", "L", "R", "S", "U", "T"]
 
     @staticmethod
     def is_scottsdale_unit(unit_resource_id: str) -> bool:
+        uid = str(unit_resource_id).strip().upper()
         for prefix in UnitOriginHelper.SCOTTSDALE_PREFIXES:
-            if not unit_resource_id.startswith(prefix):
+            if not uid.startswith(prefix):
                 continue
-            remainder = unit_resource_id[len(prefix) :]
+            remainder = uid[len(prefix) :]
             if len(remainder) in (3, 4) and remainder[0] == "6" and remainder.isdigit():
                 return True
         return False
@@ -49,9 +50,6 @@ class UnitOriginHelper:
 
     @staticmethod
     def compute_mutual_aid(df, db=None):
-        breakdown = UnitOriginHelper.get_unit_origin_breakdown(df, db)
-        scottsdale_set = {u["unit_id"] for u in breakdown if u["is_scottsdale_unit"]}
-
         scottsdale_units_outside = 0
         other_units_in_scottsdale = 0
         other_units_in_scottsdale_by_unit = {}
@@ -72,7 +70,7 @@ class UnitOriginHelper:
             except (ValueError, TypeError):
                 in_scottsdale = False
 
-            is_scottsdale = unit_id in scottsdale_set
+            is_scottsdale = UnitOriginHelper.is_scottsdale_unit(unit_id)
             if is_scottsdale and not in_scottsdale:
                 scottsdale_units_outside += 1
             elif not is_scottsdale and in_scottsdale:
