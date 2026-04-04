@@ -5,10 +5,14 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from openai import OpenAI
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.db_ops.relational_data_store import RelationalDataStore
@@ -17,6 +21,11 @@ from backend.ingestion.ingestion_service import IngestionService
 from backend.local_unit_def import UnitOriginHelper
 
 app = FastAPI(title="FAMAR KPI Dashboard API")
+
+# Rate limiter for chatbot - 10 requests per minute per IP
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -868,15 +877,17 @@ class ChatResponse(BaseModel):
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
+@limiter.limit("10/minute")
+async def chat_endpoint(request: Request, chat_request: ChatRequest):
     """
     Chatbot endpoint for asking questions about KPI data.
     Fetches KPI summary based on date/region context to provide to the AI.
+    Rate limited to 10 requests per minute per IP.
     """
     # Get context from request, use defaults if not provided
-    region = request.context.get('region', 'all')
-    start_date = request.context.get('start_date')
-    end_date = request.context.get('end_date')
+    region = chat_request.context.get('region', 'all')
+    start_date = chat_request.context.get('start_date')
+    end_date = chat_request.context.get('end_date')
 
     # Default to last 7 days if dates missing
     if not start_date or not end_date:
@@ -988,7 +999,7 @@ If asked about something not in the data, say you don't have that information.""
                 model=CHATBOT_MODEL,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": request.question}
+                    {"role": "user", "content": chat_request.question}
                 ],
                 temperature=0.7,
                 max_tokens=150
