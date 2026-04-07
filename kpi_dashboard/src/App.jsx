@@ -6,6 +6,7 @@ import Register from './Components/Register.jsx'
 import CompleteProfile from './Components/CompleteProfile.jsx'
 import UnverifiedSplash from './Components/UnverifiedSplash.jsx'
 import SessionExpiredSplash from './Components/SessionExpiredSplash.jsx'
+import ExportPreview from './Components/ExportPreview.jsx'
 import { authClient } from './utils/authClient.js'
 import { consumeManualLogout } from './utils/manualLogoutFlag.js'
 import {
@@ -112,6 +113,14 @@ function App() {
           element={
             <RequireAuth>
               <Home />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/export-preview"
+          element={
+            <RequireAuth>
+              <ExportPreview />
             </RequireAuth>
           }
         />
