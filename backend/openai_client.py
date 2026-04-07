@@ -7,15 +7,15 @@ from openai_interface import OpenAISummaryClient
 
 load_dotenv()
 MAX_ROWS = 500
-MODEL_NAME = (
-    "gpt-4o-mini"  # we will stick with this model (cheapest) for the pdf summary.
-)
+DEFAULT_OPENAI_MODEL = "gpt-5-nano"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)
 
 
 class OpenAISummaryService(OpenAISummaryClient):
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-        self.model = MODEL_NAME
+    def __init__(self, api_key: str | None = None):
+        self.api_key = api_key or OPENAI_API_KEY
+        self.model = OPENAI_MODEL
 
     def generate_summary_prompt(self, data: pd.DataFrame, endpoint: str) -> str:
         columns = ", ".join(data.columns.tolist())
@@ -61,8 +61,7 @@ class OpenAISummaryService(OpenAISummaryClient):
 
 
 if __name__ == "__main__":
-    api_key = os.getenv("OPENAI_API_KEY")
-    service = OpenAISummaryService(api_key)
+    service = OpenAISummaryService()
 
     sample_df = pd.DataFrame({"incidents": [12, 45, 30], "response_time": [4, 6, 5]})
     prompt = service.generate_summary_prompt(sample_df, "test-endpoint")
