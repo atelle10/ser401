@@ -19,7 +19,7 @@ const regionLabel = (r) => {
   return 'All';
 };
 
-const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
+const MutualAidChart = ({ startDate, endDate, region = 'all', onReadyChange }) => {
   const [stats, setStats] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +30,7 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
       setLoading(false);
       setStats(null);
       setLoadError(null);
+      onReadyChange?.(true);
       return;
     }
 
@@ -37,6 +38,7 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
     setLoading(true);
     setLoadError(null);
     setStats(null);
+    onReadyChange?.(false);
 
     const load = async () => {
       const result = await fetchMutualAid({ startDate, endDate, region });
@@ -48,13 +50,14 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
         setLoadError(result.error || 'Failed to load');
         setStats(null);
       }
+      onReadyChange?.(true);
     };
 
     load();
     return () => {
       cancelled = true;
     };
-  }, [startDate, endDate, region]);
+  }, [startDate, endDate, region, onReadyChange]);
 
   useEffect(() => {
     setShowOtherUnits(false);
@@ -185,4 +188,3 @@ const MutualAidChart = ({ startDate, endDate, region = 'all' }) => {
 };
 
 export default MutualAidChart;
-

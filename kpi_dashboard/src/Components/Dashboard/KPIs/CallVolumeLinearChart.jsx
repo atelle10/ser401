@@ -1,25 +1,30 @@
 import { useMemo, useState, useEffect } from 'react';
 import { fetchCallVolume } from '../../../services/incidentDataService';
 
-const CallVolumeLinearChart = ({ startDate, endDate, region = 'south' }) => {
+const CallVolumeLinearChart = ({ startDate, endDate, region = 'south', onReadyChange }) => {
   const [granularity, setGranularity] = useState('daily');
   const [trendData, setTrendData] = useState(null);
 
   useEffect(() => {
-    if (!startDate || !endDate) return;
+    if (!startDate || !endDate) {
+      onReadyChange?.(true);
+      return;
+    }
 
     let cancelled = false;
+    onReadyChange?.(false);
 
     const load = async () => {
       const result = await fetchCallVolume({ startDate, endDate, region, granularity });
-      if (!cancelled && result.success) {
-        setTrendData(result.data?.trend_data || []);
-      }
+      if (cancelled) return;
+
+      setTrendData(result.success ? result.data?.trend_data || [] : []);
+      onReadyChange?.(true);
     };
 
     load();
     return () => { cancelled = true; };
-  }, [startDate, endDate, region, granularity]);
+  }, [startDate, endDate, region, granularity, onReadyChange]);
 
   const chartData = useMemo(() => {
     if (!trendData?.length) return null;
