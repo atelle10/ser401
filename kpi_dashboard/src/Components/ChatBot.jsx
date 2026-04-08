@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { sendChatMessage } from '../services/chatService'
 
 const ChatBot = ({ context }) => {
@@ -8,10 +8,23 @@ const ChatBot = ({ context }) => {
   ])
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Ref for auto-scrolling to bottom of messages
+  const messagesEndRef = useRef(null)
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isLoading])
 
   // Handle input change
   const handleInputChange = (e) => {
     setInputValue(e.target.value)
+  }
+  
+  // Clear chat history
+  const handleClearChat = () => {
+    setMessages([{ role: 'assistant', content: 'Hello! I am Fammy. Ask me about the dashboard data.' }])
   }
 
   // Handle form submission
@@ -49,7 +62,16 @@ const ChatBot = ({ context }) => {
 
   return (
     <div className='m-0 mt-0 text-sm font-bold justify-center text-center shadow-blue-500/20 bg-blue-500/40 text-white shadow-md rounded-2xl p-2 min-h-40 w-full'>
-      <div className="mb-2">Fammy - Dashboard Assistant</div>
+      <div className="mb-2 flex items-center justify-between px-2">
+        <span>Fammy - Dashboard Assistant</span>
+        <button
+          onClick={handleClearChat}
+          className='text-xs bg-blue-600 hover:bg-blue-700 px-2 py-0.5 rounded transition-colors'
+          title='Clear chat history'
+        >
+          Clear
+        </button>
+      </div>
 
       {/* Messages container */}
       <div className='border m1 text-xs justify-center shadow-blue-500/20 bg-gray-200 shadow-md rounded-2xl p-2 w-full h-48 overflow-y-auto mb-2'>
@@ -73,6 +95,8 @@ const ChatBot = ({ context }) => {
             </span>
           </div>
         )}
+        {/* Invisible element for auto-scroll */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input form */}
