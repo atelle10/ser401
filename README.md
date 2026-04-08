@@ -39,17 +39,7 @@ services, checking logs, and viewing status.
 
 ## QA evidence (Software Quality Plan)
 
-Structured test run notes and logs live under [`docs/qa/`](docs/qa/).  
-Example: KPI API pytest evidence — [`docs/qa/672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md).
-
-### Backend KPI API tests (pytest)
-
-From the repo root, with a venv and dev dependencies:
-
-```bash
-pip install -r backend/api/requirements.txt -r backend/api/requirements-dev.txt
-PYTHONPATH=. pytest backend/api/tests/ -v
-```
+Software Quality Plan test notes, commands, and results live under [`docs/qa/`](docs/qa/) (e.g. [`672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md)). Run instructions stay in each evidence file so this section does not grow with every story.
 
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:
