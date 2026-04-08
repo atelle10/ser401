@@ -7,6 +7,7 @@ import CallVolumeLinearChart from './Dashboard/KPIs/CallVolumeLinearChart'
 import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
+import ExportPdfModal from './Dashboard/ExportPdfModal'
 import Chart from './Dashboard/Chart'
 import KPI_1 from './Dashboard/KPIs/KPI_1'
 import LoadingSpinner from './Dashboard/KPIs/LoadingSpinner'
@@ -15,6 +16,13 @@ import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdo
 import { createSwapy } from 'swapy'
 import './assets/style.css'
 import { Multiselect } from 'multiselect-react-dropdown'
+import {
+  buildExportPreviewSearch,
+  buildIsoRangeFromDateInputs,
+  buildExportSettings,
+  chartOptions,
+  regionOptions,
+} from './Dashboard/exportConfig'
 
 const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -22,16 +30,6 @@ const formatDateInputValue = (date) => {
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
-
-const buildIsoRangeFromDateInputs = ({ start, end }) => {
-  if (!start || !end) return { startDate: null, endDate: null }
-
-  const startDate = new Date(`${start}T00:00:00.000Z`).toISOString()
-  const endDate = new Date(`${end}T23:59:59.999Z`).toISOString()
-  return { startDate, endDate }
-}
-
-
 
 const Dashboard = ({ role = "viewer" }) => {
   const [region, setRegion] = useState('south')
@@ -60,6 +58,8 @@ const Dashboard = ({ role = "viewer" }) => {
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
   const [responseTimeVisible, setResponseTimeVisible] = useState(true)
   const [selectKey, setSelectKey] = useState(0)
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false)
+  const [exportSettings, setExportSettings] = useState(null)
 
 
   const dateRange = useMemo(() => {
@@ -199,6 +199,54 @@ const Dashboard = ({ role = "viewer" }) => {
     loadIncidentData()
   }, [loadIncidentData])
 
+  const openExportModal = () => {
+    setExportSettings(buildExportSettings({
+      region,
+      dateInputs,
+      heatmapVisible,
+      postalCodeVisible,
+      typeBreakdownVisible,
+      unitHourUtilizationVisible,
+      callVolumeVisible,
+      mutualAidVisible,
+      responseTimeVisible,
+    }))
+    setIsExportModalOpen(true)
+  }
+
+  const closeExportModal = () => {
+    setIsExportModalOpen(false)
+  }
+
+  const handlePreviewExport = () => {
+    if (!exportSettings) return
+
+    const previewUrl = new URL('/export-preview', window.location.origin)
+    previewUrl.search = buildExportPreviewSearch(exportSettings)
+    previewUrl.searchParams.set('autoprint', '1')
+    window.open(previewUrl.toString(), '_blank', 'noopener,noreferrer')
+  }
+
+  const handleExportFieldChange = (field, value) => {
+    setExportSettings((prev) => {
+      if (!prev) return prev
+
+      return { ...prev, [field]: value }
+    })
+  }
+
+  const handleExportChartToggle = (chartValue) => {
+    setExportSettings((prev) => {
+      if (!prev) return prev
+
+      const selectedCharts = prev.selectedCharts.includes(chartValue)
+        ? prev.selectedCharts.filter((value) => value !== chartValue)
+        : [...prev.selectedCharts, chartValue]
+
+      return { ...prev, selectedCharts }
+    })
+  }
+
 
   const options = [
     { label: 'Heatmap', value: 'heatmap' },
@@ -209,7 +257,6 @@ const Dashboard = ({ role = "viewer" }) => {
     { label: 'Mutual Aid', value: 'mutual_aid' },
     { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
   ]
-  const [selectedCharts, setSelectedCharts] = useState(options)
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const selectRef = React.createRef()
 
@@ -279,12 +326,12 @@ const Dashboard = ({ role = "viewer" }) => {
         </div>
 
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
           key={selectKey}
           ref={selectRef}
-          selectedValues={selectedCharts}
+          selectedValues={chartOptions}
           options={options}
           onSelect={
             selectedList => {
@@ -328,6 +375,13 @@ const Dashboard = ({ role = "viewer" }) => {
               }
           }}
         />
+          <button
+            type="button"
+            onClick={openExportModal}
+            className="shrink-0 whitespace-nowrap px-4 py-2 text-sm font-medium border border-white/60 rounded bg-white text-blue-700 hover:bg-blue-50 transition-colors"
+          >
+            Export PDF
+          </button>
         </div>
       </div>
 
@@ -383,7 +437,7 @@ const Dashboard = ({ role = "viewer" }) => {
               <br />
               <button onClick={() => {
                 setHeatmapVisible(true);
-                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'heatmap')[0]]); 
+                setSelectedCharts(prev => [...prev, chartOptions.filter(value => value.value === 'heatmap')[0]]); 
                 setSelectKey(prevKey => prevKey + 1);
                 }} 
                 title='Display Heat Map'>
@@ -617,7 +671,17 @@ const Dashboard = ({ role = "viewer" }) => {
           <p>Basic dashboard view. Contact admin for elevated access.</p>
         </div>
       )}
-  </div>)
+
+      <ExportPdfModal
+        isOpen={isExportModalOpen}
+        onClose={closeExportModal}
+        settings={exportSettings}
+        onFieldChange={handleExportFieldChange}
+        onToggleChart={handleExportChartToggle}
+        onPreview={handlePreviewExport}
+      />
+    </div>
+  )
 }
 
 export default Dashboard
