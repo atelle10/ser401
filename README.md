@@ -39,7 +39,7 @@ services, checking logs, and viewing status.
 
 ## QA evidence (Software Quality Plan)
 
-Software Quality Plan test notes, commands, and results live under [`docs/qa/`](docs/qa/) (e.g. [`672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md)). Run instructions stay in each evidence file so this section does not grow with every story.
+[`docs/qa/`](docs/qa/) — Software Quality Plan test notes (example: [`672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md)).
 
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:
