@@ -18,6 +18,7 @@ MICROSOFT_CLIENT_ID=<get from team>
 MICROSOFT_CLIENT_SECRET=<get from team>
 DEV_ADMIN_EMAIL=dev-admin@example.com
 DEV_ADMIN_PASSWORD=change-me
+OPENAI_API_KEY=<optional - for chatbot AI responses>
 ```
 
 2. Add `fire.csv` and `ems.csv` to `deployment/db` (used to initialize the database).
@@ -36,6 +37,8 @@ services, checking logs, and viewing status.
   `DEV_ADMIN_PASSWORD` are set.
 - Dev-only: email changes bypass verification; see TODO in `auth_server/src/auth.ts`
   for enabling email verification before production.
+- Chatbot (Fammy) provides AI-powered answers about dashboard KPIs. Requires `OPENAI_API_KEY`
+  for AI responses; works in fallback mode without it.
 
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:
