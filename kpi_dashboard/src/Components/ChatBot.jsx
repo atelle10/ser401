@@ -101,21 +101,29 @@ const ChatBot = ({ context }) => {
 
       {/* Input form */}
       <form onSubmit={handleSubmit} className='flex gap-1'>
-        <input
-          type='text'
-          value={inputValue}
-          onChange={handleInputChange}
-          placeholder='Ask about incidents, response times...'
-          className='flex-1 rounded-lg px-2 py-1 text-sm text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500'
-          disabled={isLoading}
-          maxLength={500}
-        />
+        <div className='flex-1 relative'>
+          <input
+            type='text'
+            value={inputValue}
+            onChange={handleInputChange}
+            placeholder='Ask about incidents, response times...'
+            className='w-full rounded-lg px-2 py-1 pr-12 text-sm text-gray-800 border border-gray-300 focus:outline-none focus:border-blue-500'
+            disabled={isLoading}
+            maxLength={500}
+          />
+          {/* Character counter */}
+          <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-[10px] ${
+            inputValue.length > 450 ? 'text-red-500' : 'text-gray-400'
+          }`}>
+            {inputValue.length}/500
+          </span>
+        </div>
         <button
           type='submit'
           disabled={isLoading || !inputValue.trim()}
           className='bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg px-3 py-1 text-xs font-medium transition-colors'
         >
-          Send
+          {isLoading ? '...' : 'Send'}
         </button>
       </form>
     </div>
