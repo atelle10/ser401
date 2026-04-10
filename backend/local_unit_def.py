@@ -5,11 +5,17 @@ logger = logging.getLogger(__name__)
 
 
 class UnitOriginHelper:
-    SCOTTSDALE_PREFIXES = ["LT", "BC", "BR", "BE", "HM", "MC", "WT", "BT", "E", "F", "L", "R", "S", "U", "T"]
+    SCOTTSDALE_PREFIXES = sorted(
+        ["LT", "BC", "BR", "BE", "HM", "MC", "WT", "BT", "E", "F", "L", "R", "S", "U", "T", "LA", "C", "UTV", "HIT", "SCTMR"],
+        key=lambda p: (-len(p), p),
+    )
+    SCOTTSDALE_EXACT_UNIT_IDS = frozenset({"NEDC"})
 
     @staticmethod
     def is_scottsdale_unit(unit_resource_id: str) -> bool:
         uid = str(unit_resource_id).strip().upper()
+        if uid in UnitOriginHelper.SCOTTSDALE_EXACT_UNIT_IDS:
+            return True
         for prefix in UnitOriginHelper.SCOTTSDALE_PREFIXES:
             if not uid.startswith(prefix):
                 continue
