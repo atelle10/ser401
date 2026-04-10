@@ -57,6 +57,7 @@ const Dashboard = ({ role = "viewer" }) => {
   const [typeBreakdownVisible, setTypeBreakdownVisible] = useState(true)
   const [mutualAidVisible, setMutualAidVisible] = useState(true)
   const [responseTimeVisible, setResponseTimeVisible] = useState(true)
+  const [selectKey, setSelectKey] = useState(0)
   const [isExportModalOpen, setIsExportModalOpen] = useState(false)
   const [exportSettings, setExportSettings] = useState(null)
 
@@ -246,6 +247,16 @@ const Dashboard = ({ role = "viewer" }) => {
     })
   }
 
+
+  const options = [
+    { label: 'Heatmap', value: 'heatmap' },
+    { label: 'Postal Code', value: 'postal_code' },
+    { label: 'Type Breakdown', value: 'type_breakdown' },
+    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
+    { label: 'Call Volume Trend', value: 'call_volume_trend' },
+    { label: 'Mutual Aid', value: 'mutual_aid' },
+    { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
+  ]
   const isAnalystOrAdmin = ["analyst", "admin"].includes(role)
   const selectRef = React.createRef()
 
@@ -318,9 +329,10 @@ const Dashboard = ({ role = "viewer" }) => {
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
+          key={selectKey}
           ref={selectRef}
           selectedValues={chartOptions}
-          options={chartOptions}
+          options={options}
           onSelect={
             selectedList => {
               const selectedValues = selectedList.map(opt => opt.value)
@@ -331,6 +343,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
+              setSelectedCharts(selectedList)
             }
           }
           onRemove={
@@ -343,6 +356,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
+              setSelectedCharts(selectedList)
             }
           }
           avoidHighlightFirstOption={true}
@@ -382,7 +396,7 @@ const Dashboard = ({ role = "viewer" }) => {
       )}
 
       {hasLoadedOnce && kpiSummary && (
-        <div data-testid="basic-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+        <div data-testid="basic-kpis" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-6">
           <div className="bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg">
             <h3 className="font-semibold mb-2">Total Incidents</h3>
             <div className="text-2xl font-semibold">{kpiSummary.total_incidents ?? '-'}</div>
@@ -413,9 +427,9 @@ const Dashboard = ({ role = "viewer" }) => {
           </div>
         </div>
       )}
-
+      
       {isAnalystOrAdmin && (
-        <div data-testid="advanced-analytics" className="container p-4" ref={containerRef}>
+        <div data-testid="advanced-analytics" className="container" ref={containerRef}> 
         <div className="slot top" data-swapy-slot="a">
           <div className="item item-a" data-swapy-item="a">
             <div className="handle" data-swapy-handle></div>
@@ -423,31 +437,62 @@ const Dashboard = ({ role = "viewer" }) => {
               <br />
               <button onClick={() => {
                 setHeatmapVisible(true);
-                console.log(selectRef.current.getSelectedItems());
-                selectRef.current.selectedValues = [...selectRef.current.getSelectedItems(), chartOptions.filter(value => value.value === 'heatmap')[0]];
-                console.log(chartOptions.filter(item => item.value === 'heatmap')[0]);
-                console.log(selectRef.current.selectedValues);
-                selectRef.current.onSelect();
-                console.log(selectRef.current.selectedValues)
-                }}
+                setSelectedCharts(prev => [...prev, chartOptions.filter(value => value.value === 'heatmap')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
                 title='Display Heat Map'>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
+                </svg> 
               </button>
             </div>
             <div className={ "w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (heatmapVisible ? 'visible' : 'hidden') }>
-              <br />
+              <div className="right-align-button">
+                <button onClick={() => {
+                  setHeatmapVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'heatmap'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Heat Map'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <h3 className="font-semibold mb-3 text-center">Heat Map: Incidents by Day x Hour</h3>
               <HeatMapDayHour data={incidentData} heatmapData={heatmapData} region={region} weeks={1} />
             </div>
-          </div>
+          </div> 
         </div>
         <div className="slot top2" data-swapy-slot="e" >
           <div className="item item-e" data-swapy-item="e">
             <div className="handle" data-swapy-handle></div>
+            <div className={callVolumeVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setCallVolumeVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'call_volume_trend')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Call Volume Trend'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
             <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (callVolumeVisible ? 'visible' : 'hidden')} >
-               <br />
+              <div className="right-align-button">
+                <button onClick={() => {
+                  setCallVolumeVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'call_volume_trend'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Call Volume Trend'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
               <h3 className="font-semibold mb-3 text-center">Call Volume Trend</h3>
               <CallVolumeLinearChart
                 startDate={dateRange.startDate}
@@ -455,82 +500,170 @@ const Dashboard = ({ role = "viewer" }) => {
                 region={region}
               />
             </div>
-          </div>
+          </div> 
         </div>
-        <div className="middle">
-          <div className="slot middle-left" data-swapy-slot="b" >
+          <div className="slot middle-top" data-swapy-slot="b" >
             <div className="item item-b" data-swapy-item="b">
               <div className="handle" data-swapy-handle></div>
+              <div className={unitHourUtilizationVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setUnitHourUtilizationVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'unit_hour_utilization')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Unit Hour Utilization'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
               <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (unitHourUtilizationVisible ? 'visible' : 'hidden')}>
-               <br />
-              <h3 className="font-semibold mb-3 text-center">Unit Hour Utilization (UHU)</h3>
-              <UnitHourUtilization
-                data={incidentData}
-                timePeriodHours={
-                  (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60)
-                }
-              />
-              <div className="mt-4 pt-4 border-t border-white/20">
-                <h3 className="font-semibold mb-3">UHU by Unit Origin</h3>
-                <UnitHourUtilizationByOrigin
-                  scottsdaleUhu={unitOriginData?.scottsdale_uhu}
-                  nonScottsdaleUhu={unitOriginData?.non_scottsdale_uhu}
-                />
+               <div className="right-align-button">
+                <button onClick={() => {
+                  setUnitHourUtilizationVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'unit_hour_utilization'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Unit Hour Utilization'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
+              <h3 className="font-semibold mb-3 text-center">Unit Hour Utilization (UHU)</h3>
+              <UnitHourUtilization data={incidentData} />
             </div>
             </div>
           </div>
-          <div className="slot middle-right" data-swapy-slot="c" >
+          <div className="slot middle-bottom" data-swapy-slot="c" >
             <div className="item item-c" data-swapy-item="c">
               <div className="handle" data-swapy-handle></div>
+              <div className={postalCodeVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setPostalCodeVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'postal_code')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Postal Code'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
                 <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (postalCodeVisible ? 'visible' : 'hidden')}>
-                <br />
+                <div className="right-align-button">
+                <button onClick={() => {
+                  setPostalCodeVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'postal_code'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Postal Code'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
                 <h3 className="font-semibold mb-3 text-center">Incidents by Postal Code</h3>
                 <IncidentsByPostalCode data={postalData} />
               </div>
             </div>
-          </div>
         </div>
-        <div className="middle">
-          <div className="slot middle-left" data-swapy-slot="f" >
-            <div className="item item-f" data-swapy-item="f">
+        <div className="slot bottom" data-swapy-slot="d" >
+          <div className="item item-d" data-swapy-item="d">
               <div className="handle" data-swapy-handle></div>
-              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (mutualAidVisible ? 'visible' : 'hidden')}>
-                <br />
-                <h3 className="font-semibold mb-3 text-center">Mutual Aid: Scottsdale vs Other Units</h3>
-                <MutualAidChart
-                  startDate={dateRange.startDate}
-                  endDate={dateRange.endDate}
-                  region={region}
-                />
-              </div>
+              <div className={typeBreakdownVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setTypeBreakdownVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'type_breakdown')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Type Breakdown'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
             </div>
-          </div>
-          <div className="slot middle-right" data-swapy-slot="d" >
-            <div className="item item-d" data-swapy-item="d">
-              <div className="handle" data-swapy-handle></div>
               <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (typeBreakdownVisible ? 'visible' : 'hidden')}>
-                <br />
-                <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
-                <IncidentTypeBreakdown data={typeBreakdownData} />
+                <div className="right-align-button">
+                <button onClick={() => {
+                  setTypeBreakdownVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'type_breakdown'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Type Breakdown'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
+              <h3 className="font-semibold mb-3 text-center">Incident Type Breakdown</h3>
+              <IncidentTypeBreakdown data={typeBreakdownData} />
             </div>
           </div>
         </div>
+        <div className="slot bottom2" data-swapy-slot="f" >
+          <div className="item item-f" data-swapy-item="f">
+              <div className="handle" data-swapy-handle></div>
+              <div className={mutualAidVisible ? 'hidden' : 'visible'  }>
+              <br />
+              <button onClick={() => {
+                setMutualAidVisible(true);
+                setSelectedCharts(prev => [...prev, options.filter(value => value.value === 'mutual_aid')[0]]); 
+                setSelectKey(prevKey => prevKey + 1);
+                }} 
+                title='Display Mutual Aid'>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg> 
+              </button>
+            </div>
+              <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg "+ (mutualAidVisible ? 'visible' : 'hidden')}>
+                <div className="right-align-button">
+                <button onClick={() => {
+                  setMutualAidVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'mutual_aid'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Mutual Aid'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <h3 className="font-semibold mb-3 text-center">Incident Mutual Aid</h3>
+              <MutualAidChart startDate={dateInputs.start} endDate={dateInputs.end} />
+            </div>
+          </div>
+          </div>
+        
         <div className="slot bottom" data-swapy-slot="g">
           <div className="item item-g" data-swapy-item="g">
             <div className="handle" data-swapy-handle></div>
             <div className={"w-full bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-4 rounded-lg " + (responseTimeVisible ? 'visible' : 'hidden')}>
-              <br />
+              <div className="right-align-button">
+                <button onClick={() => {
+                  setResponseTimeVisible(false);
+                  setSelectedCharts(prev => prev.filter(chart => chart.value !== 'response_time_breakdown'));
+                  setSelectKey(prevKey => prevKey + 1);
+                  }} 
+                  title='Minimize Response Time Breakdown'>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <h3 className="font-semibold mb-3 text-center">Response Time Breakdown</h3>
               <ResponseTimeBreakdown
                 overall={responseTimeData?.overall}
                 perUnit={responseTimeData?.per_unit}
-                role={role}
               />
             </div>
           </div>
         </div>
-        </div>
+      </div>
       )}
 
       {role === "viewer" && (
