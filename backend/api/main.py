@@ -5,8 +5,14 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+from openai import OpenAI
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.db_ops.relational_data_store import RelationalDataStore
@@ -15,6 +21,11 @@ from backend.ingestion.ingestion_service import IngestionService
 from backend.local_unit_def import UnitOriginHelper
 
 app = FastAPI(title="FAMAR KPI Dashboard API")
+
+# Rate limiter for chatbot - 10 requests per minute per IP
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +36,10 @@ app.add_middleware(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://michael@localhost/famar_db")
+
+# OpenAI config for chatbot
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+CHATBOT_MODEL = "gpt-4o-mini"  # cheapest model, good enough for our use case
 
 RESPONSE_TIME_TARGETS_PATH = (
     Path(__file__).resolve().parent / "data" / "response_time_targets.json"
@@ -849,3 +864,155 @@ async def get_mutual_aid(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+# Chatbot models - adding these for the new chat feature
+class ChatRequest(BaseModel):
+    question: str = Field(..., min_length=1, max_length=500)
+    context: dict = Field(default_factory=dict)
+
+
+class ChatResponse(BaseModel):
+    answer: str
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+@limiter.limit("10/minute")
+async def chat_endpoint(request: Request, chat_request: ChatRequest):
+    """
+    Chatbot endpoint for asking questions about KPI data.
+    Fetches KPI summary based on date/region context to provide to the AI.
+    Rate limited to 10 requests per minute per IP.
+    """
+    # Get context from request, use defaults if not provided
+    region = chat_request.context.get('region', 'all')
+    start_date = chat_request.context.get('start_date')
+    end_date = chat_request.context.get('end_date')
+
+    # Default to last 7 days if dates missing
+    if not start_date or not end_date:
+        end_dt = datetime.now()
+        start_dt = datetime.fromtimestamp(end_dt.timestamp() - 7 * 24 * 60 * 60)
+        start_date = start_dt.isoformat()
+        end_date = end_dt.isoformat()
+
+    try:
+        # Parse dates
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
+
+    # Build region filter like other endpoints do
+    region_filter = ""
+    if region == "south":
+        region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+    elif region == "north":
+        region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+
+    try:
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+
+        # Query for summary stats - copied from the summary endpoint logic
+        summary_query = f"""
+        WITH response_times AS (
+            SELECT
+                EXTRACT(EPOCH FROM (ur.apparatus_resource_arrival_date_time - ur.apparatus_resource_dispatch_date_time)) / 60.0 AS response_minutes
+            FROM fire_ems.incident i
+            JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+            WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+            {region_filter}
+            AND ur.apparatus_resource_dispatch_date_time IS NOT NULL
+            AND ur.apparatus_resource_arrival_date_time IS NOT NULL
+        ),
+        hourly_counts AS (
+            SELECT
+                EXTRACT(HOUR FROM i.basic_incident_psap_date_time) AS hour,
+                COUNT(*) AS count
+            FROM fire_ems.incident i
+            WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+            {region_filter}
+            GROUP BY EXTRACT(HOUR FROM i.basic_incident_psap_date_time)
+        )
+        SELECT
+            (SELECT AVG(response_minutes) FROM response_times) AS avg_response_time,
+            (SELECT COUNT(DISTINCT i.incident_id) FROM fire_ems.incident i
+             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}' {region_filter}) AS total_incidents,
+            (SELECT COUNT(DISTINCT ur.apparatus_resource_id) FROM fire_ems.incident i
+             JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}' {region_filter}) AS active_units,
+            (SELECT MAX(count) FROM hourly_counts) AS peak_count,
+            (SELECT AVG(count) FROM hourly_counts) AS avg_count,
+            (SELECT hour FROM hourly_counts ORDER BY count DESC LIMIT 1) AS peak_hour
+        """
+
+        df = db.read_table(f"({summary_query}) as subquery")
+        db.disconnect()
+
+        # Build the data summary
+        if df.empty:
+            data_summary = {
+                "total_incidents": 0,
+                "avg_response_time": None,
+                "active_units": 0,
+                "peak_hour": None
+            }
+        else:
+            row = df.iloc[0]
+            data_summary = {
+                "total_incidents": int(row["total_incidents"]) if row["total_incidents"] else 0,
+                "avg_response_time": float(row["avg_response_time"]) if row["avg_response_time"] else None,
+                "active_units": int(row["active_units"]) if row["active_units"] else 0,
+                "peak_hour": int(row["peak_hour"]) if row["peak_hour"] is not None else None
+            }
+
+        # Build the system prompt for OpenAI
+        avg_text = f"{data_summary['avg_response_time']:.1f} minutes" if data_summary['avg_response_time'] else "not available"
+        peak_text = f"hour {data_summary['peak_hour']}" if data_summary['peak_hour'] is not None else "not available"
+
+        system_prompt = f"""You are Fammy, a helpful assistant for the FAMAR Fire/EMS KPI Dashboard.
+Answer questions about the current dashboard data based on the context provided.
+
+Current Dashboard Context:
+- Date range: {start_date[:10]} to {end_date[:10]}
+- Region: {region}
+- Total incidents: {data_summary['total_incidents']}
+- Average response time: {avg_text}
+- Active units: {data_summary['active_units']}
+- Peak activity: {peak_text}
+
+Keep responses short (2-3 sentences). Be helpful and direct.
+If asked about something not in the data, say you don't have that information."""
+
+        # Check if we have an API key
+        if not OPENAI_API_KEY:
+            # Fallback response without AI - useful for testing
+            return ChatResponse(
+                answer=f"There were {data_summary['total_incidents']} incidents with an average response time of {avg_text}. Peak activity was at {peak_text}. (AI responses disabled - no API key)"
+            )
+
+        try:
+            # Call OpenAI
+            client = OpenAI(api_key=OPENAI_API_KEY)
+            response = client.chat.completions.create(
+                model=CHATBOT_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": chat_request.question}
+                ],
+                temperature=0.7,
+                max_tokens=150
+            )
+
+            ai_answer = response.choices[0].message.content
+            return ChatResponse(answer=ai_answer)
+
+        except Exception as ai_error:
+            # If AI fails, return data summary as fallback
+            return ChatResponse(
+                answer=f"Based on the data: {data_summary['total_incidents']} incidents, avg response {avg_text}. (AI service temporarily unavailable)"
+            )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
