@@ -17,3 +17,13 @@ sudo chown $USER:$USER $DEPLOY_DIR
 git clone -b $BRANCH $REPO_URL $DEPLOY_DIR
 
 cd $DEPLOY_DIR/deployment
+
+if [ ! -f .env ]; then
+    echo "No .env found. Copy .env.example to .env and fill it out first!!"
+    exit 1
+fi
+
+echo "Starting containers..."
+sudo docker compose up -d --build
+
+echo "Done. App on port 3000"
