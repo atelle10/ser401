@@ -74,6 +74,11 @@ def test_export_summary_returns_ready_and_builds_datasets(mock_service_cls, clie
     mock_service.summarize_dashboard.return_value = {
         "status": "ready",
         "summary": "Demand peaked in the afternoon while response times remained stable.",
+        "summary_paragraph": "Demand peaked in the afternoon while response times remained stable.",
+        "summary_highlights": [
+            "Afternoon demand may justify closer staffing review.",
+            "Response-time performance remained comparatively steady.",
+        ],
     }
     mock_service_cls.return_value = mock_service
 
@@ -83,6 +88,11 @@ def test_export_summary_returns_ready_and_builds_datasets(mock_service_cls, clie
     assert response.json() == {
         "status": "ready",
         "summary": "Demand peaked in the afternoon while response times remained stable.",
+        "summary_paragraph": "Demand peaked in the afternoon while response times remained stable.",
+        "summary_highlights": [
+            "Afternoon demand may justify closer staffing review.",
+            "Response-time performance remained comparatively steady.",
+        ],
     }
 
     datasets = mock_service.summarize_dashboard.call_args.args[0]
@@ -108,6 +118,8 @@ def test_export_summary_passes_through_unavailable(mock_service_cls, client):
     mock_service.summarize_dashboard.return_value = {
         "status": "unavailable",
         "summary": "",
+        "summary_paragraph": "",
+        "summary_highlights": [],
         "message": "OpenAI API key is not configured.",
     }
     mock_service_cls.return_value = mock_service
@@ -118,6 +130,8 @@ def test_export_summary_passes_through_unavailable(mock_service_cls, client):
     assert response.json() == {
         "status": "unavailable",
         "summary": "",
+        "summary_paragraph": "",
+        "summary_highlights": [],
         "message": "OpenAI API key is not configured.",
     }
 
@@ -128,6 +142,8 @@ def test_export_summary_passes_through_error(mock_service_cls, client):
     mock_service.summarize_dashboard.return_value = {
         "status": "error",
         "summary": "",
+        "summary_paragraph": "",
+        "summary_highlights": [],
         "message": "OpenAI summary request failed: RuntimeError",
     }
     mock_service_cls.return_value = mock_service
@@ -138,6 +154,8 @@ def test_export_summary_passes_through_error(mock_service_cls, client):
     assert response.json() == {
         "status": "error",
         "summary": "",
+        "summary_paragraph": "",
+        "summary_highlights": [],
         "message": "OpenAI summary request failed: RuntimeError",
     }
 
@@ -148,6 +166,8 @@ def test_export_summary_accepts_missing_optional_highlights(mock_service_cls, cl
     mock_service.summarize_dashboard.return_value = {
         "status": "ready",
         "summary": "Overview-only summary.",
+        "summary_paragraph": "Overview-only summary.",
+        "summary_highlights": [],
     }
     mock_service_cls.return_value = mock_service
     payload = build_export_summary_payload()

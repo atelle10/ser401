@@ -29,6 +29,8 @@ def test_summarize_dashboard_returns_unavailable_without_api_key(monkeypatch):
     assert result == {
         "status": "unavailable",
         "summary": "",
+        "summary_paragraph": "",
+        "summary_highlights": [],
         "message": "OpenAI API key is not configured.",
     }
 
@@ -36,9 +38,15 @@ def test_summarize_dashboard_returns_unavailable_without_api_key(monkeypatch):
 @patch("backend.openai_client.OpenAI")
 def test_summarize_dashboard_returns_ready_with_summary(mock_openai):
     response = MagicMock()
-    response.output_text = "Incident activity remained steady with peak demand in the afternoon."
+    response.output_parsed = openai_client.StructuredExportSummary(
+        summary_paragraph="Incident activity remained steady with peak demand in the afternoon and soft staffing pressure in the late day window.",
+        summary_highlights=[
+            "Afternoon demand may warrant closer staffing attention.",
+            "Response times remained comparatively stable despite peak activity.",
+        ],
+    )
     mock_client = MagicMock()
-    mock_client.responses.create.return_value = response
+    mock_client.responses.parse.return_value = response
     mock_openai.return_value = mock_client
     service = openai_client.OpenAISummaryService(api_key="test-key")
 
@@ -56,14 +64,22 @@ def test_summarize_dashboard_returns_ready_with_summary(mock_openai):
 
     assert result == {
         "status": "ready",
-        "summary": "Incident activity remained steady with peak demand in the afternoon.",
+        "summary": "Incident activity remained steady with peak demand in the afternoon and soft staffing pressure in the late day window.",
+        "summary_paragraph": "Incident activity remained steady with peak demand in the afternoon and soft staffing pressure in the late day window.",
+        "summary_highlights": [
+            "Afternoon demand may warrant closer staffing attention.",
+            "Response times remained comparatively stable despite peak activity.",
+        ],
     }
 
-    kwargs = mock_client.responses.create.call_args.kwargs
+    kwargs = mock_client.responses.parse.call_args.kwargs
     assert kwargs["model"] == "gpt-5-nano"
     assert kwargs["store"] is False
-    assert "Dataset: heatmap" in kwargs["input"]
-    assert "Dataset: empty" not in kwargs["input"]
+    prompt = kwargs["input"][1]["content"]
+    assert "Heat map:" in prompt
+    assert "Descriptive summary:" not in prompt
+    assert "Sample rows:" not in prompt
+    assert "Heat map:\n- Busiest day:" in prompt
 
 
 @patch("backend.openai_client.OpenAI")
@@ -77,6 +93,8 @@ def test_summarize_dashboard_returns_ready_when_all_inputs_empty(mock_openai):
     assert result == {
         "status": "ready",
         "summary": "No report data was available to summarize for this export.",
+        "summary_paragraph": "No report data was available to summarize for this export.",
+        "summary_highlights": [],
     }
     mock_openai.assert_not_called()
 
@@ -93,5 +111,7 @@ def test_summarize_dashboard_returns_error_on_openai_failure(mock_openai):
     assert result == {
         "status": "error",
         "summary": "",
+        "summary_paragraph": "",
+        "summary_highlights": [],
         "message": "OpenAI summary request failed: RuntimeError",
     }

@@ -7,6 +7,8 @@ import pandas as pd
 class SummaryResult(TypedDict, total=False):
     status: Literal["ready", "unavailable", "error"]
     summary: str
+    summary_paragraph: str
+    summary_highlights: list[str]
     message: str
 
 
