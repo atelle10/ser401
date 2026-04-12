@@ -26,4 +26,15 @@ fi
 echo "Starting containers..."
 sudo docker compose up -d --build
 
-echo "Done. App on port 3000"
+echo "Waiting for services to start..."
+sleep 10
+
+echo "Running health check..."
+for port in 3000 8000 3001; do
+    if curl -s -o /dev/null -w "" http://localhost:$port; then
+        echo " Port $port: Ok!"
+    else
+        echo " Port $port: Down!"
+    fi
+done
+echo "Done. App on port 300"
