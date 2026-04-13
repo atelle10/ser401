@@ -31,6 +31,7 @@ The `justfile` in the repo root includes helpers for starting/stopping individua
 services, checking logs, and viewing status.
 
 ## Notes
+- QA artifacts: [docs/qa/README.md](docs/qa/README.md).
 - Better Auth expects the `auth` schema in `famar_db` (the Docker setup handles this).
 - Dev-only admin seeding runs on auth server startup if `DEV_ADMIN_EMAIL` and
   `DEV_ADMIN_PASSWORD` are set.
