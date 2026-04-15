@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import Body, FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -17,6 +17,10 @@ from backend.db_ops.relational_data_store import RelationalDataStore
 from backend.ingestion.data_classes import DataSet, DQPolicy, DQRule
 from backend.ingestion.ingestion_service import IngestionService
 from backend.local_unit_def import UnitOriginHelper
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from openai import OpenAI
 
 app = FastAPI(title="FAMAR KPI Dashboard API")
 
@@ -28,7 +32,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://michael@localhost/famar_db")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+CHATBOT_MODEL = os.getenv("CHATBOT_MODEL", "gpt-4o-mini")
 
 RESPONSE_TIME_TARGETS_PATH = (
     Path(__file__).resolve().parent / "data" / "response_time_targets.json"
@@ -1080,3 +1090,14 @@ async def get_mutual_aid(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+class ChatRequest(BaseModel):
+    """Request model for chatbot endpoint"""
+    question: str = Field(..., min_length=1, max_length=500)
+    context: dict = Field(default_factory=dict)
+
+
+class ChatResponse(BaseModel):
+    """Response model for chatbot endpoint"""
+    answer: str
