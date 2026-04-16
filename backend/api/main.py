@@ -206,6 +206,18 @@ def _flatten_response_time_overall(overall: ResponseTimeOverall | None) -> dict[
 def _build_export_summary_frames(payload: ExportSummaryRequest) -> dict[str, pd.DataFrame]:
     datasets: dict[str, pd.DataFrame] = {}
 
+    export_context_frame = _dataframe_from_row(
+        {
+            "region": payload.region,
+            "start_date": payload.start_date,
+            "end_date": payload.end_date,
+            "selected_charts": ", ".join(payload.selected_charts),
+            "selected_chart_count": len(payload.selected_charts),
+        }
+    )
+    if not export_context_frame.empty:
+        datasets["export_context"] = export_context_frame
+
     overview_frame = _dataframe_from_row(payload.overview.model_dump(exclude_none=True))
     if not overview_frame.empty:
         datasets["overview"] = overview_frame

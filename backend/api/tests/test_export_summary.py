@@ -97,6 +97,7 @@ def test_export_summary_returns_ready_and_builds_datasets(mock_service_cls, clie
 
     datasets = mock_service.summarize_dashboard.call_args.args[0]
     assert set(datasets) == {
+        "export_context",
         "overview",
         "heatmap",
         "postal_code",
@@ -106,6 +107,8 @@ def test_export_summary_returns_ready_and_builds_datasets(mock_service_cls, clie
         "mutual_aid",
         "response_time_breakdown",
     }
+    assert datasets["export_context"].iloc[0]["region"] == "south"
+    assert datasets["export_context"].iloc[0]["selected_chart_count"] == 7
     assert datasets["overview"].iloc[0]["total_incidents"] == 42
     assert list(datasets["postal_code"]["zip"]) == ["85251", "85260"]
     assert datasets["response_time_breakdown"].iloc[0]["call_processing_avg"] == 2.5
@@ -177,7 +180,7 @@ def test_export_summary_accepts_missing_optional_highlights(mock_service_cls, cl
 
     assert response.status_code == 200
     datasets = mock_service.summarize_dashboard.call_args.args[0]
-    assert set(datasets) == {"overview"}
+    assert set(datasets) == {"export_context", "overview"}
 
 
 def test_export_summary_rejects_invalid_payload(client):

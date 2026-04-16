@@ -52,10 +52,20 @@ def test_summarize_dashboard_returns_ready_with_summary(mock_openai):
 
     result = service.summarize_dashboard(
         {
+            "export_context": pd.DataFrame(
+                {
+                    "region": ["south"],
+                    "start_date": ["2026-03-01T00:00:00+00:00"],
+                    "end_date": ["2026-03-31T23:59:59+00:00"],
+                    "selected_charts": ["heatmap, response_time_breakdown"],
+                    "selected_chart_count": [2],
+                }
+            ),
             "heatmap": pd.DataFrame(
                 {
-                    "timestamp": pd.to_datetime(["2024-01-01T00:00:00Z", "2024-01-01T01:00:00Z"]),
-                    "incident_count": [12, 18],
+                    "busiest_day": ["Mon"],
+                    "busiest_hour": [14],
+                    "max_incidents_per_cell": [18],
                 }
             ),
             "empty": pd.DataFrame(),
@@ -75,11 +85,15 @@ def test_summarize_dashboard_returns_ready_with_summary(mock_openai):
     kwargs = mock_client.responses.parse.call_args.kwargs
     assert kwargs["model"] == "gpt-5-nano"
     assert kwargs["store"] is False
+    assert "big picture" in kwargs["input"][0]["content"].lower()
+    assert "decision-relevant" in kwargs["input"][0]["content"].lower()
     prompt = kwargs["input"][1]["content"]
+    assert "Report context:" in prompt
+    assert "- Region: South" in prompt
     assert "Heat map:" in prompt
     assert "Descriptive summary:" not in prompt
     assert "Sample rows:" not in prompt
-    assert "Heat map:\n- Busiest day:" in prompt
+    assert "Heat map:\n- Busiest period:" in prompt
 
 
 @patch("backend.openai_client.OpenAI")
@@ -102,7 +116,7 @@ def test_summarize_dashboard_returns_ready_when_all_inputs_empty(mock_openai):
 @patch("backend.openai_client.OpenAI")
 def test_summarize_dashboard_returns_error_on_openai_failure(mock_openai):
     mock_client = MagicMock()
-    mock_client.responses.create.side_effect = RuntimeError("boom")
+    mock_client.responses.parse.side_effect = RuntimeError("boom")
     mock_openai.return_value = mock_client
     service = openai_client.OpenAISummaryService(api_key="test-key")
 

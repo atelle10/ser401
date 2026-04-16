@@ -13,6 +13,39 @@ const toInteger = (value) => {
   return Math.round(Number(value))
 }
 
+const formatDateLabel = (value) => {
+  if (!value) return null
+
+  const dateOnlyMatch = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day))
+    return parsed.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    return String(value)
+  }
+
+  const hasTime = parsed.getUTCHours() !== 0 || parsed.getUTCMinutes() !== 0
+  return parsed.toLocaleString('en-US', hasTime ? {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  } : {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 const buildOverview = (overviewData) => ({
   total_incidents: toInteger(overviewData?.total_incidents),
   avg_response_time_minutes: toRoundedNumber(overviewData?.avg_response_time_minutes),
@@ -70,9 +103,11 @@ const buildTypeBreakdownHighlight = (typeBreakdownData) => {
 
   const top_incident_types = typeBreakdownData.types
     .filter((row) => row?.type && isFiniteNumber(row?.count))
+    .slice()
+    .sort((a, b) => Number(b.count) - Number(a.count))
     .slice(0, TOP_N)
     .map((row) => ({
-      type: String(row.type),
+      type: String(row.type).trim(),
       count: toInteger(row.count),
     }))
 
@@ -156,7 +191,7 @@ const buildCallVolumeTrendHighlight = (callVolumeData) => {
   const total = counts.reduce((sum, count) => sum + count, 0)
 
   return {
-    peak_bucket_label: peakBucket.label,
+    peak_bucket_label: formatDateLabel(peakBucket.label),
     peak_bucket_count: peakBucket.count,
     average_bucket_count: toRoundedNumber(total / counts.length),
   }

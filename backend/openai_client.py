@@ -18,12 +18,15 @@ DEFAULT_OPENAI_MODEL = "gpt-5-nano"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)
 SUMMARY_INSTRUCTIONS = (
-    "You are drafting the narrative summary section of a KPI analytics report for operations stakeholders. "
+    "You are drafting the AI-generated summary section of a KPI analytics report for operations stakeholders. "
     "Use only the supplied report facts. "
-    "Write one readable paragraph and up to three concise highlight bullets. "
-    "You may add moderate interpretation, likely operational implications, and soft recommendations when they are clearly grounded in the data. "
+    "Write one readable summary paragraph of three to five sentences followed by up to three concise highlight bullets. "
+    "Start with the big picture: demand, response performance, resource pressure, and any notable coverage or mutual-aid themes. "
+    "Then emphasize only the most decision-relevant findings rather than listing every metric. "
+    "You may add moderate interpretation, likely operational implications, and short, grounded recommendations when they are clearly supported by the data. "
     "Use cautious language for inference, such as 'may indicate', 'could reflect', or 'suggests'. "
-    "Do not present speculation as fact, do not invent unsupported causes, and do not exhaustively list every metric."
+    "Do not present speculation as fact, do not invent unsupported causes, and do not restate the report as a metric dump. "
+    "Each highlight bullet should be a takeaway, not a raw statistic list."
 )
 
 
@@ -45,6 +48,7 @@ class OpenAISummaryService(OpenAISummaryClient):
 
     def generate_summary_prompt(self, data: pd.DataFrame, endpoint: str) -> str:
         formatter = {
+            "export_context": self._format_export_context_section,
             "overview": self._format_overview_section,
             "heatmap": self._format_heatmap_section,
             "postal_code": self._format_postal_code_section,
@@ -158,11 +162,28 @@ class OpenAISummaryService(OpenAISummaryClient):
     def _build_dashboard_prompt(self, dataset_sections: list[str]) -> str:
         sections = "\n\n---\n\n".join(dataset_sections)
         return (
-            "Create the narrative summary content for this KPI dashboard export. "
-            "Prioritize the most important operational themes rather than listing every metric. "
-            "If you include a recommendation, keep it cautious and grounded in the observed patterns.\n\n"
+            "Create the AI-generated summary content for this KPI dashboard export. "
+            "Synthesize themes instead of listing every input. "
+            "Mention only the most decision-relevant facts, explain what the patterns may indicate operationally, "
+            "and keep any recommendation short, cautious, and directly tied to the report facts. "
+            "Use the report context to anchor the narrative to the selected region, time window, and charts.\n\n"
             f"{sections}"
         )
+
+    def _format_export_context_section(self, data: pd.DataFrame) -> str:
+        row = data.iloc[0]
+        facts = [
+            self._fact_line("Region", self._format_region(row.get("region"))),
+            self._fact_line(
+                "Reporting window",
+                self._format_date_range(row.get("start_date"), row.get("end_date")),
+            ),
+            self._fact_line(
+                "Charts included",
+                self._format_chart_list(row.get("selected_charts"), row.get("selected_chart_count")),
+            ),
+        ]
+        return self._section_block("Report context", facts)
 
     def _format_overview_section(self, data: pd.DataFrame) -> str:
         row = data.iloc[0]
@@ -175,7 +196,7 @@ class OpenAISummaryService(OpenAISummaryClient):
             self._fact_line("Active units", self._format_int(row.get("active_units"))),
             self._fact_line(
                 "Peak load factor",
-                self._format_decimal(row.get("peak_load_factor"), digits=2),
+                self._format_ratio(row.get("peak_load_factor")),
             ),
             self._fact_line("Peak hour", self._format_hour(row.get("peak_hour"))),
         ]
@@ -184,8 +205,10 @@ class OpenAISummaryService(OpenAISummaryClient):
     def _format_heatmap_section(self, data: pd.DataFrame) -> str:
         row = data.iloc[0]
         facts = [
-            self._fact_line("Busiest day", row.get("busiest_day")),
-            self._fact_line("Busiest hour", self._format_hour(row.get("busiest_hour"))),
+            self._fact_line(
+                "Busiest period",
+                self._format_day_hour(row.get("busiest_day"), row.get("busiest_hour")),
+            ),
             self._fact_line(
                 "Max incidents in a day-hour cell",
                 self._format_int(row.get("max_incidents_per_cell")),
@@ -195,14 +218,17 @@ class OpenAISummaryService(OpenAISummaryClient):
 
     def _format_postal_code_section(self, data: pd.DataFrame) -> str:
         rows = []
-        for _, row in data.head(3).iterrows():
+        for index, (_, row) in enumerate(data.head(3).iterrows()):
             zip_code = row.get("zip")
             count = self._format_int(row.get("count"))
             avg_response = self._format_minutes(row.get("avg_response_minutes"))
-            parts = [part for part in [f"{zip_code}", f"{count} incidents" if count else None] if part]
-            detail = ", ".join(parts)
+            if not zip_code or not count:
+                continue
+
+            lead_in = "Highest volume area" if index == 0 else "Additional hotspot"
+            detail = f"{lead_in}: {zip_code} with {count} incidents"
             if avg_response:
-                detail = f"{detail}, avg response {avg_response}" if detail else f"Avg response {avg_response}"
+                detail = f"{detail} and average response {avg_response}"
             if detail:
                 rows.append(detail)
 
@@ -210,11 +236,12 @@ class OpenAISummaryService(OpenAISummaryClient):
 
     def _format_type_breakdown_section(self, data: pd.DataFrame) -> str:
         rows = []
-        for _, row in data.head(3).iterrows():
+        for index, (_, row) in enumerate(data.head(3).iterrows()):
             incident_type = row.get("type")
             count = self._format_int(row.get("count"))
             if incident_type and count:
-                rows.append(f"{incident_type}: {count}")
+                lead_in = "Most common type" if index == 0 else "Additional high-volume type"
+                rows.append(f"{lead_in}: {incident_type} with {count} incidents")
 
         return self._section_block("Incident type breakdown", rows)
 
@@ -231,6 +258,12 @@ class OpenAISummaryService(OpenAISummaryClient):
             ),
         ]
 
+        gap = self._format_uhu_gap(
+            first_row.get("scottsdale_uhu"), first_row.get("non_scottsdale_uhu")
+        )
+        if gap:
+            facts.append(gap)
+
         top_units = []
         for _, row in data.head(3).iterrows():
             unit_id = row.get("unit_id")
@@ -239,7 +272,7 @@ class OpenAISummaryService(OpenAISummaryClient):
                 top_units.append(f"{unit_id}: {uhu}")
 
         if top_units:
-            facts.append(f"Top units: {', '.join(top_units)}")
+            facts.append(f"Highest-utilization units: {', '.join(top_units)}")
 
         return self._section_block("Unit hour utilization", facts)
 
@@ -247,12 +280,11 @@ class OpenAISummaryService(OpenAISummaryClient):
         row = data.iloc[0]
         facts = [
             self._fact_line(
-                "Peak bucket",
-                self._format_date_label(row.get("peak_bucket_label")),
-            ),
-            self._fact_line(
-                "Peak bucket incident count",
-                self._format_int(row.get("peak_bucket_count")),
+                "Peak demand period",
+                self._format_peak_bucket(
+                    row.get("peak_bucket_label"),
+                    row.get("peak_bucket_count"),
+                ),
             ),
             self._fact_line(
                 "Average incidents per bucket",
@@ -273,6 +305,13 @@ class OpenAISummaryService(OpenAISummaryClient):
                 self._format_int(row.get("other_units_in_scottsdale")),
             ),
         ]
+
+        balance = self._format_mutual_aid_balance(
+            row.get("scottsdale_units_outside"), row.get("other_units_in_scottsdale")
+        )
+        if balance:
+            facts.append(balance)
+
         return self._section_block("Mutual aid", facts)
 
     def _format_response_time_section(self, data: pd.DataFrame) -> str:
@@ -283,6 +322,10 @@ class OpenAISummaryService(OpenAISummaryClient):
             "Travel": ("travel_avg", "travel_p90"),
         }
         facts = []
+        slowest = self._find_slowest_response_phase(row, metrics)
+        if slowest:
+            facts.append(slowest)
+
         for label, (avg_key, p90_key) in metrics.items():
             avg = self._format_minutes(row.get(avg_key))
             p90 = self._format_minutes(row.get(p90_key))
@@ -357,6 +400,10 @@ class OpenAISummaryService(OpenAISummaryClient):
         formatted = self._format_decimal(value, digits=1)
         return f"{formatted}%" if formatted else None
 
+    def _format_ratio(self, value) -> str | None:
+        formatted = self._format_decimal(value, digits=2)
+        return f"{formatted}x average demand" if formatted else None
+
     def _format_hour(self, value) -> str | None:
         if value is None or pd.isna(value):
             return None
@@ -366,7 +413,9 @@ class OpenAISummaryService(OpenAISummaryClient):
             return None
         if hour < 0 or hour > 23:
             return str(hour)
-        return f"{hour:02d}:00"
+        display_hour = hour % 12 or 12
+        meridiem = "AM" if hour < 12 else "PM"
+        return f"{display_hour} {meridiem}"
 
     def _format_date_label(self, value) -> str | None:
         if value is None or pd.isna(value):
@@ -379,7 +428,109 @@ class OpenAISummaryService(OpenAISummaryClient):
             except ValueError:
                 return str(value)
 
+        if parsed.hour or parsed.minute:
+            return parsed.strftime("%b %-d, %Y %-I:%M %p")
         return parsed.strftime("%b %-d, %Y")
+
+    def _format_date_range(self, start_value, end_value) -> str | None:
+        start = self._format_date_label(start_value)
+        end = self._format_date_label(end_value)
+        if start and end:
+            return f"{start} to {end}"
+        return start or end
+
+    def _format_chart_list(self, value, count_value) -> str | None:
+        if value is None or pd.isna(value):
+            return None
+        chart_labels = [
+            self._format_chart_name(chart_name.strip())
+            for chart_name in str(value).split(",")
+            if chart_name and chart_name.strip()
+        ]
+        if not chart_labels:
+            return None
+        count = self._format_int(count_value) or str(len(chart_labels))
+        return f"{count} ({', '.join(chart_labels)})"
+
+    def _format_chart_name(self, value: str) -> str:
+        return value.replace("_", " ").title()
+
+    def _format_region(self, value) -> str | None:
+        if value is None or pd.isna(value):
+            return None
+        region = str(value).strip().lower()
+        if region == "all":
+            return "All regions"
+        return str(value).replace("_", " ").title()
+
+    def _format_day_hour(self, day_value, hour_value) -> str | None:
+        day = None if day_value is None or pd.isna(day_value) else str(day_value)
+        hour = self._format_hour(hour_value)
+        if day and hour:
+            return f"{day} around {hour}"
+        return day or hour
+
+    def _format_peak_bucket(self, label_value, count_value) -> str | None:
+        label = self._format_date_label(label_value)
+        count = self._format_int(count_value)
+        if label and count:
+            return f"{label} with {count} incidents"
+        return label or count
+
+    def _format_uhu_gap(self, scottsdale_value, non_scottsdale_value) -> str | None:
+        if scottsdale_value is None or non_scottsdale_value is None:
+            return None
+        try:
+            gap = float(scottsdale_value) - float(non_scottsdale_value)
+        except (TypeError, ValueError):
+            return None
+        formatted_gap = self._format_percentage(abs(gap))
+        if not formatted_gap:
+            return None
+        direction = "higher" if gap >= 0 else "lower"
+        return f"Utilization gap: Scottsdale averaged {formatted_gap} {direction} than non-Scottsdale units"
+
+    def _format_mutual_aid_balance(self, outside_value, inbound_value) -> str | None:
+        if outside_value is None or inbound_value is None:
+            return None
+        try:
+            outside = int(round(float(outside_value)))
+            inbound = int(round(float(inbound_value)))
+        except (TypeError, ValueError):
+            return None
+        if outside == inbound:
+            return "Mutual-aid activity was balanced between outbound and inbound support"
+        if inbound > outside:
+            return "Inbound mutual-aid support exceeded outbound support"
+        return "Outbound mutual-aid activity exceeded inbound support"
+
+    def _find_slowest_response_phase(self, row, metrics: dict[str, tuple[str, str]]) -> str | None:
+        slowest_label = None
+        slowest_avg = None
+        slowest_p90 = None
+        for label, (avg_key, p90_key) in metrics.items():
+            avg_value = row.get(avg_key)
+            if avg_value is None or pd.isna(avg_value):
+                continue
+            try:
+                avg_number = float(avg_value)
+            except (TypeError, ValueError):
+                continue
+            if slowest_avg is None or avg_number > slowest_avg:
+                slowest_label = label
+                slowest_avg = avg_number
+                slowest_p90 = row.get(p90_key)
+
+        if slowest_label is None:
+            return None
+
+        avg = self._format_minutes(slowest_avg)
+        p90 = self._format_minutes(slowest_p90)
+        if avg and p90:
+            return f"Longest average phase: {slowest_label} at {avg} (P90 {p90})"
+        if avg:
+            return f"Longest average phase: {slowest_label} at {avg}"
+        return None
 
 
 if __name__ == "__main__":

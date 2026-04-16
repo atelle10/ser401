@@ -68,6 +68,9 @@ const formatDateDisplay = (value) => {
   })
 }
 
+const AI_SUMMARY_CAUTION =
+  'AI-generated content may include interpretation and should be reviewed alongside the report data.'
+
 const ExportPreview = () => {
   const { search } = useLocation()
   const { data: session } = authClient.useSession()
@@ -579,27 +582,34 @@ const ExportPreview = () => {
 
           {(summaryStatus === 'loading' || summaryStatus === 'ready' || isSummaryReadyForPrint) && (
             <div className="export-preview-summary">
-              <h2 className="export-preview-summary-title">Report Summary</h2>
+              <div className="export-preview-summary-header">
+                <span className="export-preview-summary-badge">AI-generated</span>
+                <h2 className="export-preview-summary-title">Report Summary</h2>
+              </div>
               {summaryStatus === 'ready' && (summaryParagraph || summaryHighlights.length > 0) ? (
                 <div className="export-preview-summary-content">
                   {summaryParagraph && (
                     <p className="export-preview-summary-text">{summaryParagraph}</p>
                   )}
                   {summaryHighlights.length > 0 && (
-                    <ul className="export-preview-summary-highlights">
-                      {summaryHighlights.map((highlight) => (
-                        <li key={highlight}>{highlight}</li>
-                      ))}
-                    </ul>
+                    <div className="export-preview-summary-takeaways">
+                      <h3 className="export-preview-summary-subtitle">Key Takeaways</h3>
+                      <ul className="export-preview-summary-highlights">
+                        {summaryHighlights.map((highlight) => (
+                          <li key={highlight}>{highlight}</li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               ) : summaryStatus === 'loading' ? (
-                <p className="export-preview-summary-text">Generating report summary…</p>
+                <p className="export-preview-summary-text">Generating AI summary…</p>
               ) : (
                 <p className="export-preview-summary-fallback">
-                  Summary unavailable for this export.
+                  AI summary unavailable for this export. Review the report data directly.
                 </p>
               )}
+              <p className="export-preview-summary-caution">{AI_SUMMARY_CAUTION}</p>
             </div>
           )}
 
