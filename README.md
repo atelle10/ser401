@@ -18,7 +18,6 @@ MICROSOFT_CLIENT_ID=<get from team>
 MICROSOFT_CLIENT_SECRET=<get from team>
 DEV_ADMIN_EMAIL=dev-admin@example.com
 DEV_ADMIN_PASSWORD=change-me
-OPENAI_API_KEY=<optional - for chatbot AI responses>
 ```
 
 2. Add `fire.csv` and `ems.csv` to `deployment/db` (used to initialize the database).
@@ -31,14 +30,20 @@ just start-clean-all
 The `justfile` in the repo root includes helpers for starting/stopping individual
 services, checking logs, and viewing status.
 
+## QA
+- KPI / endpoint verification notes: [docs/qa/](docs/qa/).
+
 ## Notes
+- QA evidence: [docs/qa/](docs/qa/) — [676-dashboard-exploratory.md](docs/qa/676-dashboard-exploratory.md) (US 676).
 - Better Auth expects the `auth` schema in `famar_db` (the Docker setup handles this).
 - Dev-only admin seeding runs on auth server startup if `DEV_ADMIN_EMAIL` and
   `DEV_ADMIN_PASSWORD` are set.
 - Dev-only: email changes bypass verification; see TODO in `auth_server/src/auth.ts`
   for enabling email verification before production.
-- Chatbot (Fammy) provides AI-powered answers about dashboard KPIs. Requires `OPENAI_API_KEY`
-  for AI responses; works in fallback mode without it.
+
+## QA evidence (Software Quality Plan)
+
+[`docs/qa/`](docs/qa/) — Software Quality Plan test notes (example: [`672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md)).
 
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:

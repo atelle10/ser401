@@ -25,6 +25,21 @@ const fetchJson = async (url) => {
   return response.json();
 };
 
+const postJson = async (url, body) => {
+  const response = await fetch(url, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+
+  return response.json();
+};
+
 export const fetchKPIData = async ({ startDate, endDate, region = 'all' }) => {
   try {
     const url = buildUrl('/incidents/kpi-data', {
@@ -173,6 +188,15 @@ export const fetchUnitOrigin = async ({ startDate, endDate, region = 'all' }) =>
     });
 
     const data = await fetchJson(url);
+    return { success: true, data, error: null };
+  } catch (error) {
+    return { success: false, data: null, error: error.message };
+  }
+};
+
+export const fetchExportSummary = async (payload) => {
+  try {
+    const data = await postJson(`${API_BASE_URL}/export/summary`, payload);
     return { success: true, data, error: null };
   } catch (error) {
     return { success: false, data: null, error: error.message };

@@ -2,30 +2,23 @@ import json
 import os
 import sys
 import tempfile
+from typing import Any
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile, Request
+import pandas as pd
+from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
-from openai import OpenAI
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
+from pydantic import BaseModel, ConfigDict, Field
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+from backend.openai_client import OpenAISummaryService
 from backend.db_ops.relational_data_store import RelationalDataStore
 from backend.ingestion.data_classes import DataSet, DQPolicy, DQRule
 from backend.ingestion.ingestion_service import IngestionService
 from backend.local_unit_def import UnitOriginHelper
 
 app = FastAPI(title="FAMAR KPI Dashboard API")
-
-# Rate limiter for chatbot - 10 requests per minute per IP
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,10 +30,6 @@ app.add_middleware(
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://michael@localhost/famar_db")
 
-# OpenAI config for chatbot
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-CHATBOT_MODEL = "gpt-4o-mini"  # cheapest model, good enough for our use case
-
 RESPONSE_TIME_TARGETS_PATH = (
     Path(__file__).resolve().parent / "data" / "response_time_targets.json"
 )
@@ -49,6 +38,99 @@ DEFAULT_RESPONSE_TIME_TARGETS = {
     "turnout": {"national": 1.5, "local": 2.0},
     "travel": {"national": 4.0, "local": 5.0},
 }
+
+
+class ExportSummaryModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class ExportSummaryOverview(ExportSummaryModel):
+    total_incidents: int | None = None
+    avg_response_time_minutes: float | None = None
+    active_units: int | None = None
+    peak_load_factor: float | None = None
+    peak_hour: int | None = None
+
+
+class HeatmapHighlight(ExportSummaryModel):
+    busiest_day: str | None = None
+    busiest_hour: int | None = None
+    max_incidents_per_cell: int | None = None
+
+
+class PostalCodeHighlightItem(ExportSummaryModel):
+    zip: str
+    count: int
+    avg_response_minutes: float | None = None
+
+
+class PostalCodeHighlight(ExportSummaryModel):
+    top_postal_codes: list[PostalCodeHighlightItem] = Field(default_factory=list)
+
+
+class IncidentTypeHighlightItem(ExportSummaryModel):
+    type: str
+    count: int
+
+
+class TypeBreakdownHighlight(ExportSummaryModel):
+    top_incident_types: list[IncidentTypeHighlightItem] = Field(default_factory=list)
+
+
+class UnitHourUtilizationItem(ExportSummaryModel):
+    unit_id: str
+    uhu: float
+
+
+class UnitHourUtilizationHighlight(ExportSummaryModel):
+    top_units: list[UnitHourUtilizationItem] = Field(default_factory=list)
+    scottsdale_uhu: float | None = None
+    non_scottsdale_uhu: float | None = None
+
+
+class CallVolumeTrendHighlight(ExportSummaryModel):
+    peak_bucket_label: str | None = None
+    peak_bucket_count: int | None = None
+    average_bucket_count: float | None = None
+
+
+class MutualAidHighlight(ExportSummaryModel):
+    scottsdale_units_outside: int | None = None
+    other_units_in_scottsdale: int | None = None
+
+
+class ResponseTimeMetric(ExportSummaryModel):
+    avg: float | None = None
+    p90: float | None = None
+
+
+class ResponseTimeOverall(ExportSummaryModel):
+    call_processing: ResponseTimeMetric | None = None
+    turnout: ResponseTimeMetric | None = None
+    travel: ResponseTimeMetric | None = None
+
+
+class ResponseTimeBreakdownHighlight(ExportSummaryModel):
+    overall: ResponseTimeOverall | None = None
+
+
+class ExportSummaryHighlights(ExportSummaryModel):
+    heatmap: HeatmapHighlight | None = None
+    postal_code: PostalCodeHighlight | None = None
+    type_breakdown: TypeBreakdownHighlight | None = None
+    unit_hour_utilization: UnitHourUtilizationHighlight | None = None
+    call_volume_trend: CallVolumeTrendHighlight | None = None
+    mutual_aid: MutualAidHighlight | None = None
+    response_time_breakdown: ResponseTimeBreakdownHighlight | None = None
+
+
+class ExportSummaryRequest(ExportSummaryModel):
+    region: str = Field(..., min_length=1)
+    start_date: str = Field(..., min_length=1)
+    end_date: str = Field(..., min_length=1)
+    selected_charts: list[str]
+    overview: ExportSummaryOverview
+    highlights: ExportSummaryHighlights
 
 
 def _merge_response_time_targets_payload(payload: dict) -> dict:
@@ -82,6 +164,133 @@ def _read_response_time_targets() -> dict:
 def _write_response_time_targets(data: dict) -> None:
     RESPONSE_TIME_TARGETS_PATH.parent.mkdir(parents=True, exist_ok=True)
     RESPONSE_TIME_TARGETS_PATH.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def _dataframe_from_row(row: dict[str, Any]) -> pd.DataFrame:
+    cleaned_row = {key: value for key, value in row.items() if value is not None}
+    if not cleaned_row:
+        return pd.DataFrame()
+    return pd.DataFrame([cleaned_row])
+
+
+def _dataframe_from_rows(rows: list[dict[str, Any]]) -> pd.DataFrame:
+    cleaned_rows = []
+    for row in rows:
+        cleaned = {key: value for key, value in row.items() if value is not None}
+        if cleaned:
+            cleaned_rows.append(cleaned)
+
+    if not cleaned_rows:
+        return pd.DataFrame()
+
+    return pd.DataFrame(cleaned_rows)
+
+
+def _flatten_response_time_overall(overall: ResponseTimeOverall | None) -> dict[str, float]:
+    if overall is None:
+        return {}
+
+    flat: dict[str, float] = {}
+    for metric_name in ("call_processing", "turnout", "travel"):
+        metric = getattr(overall, metric_name)
+        if metric is None:
+            continue
+        if metric.avg is not None:
+            flat[f"{metric_name}_avg"] = metric.avg
+        if metric.p90 is not None:
+            flat[f"{metric_name}_p90"] = metric.p90
+
+    return flat
+
+
+def _build_export_summary_frames(payload: ExportSummaryRequest) -> dict[str, pd.DataFrame]:
+    datasets: dict[str, pd.DataFrame] = {}
+
+    export_context_frame = _dataframe_from_row(
+        {
+            "region": payload.region,
+            "start_date": payload.start_date,
+            "end_date": payload.end_date,
+            "selected_charts": ", ".join(payload.selected_charts),
+            "selected_chart_count": len(payload.selected_charts),
+        }
+    )
+    if not export_context_frame.empty:
+        datasets["export_context"] = export_context_frame
+
+    overview_frame = _dataframe_from_row(payload.overview.model_dump(exclude_none=True))
+    if not overview_frame.empty:
+        datasets["overview"] = overview_frame
+
+    if payload.highlights.heatmap:
+        heatmap_frame = _dataframe_from_row(
+            payload.highlights.heatmap.model_dump(exclude_none=True)
+        )
+        if not heatmap_frame.empty:
+            datasets["heatmap"] = heatmap_frame
+
+    if payload.highlights.postal_code:
+        postal_frame = _dataframe_from_rows(
+            [
+                item.model_dump(exclude_none=True)
+                for item in payload.highlights.postal_code.top_postal_codes
+            ]
+        )
+        if not postal_frame.empty:
+            datasets["postal_code"] = postal_frame
+
+    if payload.highlights.type_breakdown:
+        type_frame = _dataframe_from_rows(
+            [
+                item.model_dump(exclude_none=True)
+                for item in payload.highlights.type_breakdown.top_incident_types
+            ]
+        )
+        if not type_frame.empty:
+            datasets["type_breakdown"] = type_frame
+
+    if payload.highlights.unit_hour_utilization:
+        scalar_values = {
+            "scottsdale_uhu": payload.highlights.unit_hour_utilization.scottsdale_uhu,
+            "non_scottsdale_uhu": payload.highlights.unit_hour_utilization.non_scottsdale_uhu,
+        }
+        top_units = [
+            {
+                **item.model_dump(exclude_none=True),
+                **{key: value for key, value in scalar_values.items() if value is not None},
+            }
+            for item in payload.highlights.unit_hour_utilization.top_units
+        ]
+        uhu_frame = (
+            _dataframe_from_rows(top_units)
+            if top_units
+            else _dataframe_from_row(scalar_values)
+        )
+        if not uhu_frame.empty:
+            datasets["unit_hour_utilization"] = uhu_frame
+
+    if payload.highlights.call_volume_trend:
+        call_volume_frame = _dataframe_from_row(
+            payload.highlights.call_volume_trend.model_dump(exclude_none=True)
+        )
+        if not call_volume_frame.empty:
+            datasets["call_volume_trend"] = call_volume_frame
+
+    if payload.highlights.mutual_aid:
+        mutual_aid_frame = _dataframe_from_row(
+            payload.highlights.mutual_aid.model_dump(exclude_none=True)
+        )
+        if not mutual_aid_frame.empty:
+            datasets["mutual_aid"] = mutual_aid_frame
+
+    if payload.highlights.response_time_breakdown:
+        response_time_frame = _dataframe_from_row(
+            _flatten_response_time_overall(payload.highlights.response_time_breakdown.overall)
+        )
+        if not response_time_frame.empty:
+            datasets["response_time_breakdown"] = response_time_frame
+
+    return datasets
 
 UPLOAD_POLICY = DQPolicy(
     policy_id="dq_001", name="BASIC_POLICY", rules=[DQRule.NAN, DQRule.NON_NUMERIC]
@@ -507,6 +716,13 @@ async def put_response_time_targets_admin(payload: dict = Body(...)):
     return merged
 
 
+@app.post("/api/export/summary")
+async def post_export_summary(payload: ExportSummaryRequest):
+    datasets = _build_export_summary_frames(payload)
+    summary_service = OpenAISummaryService()
+    return summary_service.summarize_dashboard(datasets)
+
+
 @app.get("/api/incidents/heatmap")
 async def get_incident_heatmap(
     start_date: str = Query(...), end_date: str = Query(...), region: str = Query("all")
@@ -864,155 +1080,3 @@ async def get_mutual_aid(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
-
-
-# Chatbot models - adding these for the new chat feature
-class ChatRequest(BaseModel):
-    question: str = Field(..., min_length=1, max_length=500)
-    context: dict = Field(default_factory=dict)
-
-
-class ChatResponse(BaseModel):
-    answer: str
-
-
-@app.post("/api/chat", response_model=ChatResponse)
-@limiter.limit("10/minute")
-async def chat_endpoint(request: Request, chat_request: ChatRequest):
-    """
-    Chatbot endpoint for asking questions about KPI data.
-    Fetches KPI summary based on date/region context to provide to the AI.
-    Rate limited to 10 requests per minute per IP.
-    """
-    # Get context from request, use defaults if not provided
-    region = chat_request.context.get('region', 'all')
-    start_date = chat_request.context.get('start_date')
-    end_date = chat_request.context.get('end_date')
-
-    # Default to last 7 days if dates missing
-    if not start_date or not end_date:
-        end_dt = datetime.now()
-        start_dt = datetime.fromtimestamp(end_dt.timestamp() - 7 * 24 * 60 * 60)
-        start_date = start_dt.isoformat()
-        end_date = end_dt.isoformat()
-
-    try:
-        # Parse dates
-        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
-        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
-
-    # Build region filter like other endpoints do
-    region_filter = ""
-    if region == "south":
-        region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
-    elif region == "north":
-        region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
-
-    try:
-        db = RelationalDataStore(DATABASE_URL)
-        db.connect()
-
-        # Query for summary stats - copied from the summary endpoint logic
-        summary_query = f"""
-        WITH response_times AS (
-            SELECT
-                EXTRACT(EPOCH FROM (ur.apparatus_resource_arrival_date_time - ur.apparatus_resource_dispatch_date_time)) / 60.0 AS response_minutes
-            FROM fire_ems.incident i
-            JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
-            WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
-            {region_filter}
-            AND ur.apparatus_resource_dispatch_date_time IS NOT NULL
-            AND ur.apparatus_resource_arrival_date_time IS NOT NULL
-        ),
-        hourly_counts AS (
-            SELECT
-                EXTRACT(HOUR FROM i.basic_incident_psap_date_time) AS hour,
-                COUNT(*) AS count
-            FROM fire_ems.incident i
-            WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
-            {region_filter}
-            GROUP BY EXTRACT(HOUR FROM i.basic_incident_psap_date_time)
-        )
-        SELECT
-            (SELECT AVG(response_minutes) FROM response_times) AS avg_response_time,
-            (SELECT COUNT(DISTINCT i.incident_id) FROM fire_ems.incident i
-             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}' {region_filter}) AS total_incidents,
-            (SELECT COUNT(DISTINCT ur.apparatus_resource_id) FROM fire_ems.incident i
-             JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
-             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}' {region_filter}) AS active_units,
-            (SELECT MAX(count) FROM hourly_counts) AS peak_count,
-            (SELECT AVG(count) FROM hourly_counts) AS avg_count,
-            (SELECT hour FROM hourly_counts ORDER BY count DESC LIMIT 1) AS peak_hour
-        """
-
-        df = db.read_table(f"({summary_query}) as subquery")
-        db.disconnect()
-
-        # Build the data summary
-        if df.empty:
-            data_summary = {
-                "total_incidents": 0,
-                "avg_response_time": None,
-                "active_units": 0,
-                "peak_hour": None
-            }
-        else:
-            row = df.iloc[0]
-            data_summary = {
-                "total_incidents": int(row["total_incidents"]) if row["total_incidents"] else 0,
-                "avg_response_time": float(row["avg_response_time"]) if row["avg_response_time"] else None,
-                "active_units": int(row["active_units"]) if row["active_units"] else 0,
-                "peak_hour": int(row["peak_hour"]) if row["peak_hour"] is not None else None
-            }
-
-        # Build the system prompt for OpenAI
-        avg_text = f"{data_summary['avg_response_time']:.1f} minutes" if data_summary['avg_response_time'] else "not available"
-        peak_text = f"hour {data_summary['peak_hour']}" if data_summary['peak_hour'] is not None else "not available"
-
-        system_prompt = f"""You are Fammy, a helpful assistant for the FAMAR Fire/EMS KPI Dashboard.
-Answer questions about the current dashboard data based on the context provided.
-
-Current Dashboard Context:
-- Date range: {start_date[:10]} to {end_date[:10]}
-- Region: {region}
-- Total incidents: {data_summary['total_incidents']}
-- Average response time: {avg_text}
-- Active units: {data_summary['active_units']}
-- Peak activity: {peak_text}
-
-Keep responses short (2-3 sentences). Be helpful and direct.
-If asked about something not in the data, say you don't have that information."""
-
-        # Check if we have an API key
-        if not OPENAI_API_KEY:
-            # Fallback response without AI - useful for testing
-            return ChatResponse(
-                answer=f"There were {data_summary['total_incidents']} incidents with an average response time of {avg_text}. Peak activity was at {peak_text}. (AI responses disabled - no API key)"
-            )
-
-        try:
-            # Call OpenAI
-            client = OpenAI(api_key=OPENAI_API_KEY)
-            response = client.chat.completions.create(
-                model=CHATBOT_MODEL,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": chat_request.question}
-                ],
-                temperature=0.7,
-                max_tokens=150
-            )
-
-            ai_answer = response.choices[0].message.content
-            return ChatResponse(answer=ai_answer)
-
-        except Exception as ai_error:
-            # If AI fails, return data summary as fallback
-            return ChatResponse(
-                answer=f"Based on the data: {data_summary['total_incidents']} incidents, avg response {avg_text}. (AI service temporarily unavailable)"
-            )
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
