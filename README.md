@@ -37,6 +37,10 @@ services, checking logs, and viewing status.
 - Dev-only: email changes bypass verification; see TODO in `auth_server/src/auth.ts`
   for enabling email verification before production.
 
+## QA evidence (Software Quality Plan)
+
+[`docs/qa/`](docs/qa/) — Software Quality Plan test notes (example: [`672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md)).
+
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:
 
