@@ -53,7 +53,14 @@ const Home = ({ role = "admin" }) => {
   const [adminNotificationCount, setAdminNotificationCount] = useState(0)
   const [isUnverifiedBannerDismissed, setIsUnverifiedBannerDismissed] = useState(false)
   const isAdmin = role === "admin"
-  const [displayMode, setDisplayMode] = useState(false) 
+  const [displayMode, setDisplayMode] = useState(false)
+  
+  // Chat context - currently uses defaults, could sync with Dashboard later
+  const [chatContext] = useState({
+    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date().toISOString(),
+    region: 'all'
+  }) 
 
   const refreshPage = () => {
     window.location.reload();
@@ -159,8 +166,8 @@ const Home = ({ role = "admin" }) => {
                     adminNotificationCount={adminNotificationCount}
                     role={role}
                   />
-                    <ChatBot />
-                  </div>
+                  <ChatBot context={chatContext} />
+                </div>
               </div>
               
             
