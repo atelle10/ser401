@@ -34,6 +34,7 @@ services, checking logs, and viewing status.
 - KPI / endpoint verification notes: [docs/qa/](docs/qa/).
 
 ## Notes
+- QA evidence: [docs/qa/](docs/qa/) — [676-dashboard-exploratory.md](docs/qa/676-dashboard-exploratory.md) (US 676).
 - Better Auth expects the `auth` schema in `famar_db` (the Docker setup handles this).
 - Dev-only admin seeding runs on auth server startup if `DEV_ADMIN_EMAIL` and
   `DEV_ADMIN_PASSWORD` are set.
