@@ -31,7 +31,7 @@ const formatDateInputValue = (date) => {
   return `${year}-${month}-${day}`
 }
 
-const Dashboard = ({ role = "viewer" }) => {
+const Dashboard = ({ role = "viewer" , setMetrics}) => {
   const [region, setRegion] = useState('south')
   const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
@@ -247,6 +247,11 @@ const Dashboard = ({ role = "viewer" }) => {
     })
   }
 
+  const updateMetrics = (field, value) => {
+    setMetrics((prev) => ({ ...prev, [field]: value }))
+    console.log('Updated metrics:', { ...metrics, [field]: value })
+  }
+
 
   const options = [
     { label: 'Heatmap', value: 'heatmap' },
@@ -267,9 +272,10 @@ const Dashboard = ({ role = "viewer" }) => {
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
             value={region}
-            onChange={(e) =>
+            onChange={(e) => {
               setRegion(e.target.value)
-            }
+              updateMetrics('region', e.target.value)
+            }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           >
             <option value="all">All</option>
@@ -289,6 +295,7 @@ const Dashboard = ({ role = "viewer" }) => {
               }
               setIsCustomRange(false)
               setTimeWindow(Number(v))
+              updateMetrics('window', Number(v))
             }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           >
@@ -307,6 +314,7 @@ const Dashboard = ({ role = "viewer" }) => {
             onChange={(e) => {
               setIsCustomRange(true)
               setDateInputs((prev) => ({ ...prev, start: e.target.value }))
+              updateMetrics('startDate', e.target.value)
             }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           />
@@ -320,6 +328,7 @@ const Dashboard = ({ role = "viewer" }) => {
             onChange={(e) => {
               setIsCustomRange(true)
               setDateInputs((prev) => ({ ...prev, end: e.target.value }))
+              updateMetrics('endDate', e.target.value)
             }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           />
@@ -344,6 +353,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
               setSelectedCharts(selectedList)
+              updateMetrics('selectedCharts', selectedList)
             }
           }
           onRemove={
@@ -357,6 +367,7 @@ const Dashboard = ({ role = "viewer" }) => {
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
               setSelectedCharts(selectedList)
+              updateMetrics('selectedCharts', selectedList)
             }
           }
           avoidHighlightFirstOption={true}

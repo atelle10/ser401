@@ -10,6 +10,7 @@ import { fetchKPIData, fetchKPISummary, fetchIncidentHeatmap, fetchPostalBreakdo
 import './assets/style.css'
 import homeIcon from './assets/home icon.png'
 import { motion } from 'motion/react'
+import { Multiselect } from 'multiselect-react-dropdown'
 
 export const formatDateInputValue = (date) => {
   const year = date.getFullYear()
@@ -28,13 +29,13 @@ export const buildIsoRangeFromDateInputs = ({ start, end }) => {
 
 
 
-const FireDisplay = ({ role }) => {
-  const [region, setRegion] = useState('south')
-  const [timeWindow, setTimeWindow] = useState(7)
+const FireDisplay = ({ role, settings, metrics }) => {
+  const [region, setRegion] = useState(metrics.region ? metrics.region : 'south')
+  const [timeWindow, setTimeWindow] = useState(metrics.window ? metrics.window : 7)
   const [isCustomRange, setIsCustomRange] = useState(false)
   const [dateInputs, setDateInputs] = useState(() => {
-  const end = new Date()
-  const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const end = metrics.end ? new Date(metrics.end) : new Date()
+  const start = metrics.start ? new Date(metrics.start) : new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
     return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
   })
   const [incidentData, setIncidentData] = useState([])
@@ -214,9 +215,9 @@ const FireDisplay = ({ role }) => {
   };
 
   // Slide duration and activation 
-  const [activateSlideShow, setActivateSlideShow] = useState(false)
-  const [timer, setTimer] = useState(5) //Set initial timer duration to 5 seconds 
-
+  
+  const [activateSlideShow, setActivateSlideShow] = useState(settings.enabled || false)
+  const [timer, setTimer] = useState(settings.enabled ? settings.rotationIntervalSeconds : 5) //Set initial timer duration to 5 seconds or value from settings
 
   const togglePlayButton = () => {
     setActivateSlideShow(prevToggle => !prevToggle);
@@ -240,8 +241,18 @@ const FireDisplay = ({ role }) => {
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [currentIndex, timer, activateSlideShow]);
 
+  const options = [
+    { label: 'Heatmap', value: 'heatmap' },
+    { label: 'Postal Code', value: 'postal_code' },
+    { label: 'Type Breakdown', value: 'type_breakdown' },
+    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
+    { label: 'Call Volume Trend', value: 'call_volume_trend' },
+    { label: 'Mutual Aid', value: 'mutual_aid' },
+    { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
+  ]
+
   return ( 
-    <div className="sm:p-4 space-y-2 sm:space-y-4 w-screen h-screen">
+    <div className="sm:p-4 space-y-2 sm:space-y-4 h-full w-screen ">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-1 sm:p-4 rounded-lg">
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
@@ -298,24 +309,71 @@ const FireDisplay = ({ role }) => {
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-800/80"
           />
         </div>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
+          <Multiselect
+            ref={selectRef}
+            selectedValues={chartOptions}
+            options={options}
+            onSelect={
+              selectedList => {
+                const selectedValues = selectedList.map(opt => opt.value)
+                setHeatmapVisible(selectedValues.includes('heatmap'))
+                setPostalCodeVisible(selectedValues.includes('postal_code'))
+                setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
+                setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
+                setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+                setMutualAidVisible(selectedValues.includes('mutual_aid'))
+                setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
+                setSelectedCharts(selectedList)
+                setMetrics((prev) => ({ ...prev, selectedCharts: selectedList }))
+              }
+            }
+            onRemove={
+              selectedList => {
+                const selectedValues = selectedList.map(opt => opt.value)
+                setHeatmapVisible(selectedValues.includes('heatmap'))
+                setPostalCodeVisible(selectedValues.includes('postal_code'))
+                setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
+                setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
+                setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
+                setMutualAidVisible(selectedValues.includes('mutual_aid'))
+                setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
+                setSelectedCharts(selectedList)
+                setMetrics((prev) => ({ ...prev, selectedCharts: selectedList }))
+              }
+            }
+            avoidHighlightFirstOption={true}
+            displayValue='label'
+            showCheckbox={true}
+            hideSelectedList={true}
+            placeholder='Search charts...'
+            style={{
+                multiselectContainer: {
+                  color: 'blue',
+                  background: 'transparent',
+                },
+                  searchBox: {
+                  color: 'blue',
+                  background: 'white',
+                }
+            }}
+          />
+        </div>
         <div className="flex flex-col ml-auto sm:flex-row sm:items-center gap-1 sm:gap-2">
-          <label className="text-xs sm:text-sm font-medium">Slide Duration:</label>
-          <select
+          <label className="text-xs sm:text-sm font-medium">Rotation Interval (seconds)</label>
+          <input
+            type="number"
+            min="10"
+            max="300"
+            step="5"
             value={timer}
             onChange={(e) => {
               const newValue = Number(e.target.value);
               newValue === 0 ? stopSlideShow() : handleTimerChange(newValue);
             }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
-          >
-            <option value={0} >Manual</option>
-            <option value={5}>5 Seconds</option>
-            <option value={10}>10 Seconds</option>
-            <option value={30}>30 Seconds</option>
-            <option value={60}>1 Minute</option>
-            <option value={300}>5 Minutes</option>
-            <option value={600}>10 Minutes</option>
-          </select>
+          />
         </div>
         <div 
           className="ml-auto h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1"

@@ -17,10 +17,11 @@ const defaultSettings = {
   autoStartPlayback: false,
 }
 
-const TVModeSettings = ({ onBack }) => {
+const TVModeSettings = ({ onBack, setParentSettings }) => {
   const [settings, setSettings] = useState(defaultSettings)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState('')
+  
 
   useEffect(() => {
     const stored = localStorage.getItem('tvModeSettings')
@@ -49,6 +50,10 @@ const TVModeSettings = ({ onBack }) => {
         .map((option) => option.label),
     [settings.selectedCharts]
   )
+
+  const updateParentSettings = () => {
+    setParentSettings(settings);
+  }
 
   const handleSettingChange = (key, value) => {
     setSettings((prev) => ({ ...prev, [key]: value }))
@@ -88,6 +93,7 @@ const TVModeSettings = ({ onBack }) => {
     setSaved(true)
     setSaveError('')
     window.setTimeout(() => setSaved(false), 3000)
+    updateParentSettings()
   }
 
   const handleReset = () => {
