@@ -9,8 +9,12 @@ import IncidentsByPostalCode from './Dashboard/KPIs/IncidentsByPostalCode'
 import IncidentTypeBreakdown from './Dashboard/KPIs/IncidentTypeBreakdown'
 import ResponseTimeBreakdown from './Dashboard/KPIs/ResponseTimeBreakdown'
 import {
+  fetchCallVolume,
+  fetchExportSummary,
   fetchKPIData,
   fetchIncidentHeatmap,
+  fetchKPISummary,
+  fetchMutualAid,
   fetchPostalBreakdown,
   fetchResponseTimes,
   fetchTypeBreakdown,
@@ -22,6 +26,7 @@ import {
   getSelectedChartOptions,
   parseExportPreviewSearch,
 } from './Dashboard/exportConfig'
+import { buildExportSummaryPayload } from './exportSummaryPayload'
 import { authClient } from '../utils/authClient'
 import './ExportPreview.css'
 
@@ -39,6 +44,7 @@ const PRINT_READY_CHARTS = new Set([
   'mutual_aid',
   'response_time_breakdown',
 ])
+const SUMMARY_RESOLVED_STATUSES = new Set(['ready', 'unavailable', 'error'])
 
 const buildAsyncChartStatus = (selectedCharts = []) =>
   selectedCharts.reduce((status, chartKey) => {
@@ -80,9 +86,13 @@ const ExportPreview = () => {
   )
   const [previewData, setPreviewData] = useState(EMPTY_PREVIEW_DATA)
   const [isLoading, setIsLoading] = useState(false)
+  const [loadedPreviewKey, setLoadedPreviewKey] = useState('')
   const [error, setError] = useState('')
   const [hasTriggeredPrint, setHasTriggeredPrint] = useState(false)
   const [generatedAt] = useState(() => new Date())
+  const [summaryStatus, setSummaryStatus] = useState('idle')
+  const [summaryParagraph, setSummaryParagraph] = useState('')
+  const [summaryHighlights, setSummaryHighlights] = useState([])
   const [asyncChartStatus, setAsyncChartStatus] = useState(() =>
     buildAsyncChartStatus(settings.selectedCharts)
   )
@@ -107,6 +117,24 @@ const ExportPreview = () => {
     () => Object.values(asyncChartStatus).every(Boolean),
     [asyncChartStatus]
   )
+  const isSummaryReadyForPrint = useMemo(
+    () => SUMMARY_RESOLVED_STATUSES.has(summaryStatus),
+    [summaryStatus]
+  )
+  const timePeriodHours = useMemo(() => {
+    if (!dateRange.startDate || !dateRange.endDate) return 24
+
+    return (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60)
+  }, [dateRange.endDate, dateRange.startDate])
+  const previewLoadKey = useMemo(
+    () => JSON.stringify({
+      region: settings.region,
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      selectedCharts: settings.selectedCharts,
+    }),
+    [dateRange.endDate, dateRange.startDate, settings.region, settings.selectedCharts]
+  )
   const needsSharedPreviewData = useMemo(() => ({
     incidentData:
       selectedChartSet.has('heatmap') || selectedChartSet.has('unit_hour_utilization'),
@@ -121,6 +149,7 @@ const ExportPreview = () => {
     if (!dateRange.startDate || !dateRange.endDate) {
       setPreviewData(EMPTY_PREVIEW_DATA)
       setIsLoading(false)
+      setLoadedPreviewKey('')
       setError('Start and end date are required to load chart previews.')
       return
     }
@@ -128,6 +157,7 @@ const ExportPreview = () => {
     if (selectedChartOptions.length === 0) {
       setPreviewData(EMPTY_PREVIEW_DATA)
       setIsLoading(false)
+      setLoadedPreviewKey(previewLoadKey)
       setError('')
       return
     }
@@ -135,6 +165,7 @@ const ExportPreview = () => {
     if (Object.values(needsSharedPreviewData).every((value) => !value)) {
       setPreviewData(EMPTY_PREVIEW_DATA)
       setIsLoading(false)
+      setLoadedPreviewKey(previewLoadKey)
       setError('')
       return
     }
@@ -143,6 +174,7 @@ const ExportPreview = () => {
 
     const loadPreviewData = async () => {
       setIsLoading(true)
+      setLoadedPreviewKey('')
       setError('')
 
       const [incidentResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult, responseTimesResult] = await Promise.all([
@@ -214,6 +246,7 @@ const ExportPreview = () => {
 
       setError(nextError || '')
       setIsLoading(false)
+      setLoadedPreviewKey(previewLoadKey)
     }
 
     loadPreviewData()
@@ -225,6 +258,7 @@ const ExportPreview = () => {
     dateRange.endDate,
     dateRange.startDate,
     needsSharedPreviewData,
+    previewLoadKey,
     selectedChartOptions.length,
     settings.region,
   ])
@@ -232,6 +266,9 @@ const ExportPreview = () => {
   useEffect(() => {
     setHasTriggeredPrint(false)
     setAsyncChartStatus(buildAsyncChartStatus(settings.selectedCharts))
+    setSummaryStatus('idle')
+    setSummaryParagraph('')
+    setSummaryHighlights([])
   }, [search, settings.selectedCharts])
 
   useEffect(() => {
@@ -245,6 +282,124 @@ const ExportPreview = () => {
   }, [regionLabel, settings.endDate, settings.startDate])
 
   useEffect(() => {
+    if (!dateRange.startDate || !dateRange.endDate || selectedChartOptions.length === 0) {
+      setSummaryStatus('idle')
+      setSummaryParagraph('')
+      setSummaryHighlights([])
+      return
+    }
+
+    if (loadedPreviewKey !== previewLoadKey || isLoading) {
+      return
+    }
+
+    let cancelled = false
+
+    const loadSummary = async () => {
+      setSummaryStatus('loading')
+      setSummaryParagraph('')
+      setSummaryHighlights([])
+
+      const [overviewResult, callVolumeResult, mutualAidResult] = await Promise.all([
+        fetchKPISummary({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+          region: settings.region,
+        }),
+        selectedChartSet.has('call_volume_trend')
+          ? fetchCallVolume({
+              startDate: dateRange.startDate,
+              endDate: dateRange.endDate,
+              region: settings.region,
+            })
+          : Promise.resolve({ success: true, data: { trend_data: [] }, error: null }),
+        selectedChartSet.has('mutual_aid')
+          ? fetchMutualAid({
+              startDate: dateRange.startDate,
+              endDate: dateRange.endDate,
+              region: settings.region,
+            })
+          : Promise.resolve({
+              success: true,
+              data: {
+                scottsdale_units_outside: null,
+                other_units_in_scottsdale: null,
+              },
+              error: null,
+            }),
+      ])
+
+      if (cancelled) return
+
+      const sourceError = [overviewResult, callVolumeResult, mutualAidResult].find(
+        (result) => !result.success
+      )?.error
+
+      if (sourceError) {
+        setSummaryStatus('error')
+        return
+      }
+
+      const payload = buildExportSummaryPayload({
+        settings,
+        dateRange,
+        overviewData: overviewResult.data,
+        previewData,
+        callVolumeData: callVolumeResult.data,
+        mutualAidData: mutualAidResult.data,
+        timePeriodHours,
+      })
+
+      const summaryResult = await fetchExportSummary(payload)
+      if (cancelled) return
+
+      if (!summaryResult.success) {
+        setSummaryStatus('error')
+        return
+      }
+
+      const nextStatus = SUMMARY_RESOLVED_STATUSES.has(summaryResult.data?.status)
+        ? summaryResult.data.status
+        : 'error'
+
+      setSummaryStatus(nextStatus)
+      if (nextStatus === 'ready') {
+        setSummaryParagraph(
+          summaryResult.data?.summary_paragraph || summaryResult.data?.summary || ''
+        )
+        setSummaryHighlights(
+          Array.isArray(summaryResult.data?.summary_highlights)
+            ? summaryResult.data.summary_highlights
+                .filter((item) => typeof item === 'string' && item.trim())
+                .slice(0, 3)
+            : []
+        )
+        return
+      }
+
+      setSummaryParagraph('')
+      setSummaryHighlights([])
+    }
+
+    loadSummary()
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    dateRange.endDate,
+    dateRange.startDate,
+    isLoading,
+    loadedPreviewKey,
+    previewData,
+    previewLoadKey,
+    selectedChartOptions.length,
+    selectedChartSet,
+    settings,
+    timePeriodHours,
+  ])
+
+  useEffect(() => {
     if (
       !autoPrintEnabled ||
       hasTriggeredPrint ||
@@ -252,7 +407,8 @@ const ExportPreview = () => {
       !dateRange.startDate ||
       !dateRange.endDate ||
       selectedChartOptions.length === 0 ||
-      !areAsyncChartsReady
+      !areAsyncChartsReady ||
+      !isSummaryReadyForPrint
     ) {
       return undefined
     }
@@ -278,6 +434,7 @@ const ExportPreview = () => {
     dateRange.startDate,
     hasTriggeredPrint,
     isLoading,
+    isSummaryReadyForPrint,
     selectedChartOptions.length,
   ])
 
@@ -305,12 +462,6 @@ const ExportPreview = () => {
     (isReady) => handleAsyncChartReadyChange('response_time_breakdown', isReady),
     [handleAsyncChartReadyChange]
   )
-
-  const timePeriodHours = useMemo(() => {
-    if (!dateRange.startDate || !dateRange.endDate) return 24
-
-    return (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60)
-  }, [dateRange.endDate, dateRange.startDate])
 
   const chartSections = useMemo(() => ({
     heatmap: {
@@ -425,6 +576,32 @@ const ExportPreview = () => {
         <header className="export-preview-header">
           <p className="export-preview-eyebrow">FAMAR KPI analytics</p>
           <h1 className="export-preview-title">KPI Data Analytics Report</h1>
+
+          {(summaryStatus === 'loading' || summaryStatus === 'ready' || isSummaryReadyForPrint) && (
+            <div className="export-preview-summary">
+              <h2 className="export-preview-summary-title">Report Summary</h2>
+              {summaryStatus === 'ready' && (summaryParagraph || summaryHighlights.length > 0) ? (
+                <div className="export-preview-summary-content">
+                  {summaryParagraph && (
+                    <p className="export-preview-summary-text">{summaryParagraph}</p>
+                  )}
+                  {summaryHighlights.length > 0 && (
+                    <ul className="export-preview-summary-highlights">
+                      {summaryHighlights.map((highlight) => (
+                        <li key={highlight}>{highlight}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : summaryStatus === 'loading' ? (
+                <p className="export-preview-summary-text">Generating report summary…</p>
+              ) : (
+                <p className="export-preview-summary-fallback">
+                  Summary unavailable for this export.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="export-preview-meta">
             <div className="export-preview-meta-item">
