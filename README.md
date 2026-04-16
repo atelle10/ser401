@@ -39,7 +39,7 @@ services, checking logs, and viewing status.
 
 ## QA evidence (Software Quality Plan)
 
-[`docs/qa/`](docs/qa/) — e.g. [672 KPI API pytest](docs/qa/672-kpi-api-evidence.md), [673 upload verification](docs/qa/673-upload-verification.md).
+[`docs/qa/`](docs/qa/) — Software Quality Plan test notes (example: [`672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md)).
 
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:

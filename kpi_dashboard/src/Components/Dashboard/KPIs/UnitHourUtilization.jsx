@@ -63,7 +63,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) 
   if (!uhuByUnit?.length) {
     return (
       <div 
-        className=" w-fit border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md"
+        className="border rounded-lg p-4 bg-blue-500/40 backdrop-blur-md"
         role="region"
         aria-label="Unit Hour Utilization"
       >
