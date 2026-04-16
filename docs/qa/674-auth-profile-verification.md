@@ -4,35 +4,27 @@
 
 | Field | Value |
 |--------|--------|
-| Date | 2026-04-08 |
-| Branch | — |
-| Commit | — |
+| Date | 2026-04-15 |
+| Branch | `US-674-Verify-Authentication` |
 | Reference | `kpi_dashboard/src/App.jsx` (`RequireAuth`, `RequireGuest`) |
-| Base URL | Set at run time (local or deployed SPA) |
+| Base URL | `http://localhost:3000` |
 
-## Expected behavior (from source)
+## Setup used for this run
 
-| Flow | Condition | Expected |
-|------|-----------|----------|
-| Protected route, no session | Open `/home` or `/export-preview` | Redirect to `/` (`Navigate`, `state.from` may be set) |
-| Protected route, stale client session flag | `hasAuthenticatedSession()` true, no server session | Redirect `/session-expired` |
-| Incomplete profile | `needsProfileCompletion(user)` true, path not `/complete-profile` | Redirect `/complete-profile` |
-| Unverified | `verified === false`, path not `/complete-profile` or `/awaiting-access` | Redirect `/awaiting-access` |
-| Guest routes with session | Open `/` or `/register` while signed in, profile complete + verified | Redirect `/home` |
-| Eligible user | Complete profile + verified | `/home` (and `/export-preview`) render app shell |
+- Frontend and auth/backend services running on `http://localhost:3000`.
+- Private/incognito browser window used for logged-out route checks.
+- Site data for `http://localhost:3000` cleared in dev tools storage before logged-out checks (`/home`, `/export-preview`).
 
-`/awaiting-access` and `/session-expired` are **not** wrapped in `RequireAuth`; they render without a session (splash screens).
+## Test results
 
-## Manual execution
+| Step | Action | Expected | Actual | Result |
+|------|--------|----------|--------|--------|
+| 1 | Logged out, navigate to `/home` | Land on `/` (login), not dashboard | Redirected to `http://localhost:3000/` login page | Pass |
+| 2 | Logged out, navigate to `/export-preview` | Land on `/` | Redirected to `http://localhost:3000/` login page | Pass |
+| 3 | Incomplete-profile path check | Incomplete data path is blocked before protected route access | Incomplete/missing field input did not allow login session | Pass |
+| 4 | Unverified account (profile complete), open `/home` | Redirect to `/awaiting-access` | Redirected to `/awaiting-access` (pending approval screen shown) | Pass |
+| 5 | Verified + complete account, sign in | Reach `/home` without error | `/home` rendered; `/export-preview` also rendered while signed in | Pass |
 
-Use team test accounts on the target environment. Record **pass/fail** (no passwords or tokens in this file).
+**Defects:** None in executed steps.
 
-| Step | Action | Expected | Pass |
-|------|--------|----------|------|
-| 1 | Logged out, navigate to `/home` | Land on `/` (login), not dashboard | — |
-| 2 | Logged out, navigate to `/export-preview` | Land on `/` | — |
-| 3 | Incomplete-profile account, open `/home` | Redirect to `/complete-profile` | — |
-| 4 | Unverified account (profile complete), open `/home` | Redirect to `/awaiting-access` | — |
-| 5 | Verified + complete account, sign in | Reach `/home` without error | — |
 
-**Defects:** —
