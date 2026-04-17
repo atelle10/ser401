@@ -179,6 +179,7 @@ const FireDisplay = ({ role, settings, metrics }) => {
   }, [loadIncidentData])
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  
   const titles = [
     "Call Volume Trend",
     "Heat Map: Incidents by Day × Hour",
@@ -188,26 +189,53 @@ const FireDisplay = ({ role, settings, metrics }) => {
     "Mutual Aid",
     "Response Time Breakdown"
   ]
-  const components = [
-    CallVolumeLinearChart, 
-    HeatMapDayHour, 
-    UnitHourUtilization,
+  const components  = [
+    CallVolumeLinearChart,
+    HeatMapDayHour,
     IncidentTypeBreakdown,
+    UnitHourUtilization,
     IncidentsByPostalCode,
     MutualAidChart,
     ResponseTimeBreakdown
-  ];
+  ]
 
-  const displayTitle = titles[currentIndex]
-  const CurrentComponent = components[currentIndex]; // Store the active component
+  const options = [
+    { label: 'Call Volume Trend', value: 'call_volume_trend'},
+    { label: 'Heatmap', value: 'heatmap', index: 1},
+    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization'},
+    { label: 'Type Breakdown', value: 'type_breakdown'},
+    { label: 'Postal Code', value: 'postal_code'},
+    { label: 'Mutual Aid', value: 'mutual_aid'},
+    { label: 'Response Time Breakdown', value: 'response_time_breakdown'}
+  ]
+
+  const [omitComponents, setOmitComponents] = useState(['heatmap'])
+  const displayTitle = titles[currentIndex];
+  const CurrentComponent = components[currentIndex]; 
+  // const [nextIndex, setNextIndex] = useState(0)
+
   // Function to cycle to the next component
   const goToNextComponent = () => {
-    setCurrentIndex((prevIndex) =>
-      (prevIndex + 1) % components.length // Loop back to the start if at the end
-    );
+    let nextIndex = (currentIndex + 1) % components.length;
+    console.log('Next 1 index:', nextIndex)
+    let tempIndex = components.findIndex((comp, idx) => idx === nextIndex && !omitComponents.includes(options[idx].value) && !currentIndex);
+    console.log(tempIndex)
+    while (tempIndex === -1) {
+      console.log('Next 2 index:', nextIndex)
+      tempIndex = components.findIndex((comp, idx) => idx === nextIndex && !omitComponents.includes(options[idx].value) && !currentIndex);
+      console.log('Next 3 index:', nextIndex)
+      if (tempIndex === -1) {
+        continue
+      } else {
+        nextIndex = (currentIndex + 1) % components.length;
+        console.log('Next 4 index:', nextIndex)
+        break
+      }
+    } 
+    setCurrentIndex(nextIndex);
   };
 
-  // Function to go back (optional)
+  // Function to go back to the previous component
   const goToPreviousComponent = () => {
     setCurrentIndex((prevIndex) =>
       (prevIndex - 1 + components.length) % components.length
@@ -232,6 +260,8 @@ const FireDisplay = ({ role, settings, metrics }) => {
     setTimer(inputValue)
   }
 
+  const selectRef = React.createRef()
+
   // useEffect to handle the slideshow functionality
   useEffect(() => {
     let interval = null;
@@ -240,16 +270,6 @@ const FireDisplay = ({ role, settings, metrics }) => {
     }
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [currentIndex, timer, activateSlideShow]);
-
-  const options = [
-    { label: 'Heatmap', value: 'heatmap' },
-    { label: 'Postal Code', value: 'postal_code' },
-    { label: 'Type Breakdown', value: 'type_breakdown' },
-    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization' },
-    { label: 'Call Volume Trend', value: 'call_volume_trend' },
-    { label: 'Mutual Aid', value: 'mutual_aid' },
-    { label: 'Response Time Breakdown', value: 'response_time_breakdown' },
-  ]
 
   return ( 
     <div className="sm:p-4 space-y-2 sm:space-y-4 h-full w-screen ">
@@ -313,7 +333,7 @@ const FireDisplay = ({ role, settings, metrics }) => {
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
             ref={selectRef}
-            selectedValues={chartOptions}
+            selectedValues={components.map(comp => ({ value: comp.value, label: options.find(opt => opt.value === comp.value)?.label || comp.value }))}
             options={options}
             onSelect={
               selectedList => {
@@ -325,7 +345,8 @@ const FireDisplay = ({ role, settings, metrics }) => {
                 setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
                 setMutualAidVisible(selectedValues.includes('mutual_aid'))
                 setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
-                setSelectedCharts(selectedList)
+                setComponents(selectedList.map(opt => options.find(option => option.value === opt.value)?.component).filter(Boolean))
+                setOmitComponents(options.map(opt => opt.value).filter(value => !selectedValues.includes(value)))
                 setMetrics((prev) => ({ ...prev, selectedCharts: selectedList }))
               }
             }
@@ -339,7 +360,7 @@ const FireDisplay = ({ role, settings, metrics }) => {
                 setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
                 setMutualAidVisible(selectedValues.includes('mutual_aid'))
                 setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
-                setSelectedCharts(selectedList)
+                setComponents(selectedList.map(opt => options.find(option => option.value === opt.value)?.component).filter(Boolean))
                 setMetrics((prev) => ({ ...prev, selectedCharts: selectedList }))
               }
             }

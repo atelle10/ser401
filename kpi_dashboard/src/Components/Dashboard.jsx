@@ -352,7 +352,6 @@ const Dashboard = ({ role = "viewer" , setMetrics}) => {
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
-              setSelectedCharts(selectedList)
               updateMetrics('selectedCharts', selectedList)
             }
           }
@@ -366,7 +365,6 @@ const Dashboard = ({ role = "viewer" , setMetrics}) => {
               setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
               setMutualAidVisible(selectedValues.includes('mutual_aid'))
               setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
-              setSelectedCharts(selectedList)
               updateMetrics('selectedCharts', selectedList)
             }
           }
