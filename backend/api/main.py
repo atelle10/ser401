@@ -1101,3 +1101,26 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     """Response model for chatbot endpoint"""
     answer: str
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+@limiter.limit("10/minute")
+async def chat_endpoint(request: Request, chat_request: ChatRequest):
+    region = chat_request.context.get('region', 'all')
+    start_date = chat_request.context.get('start_date') or chat_request.context.get('startDate')
+    end_date = chat_request.context.get('end_date') or chat_request.context.get('endDate')
+
+    if not start_date or not end_date:
+        end_dt = datetime.now()
+        start_dt = datetime.fromtimestamp(end_dt.timestamp() - 7 * 24 * 60 * 60)
+        start_date = start_dt.isoformat()
+        end_date = end_dt.isoformat()
+
+    try:
+        start_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+        end_dt = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
+
+    return ChatResponse(answer="Chatbot endpoint active. Full implementation in progress.")
+
