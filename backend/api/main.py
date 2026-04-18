@@ -1122,5 +1122,17 @@ async def chat_endpoint(request: Request, chat_request: ChatRequest):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
 
-    return ChatResponse(answer="Chatbot endpoint active. Full implementation in progress.")
+    region_filter = ""
+    if region == "south":
+        region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) < 85260"
+    elif region == "north":
+        region_filter = "AND CAST(i.basic_incident_postal_code AS INTEGER) >= 85260"
+
+    try:
+        db = RelationalDataStore(DATABASE_URL)
+        db.connect()
+        db.disconnect()
+        return ChatResponse(answer=f"DB connected. Fetching data for {region} region, {start_date[:10]} to {end_date[:10]}.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
 
