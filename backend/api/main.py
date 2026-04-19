@@ -1131,8 +1131,49 @@ async def chat_endpoint(request: Request, chat_request: ChatRequest):
     try:
         db = RelationalDataStore(DATABASE_URL)
         db.connect()
+
+        summary_query = f"""
+        WITH response_times AS (
+            SELECT
+                EXTRACT(EPOCH FROM (ur.apparatus_resource_arrival_date_time - ur.apparatus_resource_dispatch_date_time)) / 60.0 AS response_minutes
+            FROM fire_ems.incident i
+            JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+            WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+            {region_filter}
+            AND ur.apparatus_resource_dispatch_date_time IS NOT NULL
+            AND ur.apparatus_resource_arrival_date_time IS NOT NULL
+        ),
+        hourly_counts AS (
+            SELECT
+                EXTRACT(HOUR FROM i.basic_incident_psap_date_time) AS hour,
+                COUNT(*) AS count
+            FROM fire_ems.incident i
+            WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+            {region_filter}
+            GROUP BY EXTRACT(HOUR FROM i.basic_incident_psap_date_time)
+        )
+        SELECT
+            (SELECT AVG(response_minutes) FROM response_times) AS avg_response_time,
+            (SELECT COUNT(DISTINCT i.incident_id) FROM fire_ems.incident i
+             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}' {region_filter}) AS total_incidents,
+            (SELECT COUNT(DISTINCT ur.apparatus_resource_id) FROM fire_ems.incident i
+             JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}' {region_filter}) AS active_units,
+            (SELECT hour FROM hourly_counts ORDER BY count DESC LIMIT 1) AS peak_hour
+        """
+
+        df = db.read_table(f"({summary_query}) as subquery")
         db.disconnect()
-        return ChatResponse(answer=f"DB connected. Fetching data for {region} region, {start_date[:10]} to {end_date[:10]}.")
+
+        if df.empty:
+            return ChatResponse(answer=f"No incident data found for {region} region from {start_date[:10]} to {end_date[:10]}.")
+
+        row = df.iloc[0]
+        total = int(row["total_incidents"]) if row["total_incidents"] else 0
+        avg_rt = float(row["avg_response_time"]) if row["avg_response_time"] else None
+        avg_text = f"{avg_rt:.1f} minutes" if avg_rt else "not available"
+        return ChatResponse(answer=f"Found {total} incidents with avg response time {avg_text} for {region} region.")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
 
