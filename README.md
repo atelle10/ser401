@@ -32,6 +32,7 @@ services, checking logs, and viewing status.
 
 ## QA
 - KPI / endpoint verification notes: [docs/qa/](docs/qa/).
+- Documentation index: [docs/README.md](docs/README.md).
 
 ## Notes
 - QA evidence: [docs/qa/](docs/qa/) — [676-dashboard-exploratory.md](docs/qa/676-dashboard-exploratory.md) (US 676).
