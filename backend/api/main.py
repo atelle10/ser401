@@ -1163,16 +1163,40 @@ async def chat_endpoint(request: Request, chat_request: ChatRequest):
         """
 
         df = db.read_table(f"({summary_query}) as subquery")
+
+        incident_types_query = f"""
+        SELECT
+            COALESCE(i.basic_incident_type_code_and_description, i.basic_incident_type, i.basic_incident_type_code, 'Unknown') AS incident_type,
+            COUNT(*) AS incident_count
+        FROM fire_ems.incident i
+        WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
+        {region_filter}
+        GROUP BY COALESCE(i.basic_incident_type_code_and_description, i.basic_incident_type, i.basic_incident_type_code, 'Unknown')
+        ORDER BY incident_count DESC
+        LIMIT 5
+        """
+
+        incident_types_df = db.read_table(f"({incident_types_query}) as subquery")
         db.disconnect()
 
         if df.empty:
-            return ChatResponse(answer=f"No incident data found for {region} region from {start_date[:10]} to {end_date[:10]}.")
+            data_summary = {"total_incidents": 0, "avg_response_time": None, "active_units": 0, "peak_hour": None, "top_incident_types": []}
+        else:
+            row = df.iloc[0]
+            data_summary = {
+                "total_incidents": int(row["total_incidents"]) if row["total_incidents"] else 0,
+                "avg_response_time": float(row["avg_response_time"]) if row["avg_response_time"] else None,
+                "active_units": int(row["active_units"]) if row["active_units"] else 0,
+                "peak_hour": int(row["peak_hour"]) if row["peak_hour"] is not None else None,
+                "top_incident_types": [
+                    {"type": str(r["incident_type"]), "count": int(r["incident_count"])}
+                    for _, r in incident_types_df.iterrows()
+                ]
+            }
 
-        row = df.iloc[0]
-        total = int(row["total_incidents"]) if row["total_incidents"] else 0
-        avg_rt = float(row["avg_response_time"]) if row["avg_response_time"] else None
-        avg_text = f"{avg_rt:.1f} minutes" if avg_rt else "not available"
-        return ChatResponse(answer=f"Found {total} incidents with avg response time {avg_text} for {region} region.")
+        avg_text = f"{data_summary['avg_response_time']:.1f} minutes" if data_summary['avg_response_time'] else "not available"
+        top_types_text = ", ".join(f"{i['type']} ({i['count']})" for i in data_summary["top_incident_types"]) or "not available"
+        return ChatResponse(answer=f"Summary: {data_summary['total_incidents']} incidents, avg response {avg_text}. Top types: {top_types_text}.")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
