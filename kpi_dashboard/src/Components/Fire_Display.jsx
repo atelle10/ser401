@@ -274,6 +274,15 @@ const FireDisplay = ({ role, settings, metrics }) => {
   return ( 
     <div className="sm:p-4 space-y-2 sm:space-y-4 h-full w-screen ">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1 sm:gap-4 bg-blue-500/40 shadow-blue-500/20 shadow-md text-white p-1 sm:p-4 rounded-lg">
+        <div 
+          className="text-center h-9 p-4 text-white text-xs font-semibold hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center border-2 border-white"
+          onClick={refreshPage}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+          </svg> 
+          Back to Home
+        </div>
         <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
           <label className="text-xs sm:text-sm font-medium">Region:</label>
           <select
@@ -395,12 +404,6 @@ const FireDisplay = ({ role, settings, metrics }) => {
             }}
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           />
-        </div>
-        <div 
-          className="ml-auto h-8 p-2 text-white hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center my-1"
-          onClick={refreshPage}
-        >
-            <img src={homeIcon} title='Return to Home' alt="Home Icon" className='inline w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7'/>
         </div>
       </div>
     

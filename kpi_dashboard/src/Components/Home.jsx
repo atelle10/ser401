@@ -152,7 +152,7 @@ const Home = ({ role = "admin" }) => {
   }
 
   return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
+      <div className="w-screen min-h-screen h-full m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
         {!displayMode && (
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-0 sm:p-3 md:p-4">
               <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
