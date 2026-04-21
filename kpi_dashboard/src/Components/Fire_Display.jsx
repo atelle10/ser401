@@ -191,8 +191,8 @@ const FireDisplay = ({ role, settings, metrics }) => {
   const components  = [
     CallVolumeLinearChart,
     HeatMapDayHour,
-    IncidentTypeBreakdown,
     UnitHourUtilization,
+    IncidentTypeBreakdown,
     IncidentsByPostalCode,
     MutualAidChart,
     ResponseTimeBreakdown
@@ -200,7 +200,7 @@ const FireDisplay = ({ role, settings, metrics }) => {
 
   const options = [
     { label: 'Call Volume Trend', value: 'call_volume_trend'},
-    { label: 'Heatmap', value: 'heatmap', index: 1},
+    { label: 'Heatmap', value: 'heatmap'},
     { label: 'Unit Hour Utilization', value: 'unit_hour_utilization'},
     { label: 'Type Breakdown', value: 'type_breakdown'},
     { label: 'Postal Code', value: 'postal_code'},
@@ -215,30 +215,40 @@ const FireDisplay = ({ role, settings, metrics }) => {
 
   // Function to cycle to the next component
   const goToNextComponent = () => {
+    let index = currentIndex
     let nextIndex = (currentIndex + 1) % components.length;
-    console.log('Next 1 index:', nextIndex)
-    let tempIndex = components.findIndex((comp, idx) => idx === nextIndex && !omitComponents.includes(options[idx].value) && !currentIndex);
-    console.log(tempIndex)
+    let tempIndex = components.findIndex((comp, idx) => idx === nextIndex && !omitComponents.includes(options[idx].value) && index !== idx);
+    if(tempIndex > -1) {
+      setCurrentIndex(tempIndex);
+      return
+    }
     while (tempIndex === -1) {
-      console.log('Next 2 index:', nextIndex)
-      tempIndex = components.findIndex((comp, idx) => idx === nextIndex && !omitComponents.includes(options[idx].value) && !currentIndex);
-      console.log('Next 3 index:', nextIndex)
-      if (tempIndex === -1) {
-        continue
-      } else {
-        nextIndex = (currentIndex + 1) % components.length;
-        console.log('Next 4 index:', nextIndex)
-        break
+      nextIndex = (nextIndex + 1) % components.length;
+      tempIndex = components.findIndex((comp, idx) => idx === nextIndex && !omitComponents.includes(options[idx].value) && index !== idx);
+      if (tempIndex !== -1) {
+        setCurrentIndex((prev) => tempIndex);
+        return
       }
     } 
-    setCurrentIndex(nextIndex);
   };
 
   // Function to go back to the previous component
   const goToPreviousComponent = () => {
-    setCurrentIndex((prevIndex) =>
-      (prevIndex - 1 + components.length) % components.length
-    );
+    let index = currentIndex
+    let prevIndex = (currentIndex - 1 + components.length) % components.length;
+    let tempIndex = components.findIndex((comp, idx) => idx === prevIndex && !omitComponents.includes(options[idx].value) && index !== idx);
+    if(tempIndex > -1) {
+      setCurrentIndex(tempIndex);
+      return
+    }
+    while (tempIndex === -1) {
+      prevIndex = (prevIndex - 1 + components.length) % components.length;
+      tempIndex = components.findIndex((comp, idx) => idx === prevIndex && !omitComponents.includes(options[idx].value) && index !== idx);
+      if (tempIndex !== -1) {
+        setCurrentIndex((prev) => tempIndex);
+        return
+      }
+    }
   };
 
   // Slide duration and activation 
