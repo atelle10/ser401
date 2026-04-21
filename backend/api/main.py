@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:Sturdy_Fam_5567@localhost/famar_db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://michael@localhost/famar_db")
 
 RESPONSE_TIME_TARGETS_PATH = (
     Path(__file__).resolve().parent / "data" / "response_time_targets.json"
