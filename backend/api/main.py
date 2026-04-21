@@ -1106,6 +1106,11 @@ class ChatResponse(BaseModel):
 @app.post("/api/chat", response_model=ChatResponse)
 @limiter.limit("10/minute")
 async def chat_endpoint(request: Request, chat_request: ChatRequest):
+    """
+    Chatbot endpoint for asking questions about KPI data.
+    Fetches KPI summary based on date/region context to provide to the AI.
+    Rate limited to 10 requests per minute per IP.
+    """
     region = chat_request.context.get('region', 'all')
     start_date = chat_request.context.get('start_date') or chat_request.context.get('startDate')
     end_date = chat_request.context.get('end_date') or chat_request.context.get('endDate')
@@ -1159,6 +1164,8 @@ async def chat_endpoint(request: Request, chat_request: ChatRequest):
             (SELECT COUNT(DISTINCT ur.apparatus_resource_id) FROM fire_ems.incident i
              JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
              WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}' {region_filter}) AS active_units,
+            (SELECT MAX(count) FROM hourly_counts) AS peak_count,
+            (SELECT AVG(count) FROM hourly_counts) AS avg_count,
             (SELECT hour FROM hourly_counts ORDER BY count DESC LIMIT 1) AS peak_hour
         """
 
@@ -1195,8 +1202,51 @@ async def chat_endpoint(request: Request, chat_request: ChatRequest):
             }
 
         avg_text = f"{data_summary['avg_response_time']:.1f} minutes" if data_summary['avg_response_time'] else "not available"
+        peak_text = f"hour {data_summary['peak_hour']}" if data_summary['peak_hour'] is not None else "not available"
         top_types_text = ", ".join(f"{i['type']} ({i['count']})" for i in data_summary["top_incident_types"]) or "not available"
-        return ChatResponse(answer=f"Summary: {data_summary['total_incidents']} incidents, avg response {avg_text}. Top types: {top_types_text}.")
+
+        system_prompt = f"""You are Fammy, a helpful assistant for the FAMAR Fire/EMS KPI Dashboard.
+Answer questions about the current dashboard data based on the context provided.
+
+Current Dashboard Context:
+- Date range: {start_date[:10]} to {end_date[:10]}
+- Region: {region}
+- Total incidents: {data_summary['total_incidents']}
+- Average response time: {avg_text}
+- Active units: {data_summary['active_units']}
+- Peak activity: {peak_text}
+- Top incident types: {top_types_text}
+
+Use the exact values shown in the dashboard context when mentioning metrics.
+Do not invent, estimate, or recalculate values that are not present in the context.
+If asked for KPI metrics, include total incidents, average response time, active units, and peak activity.
+If asked about incident types, only reference the listed top incident types and counts.
+Keep responses short (2-3 sentences). Be helpful and direct.
+If asked about something not in the data, say you don't have that information."""
+
+        if not OPENAI_API_KEY:
+            return ChatResponse(
+                answer=f"There were {data_summary['total_incidents']} incidents with an average response time of {avg_text}. Peak activity was at {peak_text}. Top incident types: {top_types_text}. (AI responses disabled - no API key)"
+            )
+
+        try:
+            client = OpenAI(api_key=OPENAI_API_KEY, timeout=20.0)
+            response = client.chat.completions.create(
+                model=CHATBOT_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": chat_request.question}
+                ],
+                temperature=0.0,
+                max_tokens=150
+            )
+            ai_answer = response.choices[0].message.content
+            return ChatResponse(answer=ai_answer)
+
+        except Exception as ai_error:
+            return ChatResponse(
+                answer=f"Based on the data: {data_summary['total_incidents']} incidents, avg response {avg_text}. (AI service temporarily unavailable)"
+            )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")
