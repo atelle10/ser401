@@ -18,6 +18,16 @@ export const formatDateInputValue = (date) => {
   return `${year}-${month}-${day}`
 }
 
+const options = [
+    { label: 'Call Volume Trend', value: 'call_volume_trend'},
+    { label: 'Heatmap', value: 'heatmap'},
+    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization'},
+    { label: 'Type Breakdown', value: 'type_breakdown'},
+    { label: 'Postal Code', value: 'postal_code'},
+    { label: 'Mutual Aid', value: 'mutual_aid'},
+    { label: 'Response Time Breakdown', value: 'response_time_breakdown'}
+  ]
+
 export const buildIsoRangeFromDateInputs = ({ start, end }) => {
   if (!start || !end) return { startDate: null, endDate: null }
 
@@ -26,15 +36,22 @@ export const buildIsoRangeFromDateInputs = ({ start, end }) => {
   return { startDate, endDate }
 }
 
+const defaultSettings = {
+  enabled: false,
+  rotationIntervalSeconds: 30,
+  selectedCharts: options.map((option) => option.value),
+  autoStartPlayback: false,
+}
 
 
-const FireDisplay = ({ role, settings, metrics }) => {
-  const [region, setRegion] = useState(metrics.region ? metrics.region : 'south')
-  const [timeWindow, setTimeWindow] = useState(metrics.window ? metrics.window : 7)
+
+const FireDisplay = ({ role, settingss, }) => {
+  const [region, setRegion] = useState('south')
+  const [timeWindow, setTimeWindow] = useState(7)
   const [isCustomRange, setIsCustomRange] = useState(false)
   const [dateInputs, setDateInputs] = useState(() => {
-  const end = metrics.end ? new Date(metrics.end) : new Date()
-  const start = metrics.start ? new Date(metrics.start) : new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+  const end = new Date()
+  const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
     return { start: formatDateInputValue(start), end: formatDateInputValue(end) }
   })
   const [incidentData, setIncidentData] = useState([])
@@ -47,127 +64,148 @@ const FireDisplay = ({ role, settings, metrics }) => {
   const [error, setError] = useState(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
   const [kpiSummary, setKpiSummary] = useState(null)
+  const [settings, setSettings] = useState(defaultSettings)
 
+  useEffect(() => {
+      const stored = localStorage.getItem('tvModeSettings')
+      if (!stored) {
+        setSettings(defaultSettings)
+        return        
+      }
 
-  
-  
-    const dateRange = useMemo(() => {
-      if (isCustomRange) {
-        return buildIsoRangeFromDateInputs(dateInputs)
+      try {
+        const parsed = JSON.parse(stored)
+        setSettings({
+          ...defaultSettings,
+          ...parsed,
+          selectedCharts: Array.isArray(parsed.selectedCharts)
+            ? parsed.selectedCharts.filter((value) =>
+                options.some((option) => option.value === value)
+              )
+            : defaultSettings.selectedCharts,
+        })
+      } catch (error) {
+        console.error('Failed to load TV mode settings:', error)
       }
-  
-      const end = new Date()
-      const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
-      return { startDate: start.toISOString(), endDate: end.toISOString() }
-    }, [dateInputs, isCustomRange, timeWindow])
-  
-    useEffect(() => {
-      if (isCustomRange) return
-  
-      const end = new Date()
-      const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
-      setDateInputs({ start: formatDateInputValue(start), end: formatDateInputValue(end) })
-    }, [isCustomRange, timeWindow])
-  
-    const loadIncidentData = useCallback(async () => {
-      setIsLoading(true)
-      setError(null)
-  
-      if (!dateRange.startDate || !dateRange.endDate) {
-        setError('Please select a start and end date')
-        setIsLoading(false)
-        return
-      }
-  
-      if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
-        setError('Start date must be on or before end date')
-        setIsLoading(false)
-        return
-      }
-  
-      const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult, responseTimesResult] = await Promise.all([
-        fetchKPIData({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          region,
-        }),
-        fetchKPISummary({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          region,
-        }),
-        fetchIncidentHeatmap({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          region,
-        }),
-        fetchPostalBreakdown({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          region,
-        }),
-        fetchTypeBreakdown({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          region,
-        }),
-        fetchUnitOrigin({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          region,
-        }),
-        fetchResponseTimes({
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          region,
-        }),
-      ])
-  
-      if (!incidentResult.success) {
-        setError(incidentResult.error || 'Failed to load incident data')
-      } else {
-        setIncidentData(incidentResult.data || [])
-        setHasLoadedOnce(true)
-      }
-  
-      if (!summaryResult.success) {
-        setError((prev) => prev || summaryResult.error || 'Failed to load KPI summary')
-      } else {
-        setKpiSummary(summaryResult.data || null)
-      }
-  
-      if (!heatmapResult.success) {
-        setError((prev) => prev || heatmapResult.error || 'Failed to load heatmap data')
-      } else {
-        setHeatmapData(heatmapResult.data?.heatmap_data || [])
-      }
-  
-      if (!postalResult.success) {
-        setError((prev) => prev || postalResult.error || 'Failed to load postal breakdown')
-      } else {
-        setPostalData(postalResult.data?.postal_data || [])
-      }
-  
-      if (!typeBreakdownResult.success) {
-        setError((prev) => prev || typeBreakdownResult.error || 'Failed to load type breakdown')
-      } else {
-        setTypeBreakdownData(typeBreakdownResult.data || null)
-      }
-  
-      if (!unitOriginResult.success) {
-        setError((prev) => prev || unitOriginResult.error || 'Failed to load unit origin data')
-      } else {
-        setUnitOriginData(unitOriginResult.data || null)
-      }
-  
-      if (!responseTimesResult.success) {
-        setError((prev) => prev || responseTimesResult.error || 'Failed to load response time data')
-      } else {
-        setResponseTimeData(responseTimesResult.data || null)
-      }
-  
+    }, [])
+
+  const dateRange = useMemo(() => {
+    if (isCustomRange) {
+      return buildIsoRangeFromDateInputs(dateInputs)
+    }
+
+    const end = new Date()
+    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+    return { startDate: start.toISOString(), endDate: end.toISOString() }
+  }, [dateInputs, isCustomRange, timeWindow])
+
+  useEffect(() => {
+    if (isCustomRange) return
+
+    const end = new Date()
+    const start = new Date(end.getTime() - timeWindow * 24 * 60 * 60 * 1000)
+    setDateInputs({ start: formatDateInputValue(start), end: formatDateInputValue(end) })
+  }, [isCustomRange, timeWindow])
+
+  const loadIncidentData = useCallback(async () => {
+    setIsLoading(true)
+    setError(null)
+
+    if (!dateRange.startDate || !dateRange.endDate) {
+      setError('Please select a start and end date')
       setIsLoading(false)
-    }, [dateRange.endDate, dateRange.startDate, region])
+      return
+    }
+
+    if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
+      setError('Start date must be on or before end date')
+      setIsLoading(false)
+      return
+    }
+
+    const [incidentResult, summaryResult, heatmapResult, postalResult, typeBreakdownResult, unitOriginResult, responseTimesResult] = await Promise.all([
+      fetchKPIData({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchKPISummary({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchIncidentHeatmap({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchPostalBreakdown({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchTypeBreakdown({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchUnitOrigin({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+      fetchResponseTimes({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        region,
+      }),
+    ])
+
+    if (!incidentResult.success) {
+      setError(incidentResult.error || 'Failed to load incident data')
+    } else {
+      setIncidentData(incidentResult.data || [])
+      setHasLoadedOnce(true)
+    }
+
+    if (!summaryResult.success) {
+      setError((prev) => prev || summaryResult.error || 'Failed to load KPI summary')
+    } else {
+      setKpiSummary(summaryResult.data || null)
+    }
+
+    if (!heatmapResult.success) {
+      setError((prev) => prev || heatmapResult.error || 'Failed to load heatmap data')
+    } else {
+      setHeatmapData(heatmapResult.data?.heatmap_data || [])
+    }
+
+    if (!postalResult.success) {
+      setError((prev) => prev || postalResult.error || 'Failed to load postal breakdown')
+    } else {
+      setPostalData(postalResult.data?.postal_data || [])
+    }
+
+    if (!typeBreakdownResult.success) {
+      setError((prev) => prev || typeBreakdownResult.error || 'Failed to load type breakdown')
+    } else {
+      setTypeBreakdownData(typeBreakdownResult.data || null)
+    }
+
+    if (!unitOriginResult.success) {
+      setError((prev) => prev || unitOriginResult.error || 'Failed to load unit origin data')
+    } else {
+      setUnitOriginData(unitOriginResult.data || null)
+    }
+
+    if (!responseTimesResult.success) {
+      setError((prev) => prev || responseTimesResult.error || 'Failed to load response time data')
+    } else {
+      setResponseTimeData(responseTimesResult.data || null)
+    }
+
+    setIsLoading(false)
+  }, [dateRange.endDate, dateRange.startDate, region])
 
   const refreshPage = () => {
     window.location.reload();
@@ -198,22 +236,11 @@ const FireDisplay = ({ role, settings, metrics }) => {
     ResponseTimeBreakdown
   ]
 
-  const options = [
-    { label: 'Call Volume Trend', value: 'call_volume_trend'},
-    { label: 'Heatmap', value: 'heatmap'},
-    { label: 'Unit Hour Utilization', value: 'unit_hour_utilization'},
-    { label: 'Type Breakdown', value: 'type_breakdown'},
-    { label: 'Postal Code', value: 'postal_code'},
-    { label: 'Mutual Aid', value: 'mutual_aid'},
-    { label: 'Response Time Breakdown', value: 'response_time_breakdown'}
-  ]
-
-  const [omitComponents, setOmitComponents] = useState(['heatmap'])
+  const [omitComponents, setOmitComponents] = useState(options.map(opt => opt.value).filter(value => !settings.selectedCharts.includes(value)))
   const displayTitle = titles[currentIndex];
-  const CurrentComponent = components[currentIndex]; 
-  // const [nextIndex, setNextIndex] = useState(0)
+  const CurrentComponent = components[currentIndex];
 
-  // Function to cycle to the next component
+  // Function to cycle to the next component and omit any that are not selected in the multiselect dropdown
   const goToNextComponent = () => {
     let index = currentIndex
     let nextIndex = (currentIndex + 1) % components.length;
@@ -232,7 +259,7 @@ const FireDisplay = ({ role, settings, metrics }) => {
     } 
   };
 
-  // Function to go back to the previous component
+  // Function to go back to the previous component and omit any that are not selected in the multiselect dropdown
   const goToPreviousComponent = () => {
     let index = currentIndex
     let prevIndex = (currentIndex - 1 + components.length) % components.length;
@@ -251,8 +278,7 @@ const FireDisplay = ({ role, settings, metrics }) => {
     }
   };
 
-  // Slide duration and activation 
-  
+  // Slide duration and activation   
   const [activateSlideShow, setActivateSlideShow] = useState(settings.enabled || false)
   const [timer, setTimer] = useState(settings.enabled ? settings.rotationIntervalSeconds : 5) //Set initial timer duration to 5 seconds or value from settings
 
@@ -267,6 +293,18 @@ const FireDisplay = ({ role, settings, metrics }) => {
   const handleTimerChange = (inputValue) => {
     setActivateSlideShow(true) 
     setTimer(inputValue)
+  }
+
+  const applySettings = () => {
+    if (settings.enabled) {
+      window.alert('Applying TV mode settings')
+      setTimer(settings.rotationIntervalSeconds)
+      setOmitComponents(options.map(opt => opt.value).filter(value => !settings.selectedCharts.includes(value)))
+      setActivateSlideShow(settings.autoStartPlayback)
+    } else {
+      window.alert('TV mode settings applied but slideshow is not enabled. Please toggle play to start slideshow.')
+      setOmitComponents(options.map(opt => opt.value).filter(value => !settings.selectedCharts.includes(value)))
+    }
   }
 
   const selectRef = React.createRef()
@@ -351,35 +389,18 @@ const FireDisplay = ({ role, settings, metrics }) => {
           <label className="text-xs sm:text-sm font-medium">Charts Displayed:</label>
           <Multiselect
             ref={selectRef}
-            selectedValues={components.map(comp => ({ value: comp.value, label: options.find(opt => opt.value === comp.value)?.label || comp.value }))}
+            selectedValues={options.filter(opt => !omitComponents.includes(opt.value)).map(opt => ({ value: opt.value, label: opt.label }))}
             options={options}
             onSelect={
               selectedList => {
                 const selectedValues = selectedList.map(opt => opt.value)
-                setHeatmapVisible(selectedValues.includes('heatmap'))
-                setPostalCodeVisible(selectedValues.includes('postal_code'))
-                setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
-                setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
-                setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
-                setMutualAidVisible(selectedValues.includes('mutual_aid'))
-                setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
-                setComponents(selectedList.map(opt => options.find(option => option.value === opt.value)?.component).filter(Boolean))
                 setOmitComponents(options.map(opt => opt.value).filter(value => !selectedValues.includes(value)))
-                setMetrics((prev) => ({ ...prev, selectedCharts: selectedList }))
               }
             }
             onRemove={
               selectedList => {
                 const selectedValues = selectedList.map(opt => opt.value)
-                setHeatmapVisible(selectedValues.includes('heatmap'))
-                setPostalCodeVisible(selectedValues.includes('postal_code'))
-                setTypeBreakdownVisible(selectedValues.includes('type_breakdown'))
-                setUnitHourUtilizationVisible(selectedValues.includes('unit_hour_utilization'))
-                setCallVolumeVisible(selectedValues.includes('call_volume_trend'))
-                setMutualAidVisible(selectedValues.includes('mutual_aid'))
-                setResponseTimeVisible(selectedValues.includes('response_time_breakdown'))
-                setComponents(selectedList.map(opt => options.find(option => option.value === opt.value)?.component).filter(Boolean))
-                setMetrics((prev) => ({ ...prev, selectedCharts: selectedList }))
+                setOmitComponents(options.map(opt => opt.value).filter(value => !selectedValues.includes(value)))
               }
             }
             avoidHighlightFirstOption={true}
@@ -414,6 +435,13 @@ const FireDisplay = ({ role, settings, metrics }) => {
             className="px-3 py-2 text-sm border rounded w-full sm:w-auto text-blue-600"
           />
         </div>
+        <div 
+          className="text-center h-9 p-4 text-white text-xs font-semibold hover:bg-white transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 hover:text-blue-800 cursor-pointer rounded-full flex justify-center items-center border-2 border-white"
+          onClick={applySettings}
+        >
+          Load TV Mode Settings
+        </div>
+
       </div>
     
       <div className='flex flex-row'>
