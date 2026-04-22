@@ -55,37 +55,37 @@ Chart keys match `exportConfig.js`: `heatmap`, `postal_code`, `type_breakdown`, 
 
 Replace `HOST` with `http://localhost:3000` (or deployment origin). Sign in before opening deep links if the app requires auth.
 
-| ID | Date range | Region | Charts | Role | Expected if procedure followed | Notes |
-|----|------------|--------|--------|------|-------------------------------|--------|
-| A | 7-day window (align with seed data) | `all` | `heatmap`, `type_breakdown` | Analyst or admin | Preview loads; print dialog can open; no uncaught client error | Minimal chart set + AI summary |
-| B | ~90-day window | `south` | `heatmap`, `postal_code`, `call_volume_trend` | Same | Same | `call_volume_trend` waits for async chart readiness before `autoprint` |
-| C | Overlaps seed data | `all` | all seven chart keys | Same | Same | Full chart selection |
-| D1 | Missing `startDate` / `endDate` in URL | `all` | any | Same | Error: *Start and end date are required to load chart previews.* (`ExportPreview.jsx`) | No chart PDF until dates set |
-| D2 | Valid dates, no `charts` param | `all` | _(none)_ | Same | No KPI sections; summary pipeline idle when no charts selected | Empty-selection path |
+| Scenario | Date range | Region | Charts | Role | Expected if procedure followed | Notes |
+|----------|------------|--------|--------|------|-------------------------------|--------|
+| Short range, small chart set | 7-day window (align with seed data) | `all` | `heatmap`, `type_breakdown` | Analyst or admin | Preview loads; print dialog can open; no uncaught client error | Minimal chart set + AI summary |
+| Longer range, mixed chart set | ~90-day window | `south` | `heatmap`, `postal_code`, `call_volume_trend` | Same | Same | `call_volume_trend` waits for async chart readiness before `autoprint` |
+| Full chart selection | Overlaps seed data | `all` | all seven chart keys | Same | Same | Full chart selection |
+| Missing date parameters in URL | Missing `startDate` / `endDate` in URL | `all` | any | Same | Error: *Start and end date are required to load chart previews.* (`ExportPreview.jsx`) | No chart PDF until dates set |
+| Empty chart selection in URL | Valid dates, no `charts` param | `all` | _(none)_ | Same | No KPI sections; summary pipeline idle when no charts selected | Empty-selection path |
 
 ### Example query strings (path `/export-preview`)
 
 Parameters use ISO timestamps in the query string (same as the modal-generated URLs).
 
-- **A (template):**  
+- **Short range, small chart set (template):**  
   `?region=all&startDate=<START_ISO>&endDate=<END_ISO>&charts=heatmap,type_breakdown`  
   Example window: `2024-03-01T00:00:00.000Z` … `2024-03-07T23:59:59.999Z` (align with `deployment/db` seed dates).
 
-- **B (template):**  
+- **Longer range, mixed chart set (template):**  
   `?region=south&startDate=<START_ISO>&endDate=<END_ISO>&charts=heatmap,postal_code,call_volume_trend`
 
-- **C (all charts):**  
+- **Full chart selection:**  
   `?region=all&startDate=<START_ISO>&endDate=<END_ISO>&charts=heatmap,postal_code,type_breakdown,unit_hour_utilization,call_volume_trend,mutual_aid,response_time_breakdown`
 
-- **D1:**  
+- **Missing date parameters in URL:**  
   `?region=all` (omit date params) — expect date error on preview.
 
-- **D2:**  
+- **Empty chart selection in URL:**  
   `?region=all&startDate=<START_ISO>&endDate=<END_ISO>` (omit `charts`) — empty chart list behavior.
 
 ---
 
-## Content checklist (each successful print save — scenarios A–C)
+## Content checklist (each successful print save — first three scenarios)
 
 | Check | Result (fill on run) |
 |-------|----------------------|
@@ -95,7 +95,7 @@ Parameters use ISO timestamps in the query string (same as the modal-generated U
 | AI summary resolved (`ready` / `unavailable` / `error`) matches UI | |
 | Key takeaways ≤3 bullets when `ready` | |
 
-D1: confirm error string. D2: confirm no chart blocks and no misleading “full report” when charts empty.
+Missing date parameters: confirm error string. Empty chart selection: confirm no chart blocks and no misleading “full report” when charts are empty.
 
 ---
 
