@@ -54,6 +54,14 @@ const Home = ({ role = "admin" }) => {
   const [isUnverifiedBannerDismissed, setIsUnverifiedBannerDismissed] = useState(false)
   const isAdmin = role === "admin"
   const [displayMode, setDisplayMode] = useState(false) 
+  const [settings, setSettings] = useState('');
+  const [metrics, setMetrics] = useState({
+    region: null,
+    window: 7,
+    startDate: null,
+    endDate: null,
+    selectedCharts: [],
+  })
 
   const refreshPage = () => {
     window.location.reload();
@@ -132,19 +140,19 @@ const Home = ({ role = "admin" }) => {
         if (!isAdmin) {
           return <div className="p-8 text-center text-red-600">Access Denied — TV mode settings for admin only</div>
         }
-        return <TVModeSettings onBack={() => setCurrentView('settings')} />
+        return <TVModeSettings onBack={() => setCurrentView('settings')} setParentSettings={setSettings} />
       case 'admin':
         if (!isAdmin) {
           return <div className="p-8 text-center text-red-600">Access Denied — Admin console for admin only</div>
         }
         return <AdminMenu onUnverifiedCountChange={setAdminNotificationCount} />
       default:
-        return <Dashboard role={role} />
+        return <Dashboard role={role} setMetrics={setMetrics} />
     }
   }
 
   return(
-      <div className="w-screen min-h-screen m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
+      <div className="w-screen min-h-screen h-full m-0 p-0 bg-blue-950 bg-no-repeat bg-cover flex items-start justify-start">
         {!displayMode && (
         <div className="h-full flex flex-col lg:grid lg:grid-cols-7 gap-0.5 p-0 sm:p-3 md:p-4">
               <div className="hidden lg:flex lg:col-span-1 flex-col gap-2">
@@ -218,7 +226,7 @@ const Home = ({ role = "admin" }) => {
         )}
         {displayMode && currentView == 'fire' && (
           <div className="w-full h-full flex items-center justify-center p-4">
-            <Fire_Display role={role} />
+            <Fire_Display role={role} settings={settings} metrics={metrics} />
           </div>
         )}
         {displayMode && currentView === 'medical' && (
