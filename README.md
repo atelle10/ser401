@@ -31,8 +31,7 @@ The `justfile` in the repo root includes helpers for starting/stopping individua
 services, checking logs, and viewing status.
 
 ## QA
-- KPI / endpoint verification notes: [docs/qa/](docs/qa/).
-- Documentation index: [docs/README.md](docs/README.md).
+- QA documentation index: [docs/README.md](docs/README.md).
 
 ## Notes
 - QA evidence: [docs/qa/](docs/qa/) — [676-dashboard-exploratory.md](docs/qa/676-dashboard-exploratory.md) (US 676).
@@ -42,9 +41,10 @@ services, checking logs, and viewing status.
 - Dev-only: email changes bypass verification; see TODO in `auth_server/src/auth.ts`
   for enabling email verification before production.
 
-## QA evidence (Software Quality Plan)
+## Planning artifacts
 
-[`docs/qa/`](docs/qa/) — Software Quality Plan test notes (example: [`672-kpi-api-evidence.md`](docs/qa/672-kpi-api-evidence.md)).
+- Project Plan: [docs/planning/Project Plan Team 31.docx.pdf](docs/planning/Project%20Plan%20Team%2031.docx.pdf)
+- Software Quality Plan: [docs/planning/Team31_Software Quality Plan.docx.pdf](docs/planning/Team31_Software%20Quality%20Plan.docx.pdf)
 
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:
