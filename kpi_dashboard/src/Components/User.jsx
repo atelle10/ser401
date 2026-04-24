@@ -25,7 +25,7 @@ const User = ({ onViewAccount, profile }) => {
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative z-40" ref={menuRef}>
       <div 
         onClick={() => setOpen(!open)}
         className="h-10 p-2 bg-blue-500/40 hover:text-blue-800 hover:bg-white text-white cursor-pointer rounded-full flex flex-row items-center justify-center transition-all duration-500 ease-in-out hover:-translate-y-1 hover:scale-110 shrink shadow-blue-500/20 shadow-md w-fit"
@@ -35,10 +35,10 @@ const User = ({ onViewAccount, profile }) => {
         </div>
 
         {open && (
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 animate-fade-in">
+          <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
             <button
               onClick={handleViewAccount}
-              className="block w-full text-left px-4 py-2 hover:bg-blue-500/40 hover:rounded-xl"
+              className="block w-full px-4 py-2 text-left hover:bg-blue-50"
               >
                 View Account Details
               </button>
@@ -49,7 +49,7 @@ const User = ({ onViewAccount, profile }) => {
                   markManualLogout();
                   await authClient.signOut();
                 }}
-                className="block w-full text-left px-4 py-2 hover:bg-blue-500/40 hover:rounded-xl"
+                className="block w-full px-4 py-2 text-left hover:bg-blue-50"
                 >
                   Logout
                 </button>
