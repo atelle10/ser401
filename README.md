@@ -31,6 +31,10 @@ just start-clean-all
 The `justfile` in the repo root includes helpers for starting/stopping individual
 services, checking logs, and viewing status.
 
+## QA
+- KPI / endpoint verification notes: [docs/qa/](docs/qa/).
+- Documentation index: [docs/README.md](docs/README.md).
+
 ## Notes
 - Better Auth expects the `auth` schema in `famar_db` (the Docker setup handles this).
 - Dev-only admin seeding runs on auth server startup if `DEV_ADMIN_EMAIL` and
