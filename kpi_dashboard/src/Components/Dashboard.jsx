@@ -72,6 +72,13 @@ const Dashboard = ({ role = "viewer" , setMetrics}) => {
     return { startDate: start.toISOString(), endDate: end.toISOString() }
   }, [dateInputs, isCustomRange, timeWindow])
 
+  const timePeriodHours = useMemo(() => {
+    if (!dateRange.startDate || !dateRange.endDate) return 24
+
+    const hours = (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60)
+    return Number.isFinite(hours) && hours > 0 ? hours : 24
+  }, [dateRange.endDate, dateRange.startDate])
+
   const swapyRef = useRef(null)
   const containerRef = useRef(null)
 
@@ -541,7 +548,7 @@ const Dashboard = ({ role = "viewer" , setMetrics}) => {
                 </button>
               </div>
               <h3 className="font-semibold mb-3 text-center">Unit Hour Utilization (UHU)</h3>
-              <UnitHourUtilization data={incidentData} />
+              <UnitHourUtilization data={incidentData} timePeriodHours={timePeriodHours} />
             </div>
             </div>
           </div>
