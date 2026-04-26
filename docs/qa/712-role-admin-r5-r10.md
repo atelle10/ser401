@@ -2,13 +2,13 @@
 
 **SQP:** R5, R10.
 
-| Field | Value |
-|--------|--------|
-| Date | 2026-04-23 |
-| Branch | `US-716-Role-matrix-viewer-upload-denial-admin-console-tests` |
-| Commit | `72430d02d4de2250aa9577730a01ddbf3b2fdba8` |
-| Environment | Local Docker target (`http://localhost:3000`) |
-| Scope | Viewer upload denial, role matrix, admin console verification (R5/R10) |
+| Field       | Value                                                                  |
+| ----------- | ---------------------------------------------------------------------- |
+| Date        | 2026-04-23                                                             |
+| Branch      | `US-716-Role-matrix-viewer-upload-denial-admin-console-tests`          |
+| Commit      | `72430d02d4de2250aa9577730a01ddbf3b2fdba8`                             |
+| Environment | Local Docker target (`http://localhost:3000`)                          |
+| Scope       | Viewer upload denial, role matrix, admin console verification (R5/R10) |
 
 ## Execution summary
 
@@ -43,17 +43,17 @@ Live services during this run:
 
 Legend: **A = Allow**, **D = Deny**
 
-| Area      | Action                         | Viewer | Analyst | Admin | Evidence                                      |
-|-----------|--------------------------------|--------|---------|-------|-----------------------------------------------|
-| Dashboard | View dashboard (`/home`)       | A      | A       | A     | Pass (source-verified)                        |
-| Upload    | Open Upload view from nav      | D      | A       | A     | Pass (source-verified)                        |
-| Upload    | Upload Fire file               | D      | A       | A     | Pass (source-verified + upload API tests pass)|
-| Upload    | Upload EMS file                | D      | A       | A     | Pass (source-verified + upload API tests pass)|
-| Admin     | Open Admin console             | D      | D       | A     | Pass (source-verified)                        |
-| Admin     | List users from admin console  | D      | D       | A     | Pass (source-verified)                        |
-| Admin     | Approve user                   | D      | D       | A     | Pass (source-verified)                        |
-| Admin     | Change user role               | D      | D       | A     | Pass (source-verified)                        |
-| Admin     | Remove user                    | D      | D       | A     | Pass (source-verified)                        |
+| Area      | Action                        | Viewer | Analyst | Admin | Evidence                                       |
+| --------- | ----------------------------- | ------ | ------- | ----- | ---------------------------------------------- |
+| Dashboard | View dashboard (`/home`)      | A      | A       | A     | Pass (source-verified)                         |
+| Upload    | Open Upload view from nav     | D      | A       | A     | Pass (source-verified)                         |
+| Upload    | Upload Fire file              | D      | A       | A     | Pass (source-verified + upload API tests pass) |
+| Upload    | Upload EMS file               | D      | A       | A     | Pass (source-verified + upload API tests pass) |
+| Admin     | Open Admin console            | D      | D       | A     | Pass (source-verified)                         |
+| Admin     | List users from admin console | D      | D       | A     | Pass (source-verified)                         |
+| Admin     | Approve user                  | D      | D       | A     | Pass (source-verified)                         |
+| Admin     | Change user role              | D      | D       | A     | Pass (source-verified)                         |
+| Admin     | Remove user                   | D      | D       | A     | Pass (source-verified)                         |
 
 ## Live role checks (runtime)
 
@@ -66,22 +66,22 @@ Test account labels used:
 
 All requests used valid signed-in sessions for each role and an `Origin: http://localhost:3000` header.
 
-| Endpoint/action                  | Viewer | Analyst | Admin | Result |
-|----------------------------------|--------|---------|-------|--------|
-| `GET /api/auth/admin/list-users` | 403    | 403     | 200   | Pass   |
-| `POST /api/auth/admin/set-role`  | 403    | 403     | 200   | Pass   |
-| `POST /api/auth/admin/update-user` | 403  | 403     | 200   | Pass   |
+| Endpoint/action                    | Viewer | Analyst | Admin | Result |
+| ---------------------------------- | ------ | ------- | ----- | ------ |
+| `GET /api/auth/admin/list-users`   | 403    | 403     | 200   | Pass   |
+| `POST /api/auth/admin/set-role`    | 403    | 403     | 200   | Pass   |
+| `POST /api/auth/admin/update-user` | 403    | 403     | 200   | Pass   |
 
 ### Upload endpoint attempt by role (`http://localhost:8000/api/upload`)
 
 Uploaded a `.pdf` test file with each role session and no-auth baseline.
 
-| Attempt        | HTTP status | Response                 |
-|----------------|-------------|--------------------------|
-| Viewer session | 400         | `Unsupported file type.` |
-| Analyst session | 400        | `Unsupported file type.` |
-| Admin session  | 400         | `Unsupported file type.` |
-| No auth cookie | 400         | `Unsupported file type.` |
+| Attempt         | HTTP status | Response                 |
+| --------------- | ----------- | ------------------------ |
+| Viewer session  | 400         | `Unsupported file type.` |
+| Analyst session | 400         | `Unsupported file type.` |
+| Admin session   | 400         | `Unsupported file type.` |
+| No auth cookie  | 400         | `Unsupported file type.` |
 
 Interpretation:
 - Viewer upload remains denied in UI per role gating (`NavBar` + `Home` checks).
@@ -89,8 +89,8 @@ Interpretation:
 
 ## Current blockers / gaps
 
-| ID | Description          |
-|----|----------------------|
-| —  | None for this run.   |
+| ID | Description        |
+| --- | ------------------ |
+| —  | None for this run. |
 
 

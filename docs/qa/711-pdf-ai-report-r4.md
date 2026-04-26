@@ -3,11 +3,11 @@
 **SQP §3 metrics:** PDF Report Generation Success Rate; Report Content Completeness.  
 **Requirement:** R4.
 
-| Field | Value |
-|--------|--------|
-| Date | 2026-04-18 |
-| Branch | `US-711-AI-assisted-PDF-report-tests` |
-| Commit | `6dfaa4c445d019f8f1d67e497510b446f892f423` |
+| Field       | Value                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| Date        | 2026-04-18                                                                                |
+| Branch      | `US-711-AI-assisted-PDF-report-tests`                                                     |
+| Commit      | `6dfaa4c445d019f8f1d67e497510b446f892f423`                                                |
 | Environment | Local Docker per root `README` (`just start-clean-all`); frontend `http://localhost:3000` |
 
 ## Scope
@@ -30,12 +30,12 @@ source .venv/bin/activate   # if using project .venv
 PYTHONPATH=. pytest backend/api/tests/test_export_summary.py -v
 ```
 
-| Result | Value |
-|--------|--------|
-| Python | 3.12.3 |
-| pytest | 9.0.2 |
-| Tests | 5 passed, 0 failed |
-| Duration | ~0.11s |
+| Result   | Value              |
+| -------- | ------------------ |
+| Python   | 3.12.3             |
+| pytest   | 9.0.2              |
+| Tests    | 5 passed, 0 failed |
+| Duration | ~0.11s             |
 
 Log excerpt:
 
@@ -55,13 +55,19 @@ Chart keys match `exportConfig.js`: `heatmap`, `postal_code`, `type_breakdown`, 
 
 Replace `HOST` with `http://localhost:3000` (or deployment origin). Sign in before opening deep links if the app requires auth.
 
-| Scenario | Date range | Region | Charts | Role | Expected if procedure followed | Notes |
-|----------|------------|--------|--------|------|-------------------------------|--------|
-| Short range, small chart set | 7-day window (align with seed data) | `all` | `heatmap`, `type_breakdown` | Analyst or admin | Preview loads; print dialog can open; no uncaught client error | Minimal chart set + AI summary |
-| Longer range, mixed chart set | ~90-day window | `south` | `heatmap`, `postal_code`, `call_volume_trend` | Same | Same | `call_volume_trend` waits for async chart readiness before `autoprint` |
-| Full chart selection | Overlaps seed data | `all` | all seven chart keys | Same | Same | Full chart selection |
-| Missing date parameters in URL | Missing `startDate` / `endDate` in URL | `all` | any | Same | Error: *Start and end date are required to load chart previews.* (`ExportPreview.jsx`) | No chart PDF until dates set |
-| Empty chart selection in URL | Valid dates, no `charts` param | `all` | _(none)_ | Same | No KPI sections; summary pipeline idle when no charts selected | Empty-selection path |
+| Scenario              | Inputs                             | Expected result                                      |
+|-----------------------|------------------------------------|------------------------------------------------------|
+| Short range           | 7-day window, `all`, 2 charts      | Preview loads, print opens, no uncaught client error |
+| Longer range          | ~90-day window, `south`, 3 charts  | Same as short range                                  |
+| Full chart selection  | Seed-data overlap, `all`, all charts | Same as short range                                |
+| Missing dates in URL  | No `startDate` / `endDate`         | Validation error shown; no chart PDF                 |
+| Empty chart selection | Valid dates, no `charts` param     | No KPI sections; summary stays idle                  |
+
+Notes:
+
+- Role for all scenarios: analyst or admin (export allowed).
+- `call_volume_trend` waits for async readiness before `autoprint`.
+- Missing-date error text comes from `ExportPreview.jsx`: *Start and end date are required to load chart previews.*
 
 ### Example query strings (path `/export-preview`)
 
@@ -87,13 +93,13 @@ Parameters use ISO timestamps in the query string (same as the modal-generated U
 
 ## Content checklist (each successful print save — first three scenarios)
 
-| Check | Result (fill on run) |
-|-------|----------------------|
-| Reporting window matches selected start/end | |
-| Region label matches (`All` / South / North) | |
-| Selected chart sections present or defensible empty state | |
-| AI summary resolved (`ready` / `unavailable` / `error`) matches UI | |
-| Key takeaways ≤3 bullets when `ready` | |
+| Check                                                              | Result (fill on run) |
+| ------------------------------------------------------------------ | -------------------- |
+| Reporting window matches selected start/end                        |                      |
+| Region label matches (`All` / South / North)                       |                      |
+| Selected chart sections present or defensible empty state          |                      |
+| AI summary resolved (`ready` / `unavailable` / `error`) matches UI |                      |
+| Key takeaways ≤3 bullets when `ready`                              |                      |
 
 Missing date parameters: confirm error string. Empty chart selection: confirm no chart blocks and no misleading “full report” when charts are empty.
 
@@ -101,15 +107,15 @@ Missing date parameters: confirm error string. Empty chart selection: confirm no
 
 ## Defects / blockers
 
-| ID | Description |
-|----|-------------|
-| — | None observed for automated API slice; browser runs use local seed data. |
+| ID | Description                                                               |
+| --- | ------------------------------------------------------------------------ |
+| —  | None observed for automated API slice; browser runs use local seed data.  |
 
 ---
 
 ## Revision
 
-| Date | Change |
-|------|--------|
-| 2026-04-18 | Initial scaffold |
+| Date       | Change                                                |
+| ---------- | ----------------------------------------------------- |
+| 2026-04-18 | Initial scaffold                                      |
 | 2026-04-18 | API pytest log, scenario C/D, example URLs, checklist |

@@ -2,13 +2,13 @@
 
 **SQP:** R3 (KPI Generation Coverage — API contract).
 
-| Field | Value |
-|--------|--------|
-| Date | 2026-04-07 |
-| Branch | `US-672-KPI-API-automated-test` |
-| Commit | `d07b4fb3e678cea58181b3a469ab4bf5773db7c0` |
-| OS / Python | Linux / 3.12 |
-| DB | Not used — `RelationalDataStore` mocked |
+| Field       | Value                                      |
+| ----------- | ------------------------------------------ |
+| Date        | 2026-04-07                                 |
+| Branch      | `US-672-KPI-API-automated-test`            |
+| Commit      | `d07b4fb3e678cea58181b3a469ab4bf5773db7c0` |
+| OS / Python | Linux / 3.12                               |
+| DB          | Not used — `RelationalDataStore` mocked    |
 
 **Run (repo root):**
 

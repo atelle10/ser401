@@ -3,13 +3,13 @@
 **SQP metrics:** Dashboard Filter Response Time; Dashboard Load Completion Rate.  
 **Requirement:** R6.
 
-| Field        | Value |
-|--------------|-------|
-| Date         | 2026-04-24 |
-| Branch       | `US-714-Dashboard-filter-stability` |
-| Commit       | `3f2abfd00910a63e39a7883a2bde1cbf9fe15b2f` |
+| Field        | Value                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Date         | 2026-04-24                                                                            |
+| Branch       | `US-714-Dashboard-filter-stability`                                                   |
+| Commit       | `3f2abfd00910a63e39a7883a2bde1cbf9fe15b2f`                                            |
 | Environment  | Local Docker per root `README` (`http://localhost:3000`, API `http://localhost:8000`) |
-| Baseline doc | [676-dashboard-exploratory.md](676-dashboard-exploratory.md) |
+| Baseline doc | [676-dashboard-exploratory.md](676-dashboard-exploratory.md)                          |
 
 ## Purpose
 
@@ -33,10 +33,10 @@ PYTHONPATH=. pytest backend/api/tests/test_kpi_data.py \
   backend/api/tests/test_type_breakdown.py -q
 ```
 
-| Result   | Value |
-|----------|-------|
+| Result   | Value                   |
+| -------- | ----------------------- |
 | Outcome  | **14 passed**, 0 failed |
-| Duration | ~0.18s |
+| Duration | ~0.18s                  |
 
 Interpretation: KPI read paths used by dashboard filtering remain **green** in automated tests on this commit. This supports **R6** data refresh behavior at the API layer; it does not replace a full browser timing study.
 
@@ -57,8 +57,8 @@ Run on a live stack (Docker per root `README`). After each numbered block, write
 6. Confirm the same: data or explained empty state, no stuck UI.
 
 | Block | Result | Notes                                                                         |
-|-------|--------|-------------------------------------------------------------------------------|
-| 7     |  Pass  | Resized narrow/wide; no loading spinners observed; chart data stayed visible. |
+| ----- | ------ | ----------------------------------------------------------------------------- |
+| 7     | Pass   | Resized narrow/wide; no loading spinners observed; chart data stayed visible. |
 
 ### Step 8 — Rapid filter changes (US 676 row 8)
 
@@ -79,8 +79,14 @@ Run on a live stack (Docker per root `README`). After each numbered block, write
 
 | Block | Result | Notes |
 |-------|--------|-------|
-| 8     | Fail   | Rapid toggle sequence reproduced uncaught console errors: `TypeError: a is not a function` (charts displayed multiselect`onSelect/onRemove`) and `ReferenceError: setSelectedCharts is not defined` (tile X/+ handlers). Charts toggle off and on, but runtime errors were repeated during the flow. |
-**Note:** Response time breakdown may not restore from the tile **+** like other charts.
+| 8     | Fail   | Rapid chart toggle flow throws uncaught console errors. |
+
+Details:
+
+- `TypeError: a is not a function` from charts displayed multiselect (`onSelect/onRemove`).
+- `ReferenceError: setSelectedCharts is not defined` from tile `X/+` handlers.
+- Charts still toggle off/on, but errors repeat during the flow.
+- Response time breakdown may not restore from tile `+` like other charts.
 
 ### Step 9 — Refresh mid-filter (US 676 row 9, optional)
 
@@ -88,9 +94,9 @@ Run on a live stack (Docker per root `README`). After each numbered block, write
 2. Press the browser **Reload** (or `Ctrl+R` / `Cmd+R`).
 3. After reload, confirm either: filters and data **recover** to match what you expect, or the app shows a **clear empty state** with no broken charts.
 
-| Block | Result | Notes                                                                   |
-|-------|--------|-------------------------------------------------------------------------|
-| 9     | Pass   | Refresh resets filters to defaults; app recovers cleanly; charts render.|
+| Block | Result | Notes                                                                    |
+| ----- | ------ | ------------------------------------------------------------------------ |
+| 9     | Pass   | Refresh resets filters to defaults; app recovers cleanly; charts render. |
 
 
 ## Formal response-time metric (R6)
@@ -101,8 +107,8 @@ Run on a live stack (Docker per root `README`). After each numbered block, write
 
 ## Defects
 
-| ID | Description |
-|----|-------------|
+| ID     | Description                                                                                                                                                                |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D714-1 | Rapid chart toggle flow (multiselect and tile X/+) throws uncaught client errors: `TypeError: a is not a function` and `ReferenceError: setSelectedCharts is not defined`. |
 
 

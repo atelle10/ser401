@@ -9,11 +9,11 @@ Automated checks for `UnitOriginHelper` behavior and KPI-related endpoints:
 
 ## Branch and #664 reference
 
-| Item | Value |
-|------|--------|
-| Branch | `US-675-Mutual-aid` |
-| Integration merge | `e6d1bae` — merges `US-663-Extend-Scottsdale-unit-ID` (task **#664** Scottsdale unit classification) into this branch |
-| US-663 commits (classification rules) | `f69491f`, `e517b0f` |
+| Item                                  | Value                                                                                                                 |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Branch                                | `US-675-Mutual-aid`                                                                                                   |
+| Integration merge                     | `e6d1bae` — merges `US-663-Extend-Scottsdale-unit-ID` (task **#664** Scottsdale unit classification) into this branch |
+| US-663 commits (classification rules) | `f69491f`, `e517b0f`                                                                                                  |
 
 ## Pytest
 
