@@ -1,4 +1,0 @@
-services:
-  auth-server:
-    ports: !override
-      - "3002:3001"

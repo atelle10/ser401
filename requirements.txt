@@ -72,7 +72,6 @@ notebook_shim==0.2.4
 numpy==2.3.4
 openai==2.26.0
 packaging==25.0
-slowapi==0.1.9
 pandas==2.3.3
 pandocfilters==1.5.1
 parso==0.8.5

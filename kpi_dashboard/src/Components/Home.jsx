@@ -56,25 +56,12 @@ const Home = ({ role = "admin" }) => {
   const [displayMode, setDisplayMode] = useState(false) 
   const [settings, setSettings] = useState('');
   const [metrics, setMetrics] = useState({
-    region: 'south',
+    region: null,
     window: 7,
     startDate: null,
     endDate: null,
     selectedCharts: [],
   })
-
-  const chatWindow = Number(metrics.window) || 7
-  const chatEndDate = metrics.endDate
-    ? new Date(`${metrics.endDate}T23:59:59`)
-    : new Date()
-  const chatStartDate = metrics.startDate
-    ? new Date(`${metrics.startDate}T00:00:00`)
-    : new Date(chatEndDate.getTime() - chatWindow * 24 * 60 * 60 * 1000)
-  const chatContext = {
-    startDate: chatStartDate.toISOString(),
-    endDate: chatEndDate.toISOString(),
-    region: metrics.region || 'south',
-  }
 
   const refreshPage = () => {
     window.location.reload();
@@ -126,7 +113,7 @@ const Home = ({ role = "admin" }) => {
   const renderContent = () => {
     switch(currentView) {
       case 'dashboard':
-        return <Dashboard role={role} setMetrics={setMetrics} />
+        return <Dashboard role={role} />
       case 'fire':
         return 
       case 'medical':
@@ -180,7 +167,7 @@ const Home = ({ role = "admin" }) => {
                     adminNotificationCount={adminNotificationCount}
                     role={role}
                   />
-                    <ChatBot context={chatContext} />
+                    <ChatBot />
                   </div>
               </div>
               
