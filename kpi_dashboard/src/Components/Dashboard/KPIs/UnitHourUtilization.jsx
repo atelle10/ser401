@@ -2,6 +2,16 @@ import { useMemo, useState, useEffect } from 'react';
 
 const PAGE_SIZE = 10;
 
+const formatPeriodLabel = (hours) => {
+  if (!Number.isFinite(hours) || hours <= 0) return '24h'
+  if (hours >= 48) {
+    const days = Math.round(hours / 24)
+    return `${days} day${days === 1 ? '' : 's'}`
+  }
+  const roundedHours = Math.round(hours * 10) / 10
+  return `${roundedHours}h`
+}
+
 const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) => {
   const [currentPage, setCurrentPage] = useState(1);
   
@@ -88,7 +98,7 @@ const UnitHourUtilization = ({ data, timePeriodHours = 24, printView = false }) 
       <div className="mb-4">
         <h3 id="uhu-heading" className="text-lg font-semibold">Unit Hour Utilization (UHU)</h3>
         <p className="text-sm text-gray-300">
-          UHU = (dispatch-to-clear busy time / {timePeriodHours}h period) * 100
+          UHU = (dispatch-to-clear busy time / {formatPeriodLabel(timePeriodHours)} period) * 100
         </p>
         <p className="text-xs text-gray-300">
           Source columns: unit_response.apparatus_resource_dispatch_date_time and unit_response.apparatus_resource_clear_date_time

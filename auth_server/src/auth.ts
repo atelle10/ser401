@@ -97,7 +97,7 @@ export const auth = betterAuth({
     },
   },
   session: {
-    expiresIn: 300,
+    expiresIn: 900,
     refreshCache: true,
   },
   socialProviders: {
