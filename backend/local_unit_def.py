@@ -5,14 +5,21 @@ logger = logging.getLogger(__name__)
 
 
 class UnitOriginHelper:
-    SCOTTSDALE_PREFIXES = ["LT", "BC", "BR", "BE", "HM", "E", "L", "R", "S", "U", "T"]
+    SCOTTSDALE_PREFIXES = sorted(
+        ["LT", "BC", "BR", "BE", "HM", "MC", "WT", "BT", "E", "F", "L", "R", "S", "U", "T", "LA", "C", "UTV", "HIT", "SCTMR"],
+        key=lambda p: (-len(p), p),
+    )
+    SCOTTSDALE_EXACT_UNIT_IDS = frozenset({"NEDC"})
 
     @staticmethod
     def is_scottsdale_unit(unit_resource_id: str) -> bool:
+        uid = str(unit_resource_id).strip().upper()
+        if uid in UnitOriginHelper.SCOTTSDALE_EXACT_UNIT_IDS:
+            return True
         for prefix in UnitOriginHelper.SCOTTSDALE_PREFIXES:
-            if not unit_resource_id.startswith(prefix):
+            if not uid.startswith(prefix):
                 continue
-            remainder = unit_resource_id[len(prefix) :]
+            remainder = uid[len(prefix) :]
             if len(remainder) in (3, 4) and remainder[0] == "6" and remainder.isdigit():
                 return True
         return False
@@ -49,11 +56,9 @@ class UnitOriginHelper:
 
     @staticmethod
     def compute_mutual_aid(df, db=None):
-        breakdown = UnitOriginHelper.get_unit_origin_breakdown(df, db)
-        scottsdale_set = {u["unit_id"] for u in breakdown if u["is_scottsdale_unit"]}
-
         scottsdale_units_outside = 0
         other_units_in_scottsdale = 0
+        other_units_in_scottsdale_by_unit = {}
 
         for _, row in df.iterrows():
             unit_id = row.get("unit_id")
@@ -61,6 +66,9 @@ class UnitOriginHelper:
             if not unit_id or str(unit_id) == "None":
                 continue
             unit_id = str(unit_id)
+            u = unit_id.strip()
+            if len(u) >= 2 and u[0].upper() == "M" and u[1] == "-":
+                continue
 
             try:
                 p = int(str(postal_code).strip())
@@ -68,15 +76,26 @@ class UnitOriginHelper:
             except (ValueError, TypeError):
                 in_scottsdale = False
 
-            is_scottsdale = unit_id in scottsdale_set
+            is_scottsdale = UnitOriginHelper.is_scottsdale_unit(unit_id)
             if is_scottsdale and not in_scottsdale:
                 scottsdale_units_outside += 1
             elif not is_scottsdale and in_scottsdale:
                 other_units_in_scottsdale += 1
+                other_units_in_scottsdale_by_unit[unit_id] = (
+                    other_units_in_scottsdale_by_unit.get(unit_id, 0) + 1
+                )
+
+        other_units_in_scottsdale_detail = [
+            {"unit_id": uid, "response_count": cnt}
+            for uid, cnt in sorted(
+                other_units_in_scottsdale_by_unit.items(), key=lambda x: (-x[1], x[0])
+            )
+        ]
 
         return {
             "scottsdale_units_outside": scottsdale_units_outside,
             "other_units_in_scottsdale": other_units_in_scottsdale,
+            "other_units_in_scottsdale_detail": other_units_in_scottsdale_detail,
         }
 
     @staticmethod

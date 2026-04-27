@@ -1,12 +1,18 @@
+import json
 import os
 import sys
 import tempfile
+from typing import Any
 from datetime import datetime
+from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+import pandas as pd
+from fastapi import Body, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, ConfigDict, Field
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+from backend.openai_client import OpenAISummaryService
 from backend.db_ops.relational_data_store import RelationalDataStore
 from backend.ingestion.data_classes import DataSet, DQPolicy, DQRule
 from backend.ingestion.ingestion_service import IngestionService
@@ -23,6 +29,268 @@ app.add_middleware(
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://michael@localhost/famar_db")
+
+RESPONSE_TIME_TARGETS_PATH = (
+    Path(__file__).resolve().parent / "data" / "response_time_targets.json"
+)
+DEFAULT_RESPONSE_TIME_TARGETS = {
+    "call_processing": {"national": 2.0, "local": 2.5},
+    "turnout": {"national": 1.5, "local": 2.0},
+    "travel": {"national": 4.0, "local": 5.0},
+}
+
+
+class ExportSummaryModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class ExportSummaryOverview(ExportSummaryModel):
+    total_incidents: int | None = None
+    avg_response_time_minutes: float | None = None
+    active_units: int | None = None
+    peak_load_factor: float | None = None
+    peak_hour: int | None = None
+
+
+class HeatmapHighlight(ExportSummaryModel):
+    busiest_day: str | None = None
+    busiest_hour: int | None = None
+    max_incidents_per_cell: int | None = None
+
+
+class PostalCodeHighlightItem(ExportSummaryModel):
+    zip: str
+    count: int
+    avg_response_minutes: float | None = None
+
+
+class PostalCodeHighlight(ExportSummaryModel):
+    top_postal_codes: list[PostalCodeHighlightItem] = Field(default_factory=list)
+
+
+class IncidentTypeHighlightItem(ExportSummaryModel):
+    type: str
+    count: int
+
+
+class TypeBreakdownHighlight(ExportSummaryModel):
+    top_incident_types: list[IncidentTypeHighlightItem] = Field(default_factory=list)
+
+
+class UnitHourUtilizationItem(ExportSummaryModel):
+    unit_id: str
+    uhu: float
+
+
+class UnitHourUtilizationHighlight(ExportSummaryModel):
+    top_units: list[UnitHourUtilizationItem] = Field(default_factory=list)
+    scottsdale_uhu: float | None = None
+    non_scottsdale_uhu: float | None = None
+
+
+class CallVolumeTrendHighlight(ExportSummaryModel):
+    peak_bucket_label: str | None = None
+    peak_bucket_count: int | None = None
+    average_bucket_count: float | None = None
+
+
+class MutualAidHighlight(ExportSummaryModel):
+    scottsdale_units_outside: int | None = None
+    other_units_in_scottsdale: int | None = None
+
+
+class ResponseTimeMetric(ExportSummaryModel):
+    avg: float | None = None
+    p90: float | None = None
+
+
+class ResponseTimeOverall(ExportSummaryModel):
+    call_processing: ResponseTimeMetric | None = None
+    turnout: ResponseTimeMetric | None = None
+    travel: ResponseTimeMetric | None = None
+
+
+class ResponseTimeBreakdownHighlight(ExportSummaryModel):
+    overall: ResponseTimeOverall | None = None
+
+
+class ExportSummaryHighlights(ExportSummaryModel):
+    heatmap: HeatmapHighlight | None = None
+    postal_code: PostalCodeHighlight | None = None
+    type_breakdown: TypeBreakdownHighlight | None = None
+    unit_hour_utilization: UnitHourUtilizationHighlight | None = None
+    call_volume_trend: CallVolumeTrendHighlight | None = None
+    mutual_aid: MutualAidHighlight | None = None
+    response_time_breakdown: ResponseTimeBreakdownHighlight | None = None
+
+
+class ExportSummaryRequest(ExportSummaryModel):
+    region: str = Field(..., min_length=1)
+    start_date: str = Field(..., min_length=1)
+    end_date: str = Field(..., min_length=1)
+    selected_charts: list[str]
+    overview: ExportSummaryOverview
+    highlights: ExportSummaryHighlights
+
+
+def _merge_response_time_targets_payload(payload: dict) -> dict:
+    merged = json.loads(json.dumps(DEFAULT_RESPONSE_TIME_TARGETS))
+    for metric in ("call_processing", "turnout", "travel"):
+        block = payload.get(metric)
+        if not isinstance(block, dict):
+            continue
+        for key in ("national", "local"):
+            if key not in block:
+                continue
+            try:
+                val = float(block[key])
+            except (TypeError, ValueError):
+                continue
+            if val >= 0:
+                merged[metric][key] = val
+    return merged
+
+
+def _read_response_time_targets() -> dict:
+    if not RESPONSE_TIME_TARGETS_PATH.exists():
+        return json.loads(json.dumps(DEFAULT_RESPONSE_TIME_TARGETS))
+    try:
+        raw = json.loads(RESPONSE_TIME_TARGETS_PATH.read_text())
+        return _merge_response_time_targets_payload(raw)
+    except Exception:
+        return json.loads(json.dumps(DEFAULT_RESPONSE_TIME_TARGETS))
+
+
+def _write_response_time_targets(data: dict) -> None:
+    RESPONSE_TIME_TARGETS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    RESPONSE_TIME_TARGETS_PATH.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def _dataframe_from_row(row: dict[str, Any]) -> pd.DataFrame:
+    cleaned_row = {key: value for key, value in row.items() if value is not None}
+    if not cleaned_row:
+        return pd.DataFrame()
+    return pd.DataFrame([cleaned_row])
+
+
+def _dataframe_from_rows(rows: list[dict[str, Any]]) -> pd.DataFrame:
+    cleaned_rows = []
+    for row in rows:
+        cleaned = {key: value for key, value in row.items() if value is not None}
+        if cleaned:
+            cleaned_rows.append(cleaned)
+
+    if not cleaned_rows:
+        return pd.DataFrame()
+
+    return pd.DataFrame(cleaned_rows)
+
+
+def _flatten_response_time_overall(overall: ResponseTimeOverall | None) -> dict[str, float]:
+    if overall is None:
+        return {}
+
+    flat: dict[str, float] = {}
+    for metric_name in ("call_processing", "turnout", "travel"):
+        metric = getattr(overall, metric_name)
+        if metric is None:
+            continue
+        if metric.avg is not None:
+            flat[f"{metric_name}_avg"] = metric.avg
+        if metric.p90 is not None:
+            flat[f"{metric_name}_p90"] = metric.p90
+
+    return flat
+
+
+def _build_export_summary_frames(payload: ExportSummaryRequest) -> dict[str, pd.DataFrame]:
+    datasets: dict[str, pd.DataFrame] = {}
+
+    export_context_frame = _dataframe_from_row(
+        {
+            "region": payload.region,
+            "start_date": payload.start_date,
+            "end_date": payload.end_date,
+            "selected_charts": ", ".join(payload.selected_charts),
+            "selected_chart_count": len(payload.selected_charts),
+        }
+    )
+    if not export_context_frame.empty:
+        datasets["export_context"] = export_context_frame
+
+    overview_frame = _dataframe_from_row(payload.overview.model_dump(exclude_none=True))
+    if not overview_frame.empty:
+        datasets["overview"] = overview_frame
+
+    if payload.highlights.heatmap:
+        heatmap_frame = _dataframe_from_row(
+            payload.highlights.heatmap.model_dump(exclude_none=True)
+        )
+        if not heatmap_frame.empty:
+            datasets["heatmap"] = heatmap_frame
+
+    if payload.highlights.postal_code:
+        postal_frame = _dataframe_from_rows(
+            [
+                item.model_dump(exclude_none=True)
+                for item in payload.highlights.postal_code.top_postal_codes
+            ]
+        )
+        if not postal_frame.empty:
+            datasets["postal_code"] = postal_frame
+
+    if payload.highlights.type_breakdown:
+        type_frame = _dataframe_from_rows(
+            [
+                item.model_dump(exclude_none=True)
+                for item in payload.highlights.type_breakdown.top_incident_types
+            ]
+        )
+        if not type_frame.empty:
+            datasets["type_breakdown"] = type_frame
+
+    if payload.highlights.unit_hour_utilization:
+        scalar_values = {
+            "scottsdale_uhu": payload.highlights.unit_hour_utilization.scottsdale_uhu,
+            "non_scottsdale_uhu": payload.highlights.unit_hour_utilization.non_scottsdale_uhu,
+        }
+        top_units = [
+            {
+                **item.model_dump(exclude_none=True),
+                **{key: value for key, value in scalar_values.items() if value is not None},
+            }
+            for item in payload.highlights.unit_hour_utilization.top_units
+        ]
+        uhu_frame = (
+            _dataframe_from_rows(top_units)
+            if top_units
+            else _dataframe_from_row(scalar_values)
+        )
+        if not uhu_frame.empty:
+            datasets["unit_hour_utilization"] = uhu_frame
+
+    if payload.highlights.call_volume_trend:
+        call_volume_frame = _dataframe_from_row(
+            payload.highlights.call_volume_trend.model_dump(exclude_none=True)
+        )
+        if not call_volume_frame.empty:
+            datasets["call_volume_trend"] = call_volume_frame
+
+    if payload.highlights.mutual_aid:
+        mutual_aid_frame = _dataframe_from_row(
+            payload.highlights.mutual_aid.model_dump(exclude_none=True)
+        )
+        if not mutual_aid_frame.empty:
+            datasets["mutual_aid"] = mutual_aid_frame
+
+    if payload.highlights.response_time_breakdown:
+        response_time_frame = _dataframe_from_row(
+            _flatten_response_time_overall(payload.highlights.response_time_breakdown.overall)
+        )
+        if not response_time_frame.empty:
+            datasets["response_time_breakdown"] = response_time_frame
+
+    return datasets
 
 UPLOAD_POLICY = DQPolicy(
     policy_id="dq_001", name="BASIC_POLICY", rules=[DQRule.NAN, DQRule.NON_NUMERIC]
@@ -308,12 +576,20 @@ async def get_response_times(
                 ) / 60.0 AS travel_minutes
             FROM fire_ems.incident i
             JOIN fire_ems.unit_response ur ON i.incident_id = ur.incident_id
+            JOIN fire_ems.scottsdale_units su ON su.unit_id = ur.apparatus_resource_id
             WHERE i.basic_incident_psap_date_time BETWEEN '{start_dt.isoformat()}' AND '{end_dt.isoformat()}'
             {region_filter}
+            AND i.basic_incident_psap_date_time IS NOT NULL
             AND ur.apparatus_resource_id IS NOT NULL
             AND ur.apparatus_resource_dispatch_date_time IS NOT NULL
             AND ur.apparatus_resource_en_route_date_time IS NOT NULL
             AND ur.apparatus_resource_arrival_date_time IS NOT NULL
+            AND ur.apparatus_resource_dispatch_date_time > i.basic_incident_psap_date_time
+            AND ur.apparatus_resource_en_route_date_time > ur.apparatus_resource_dispatch_date_time
+            AND ur.apparatus_resource_arrival_date_time > ur.apparatus_resource_en_route_date_time
+            AND ur.apparatus_resource_dispatch_date_time - i.basic_incident_psap_date_time <= INTERVAL '24 hours'
+            AND ur.apparatus_resource_en_route_date_time - ur.apparatus_resource_dispatch_date_time <= INTERVAL '24 hours'
+            AND ur.apparatus_resource_arrival_date_time - ur.apparatus_resource_en_route_date_time <= INTERVAL '24 hours'
         )
         """
 
@@ -426,6 +702,25 @@ async def get_response_times(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
+
+
+@app.get("/api/admin/response-time-targets")
+async def get_response_time_targets_admin():
+    return _read_response_time_targets()
+
+
+@app.put("/api/admin/response-time-targets")
+async def put_response_time_targets_admin(payload: dict = Body(...)):
+    merged = _merge_response_time_targets_payload(payload)
+    _write_response_time_targets(merged)
+    return merged
+
+
+@app.post("/api/export/summary")
+async def post_export_summary(payload: ExportSummaryRequest):
+    datasets = _build_export_summary_frames(payload)
+    summary_service = OpenAISummaryService()
+    return summary_service.summarize_dashboard(datasets)
 
 
 @app.get("/api/incidents/heatmap")

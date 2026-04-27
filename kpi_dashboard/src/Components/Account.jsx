@@ -6,8 +6,11 @@ import { authClient } from '../utils/authClient.js';
 const fallbackProfile = {
   name: 'John Doe',
   email: 'john.doe@example.com',
+  username: '',
+  phone: '',
   role: 'User',
-  avatar: null, 
+  verificationStatus: 'Verified',
+  avatar: null,
 };
 
 const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
@@ -29,14 +32,21 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
   }, [profile]);
 
   const normalizeAvatar = (value) => value || '';
+  const normalizeText = (value) => value?.trim() || '';
+  const verificationStatusClassName =
+    formData?.verificationStatus === 'Pending approval'
+      ? 'bg-yellow-500/20 text-yellow-100 border-yellow-300/40'
+      : 'bg-green-500/20 text-green-100 border-green-300/40';
 
   const isDirty = (data) => {
     const base = profile || fallbackProfile;
     const baseAvatar = normalizeAvatar(base?.avatar);
     const currentAvatar = normalizeAvatar(data?.avatar);
     return (
-      data?.name !== base?.name ||
-      data?.email !== base?.email ||
+      normalizeText(data?.name) !== normalizeText(base?.name) ||
+      normalizeText(data?.email) !== normalizeText(base?.email) ||
+      normalizeText(data?.username) !== normalizeText(base?.username) ||
+      normalizeText(data?.phone) !== normalizeText(base?.phone) ||
       currentAvatar !== baseAvatar
     );
   };
@@ -100,12 +110,22 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
 
     const base = profile || fallbackProfile;
     const baseAvatar = normalizeAvatar(base?.avatar);
-    const name = formData?.name?.trim() || '';
-    const email = formData?.email?.trim() || '';
+    const name = normalizeText(formData?.name);
+    const email = normalizeText(formData?.email);
+    const username = normalizeText(formData?.username);
+    const phone = normalizeText(formData?.phone);
     const avatar = normalizeAvatar(formData?.avatar);
-    const nameChanged = name !== (base?.name || '');
-    const emailChanged = email !== (base?.email || '');
+    const nameChanged = name !== normalizeText(base?.name);
+    const emailChanged = email !== normalizeText(base?.email);
+    const usernameChanged = username !== normalizeText(base?.username);
+    const phoneChanged = phone !== normalizeText(base?.phone);
     const avatarChanged = avatar !== baseAvatar;
+
+    if (!name) {
+      setSaveError('Please enter your name.');
+      setIsSaving(false);
+      return;
+    }
 
     if (emailChanged && !email) {
       setSaveError('Please enter a valid email address.');
@@ -113,8 +133,22 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
       return;
     }
 
+    if (!username) {
+      setSaveError('Please enter a username.');
+      setIsSaving(false);
+      return;
+    }
+
+    if (!phone) {
+      setSaveError('Please enter a phone number.');
+      setIsSaving(false);
+      return;
+    }
+
     const updatePayload = {};
     if (nameChanged) updatePayload.name = name;
+    if (usernameChanged) updatePayload.username = username;
+    if (phoneChanged) updatePayload.phone = phone;
     if (avatarChanged) updatePayload.image = avatar ? avatar : null;
 
     let shouldRefetch = false;
@@ -150,7 +184,19 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
     }
 
     if (onUpdateProfile) {
-      onUpdateProfile({ ...formData, name, email, avatar: avatar || '' });
+      onUpdateProfile({
+        ...formData,
+        name,
+        email,
+        username,
+        phone,
+        role: formData?.role || base?.role || fallbackProfile.role,
+        verificationStatus:
+          formData?.verificationStatus ||
+          base?.verificationStatus ||
+          fallbackProfile.verificationStatus,
+        avatar: avatar || '',
+      });
     }
 
     setIsSaving(false);
@@ -224,6 +270,24 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
           )}
           <h2 className="text-2xl font-bold mt-4 text-white drop-shadow">{formData?.name}</h2>
           <p className="text-white/90 drop-shadow">{formData?.email}</p>
+          <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-white/10 bg-blue-900/30 px-4 py-3 text-left">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">Username</p>
+              <p className="mt-1 text-sm font-medium text-white">{formData?.username || 'Not set'}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-blue-900/30 px-4 py-3 text-left">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">Phone</p>
+              <p className="mt-1 text-sm font-medium text-white">{formData?.phone || 'Not set'}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-blue-900/30 px-4 py-3 text-left">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">Role</p>
+              <p className="mt-1 text-sm font-medium capitalize text-white">{formData?.role || 'User'}</p>
+            </div>
+            <div className={`rounded-xl border px-4 py-3 text-left ${verificationStatusClassName}`}>
+              <p className="text-xs font-bold uppercase tracking-[0.2em]">Verification</p>
+              <p className="mt-1 text-sm font-medium">{formData?.verificationStatus || 'Verified'}</p>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -252,10 +316,43 @@ const Account = ({ onBack, profile = fallbackProfile, onUpdateProfile }) => {
             </p>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase text-white/70 mb-1">Role</label>
-            <div className="w-full px-4 py-3 bg-blue-900/40 border border-blue-700 rounded-lg text-white/90">
-              {formData?.role || 'User'}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <label className="block text-xs font-bold uppercase text-white/70 mb-1">Username</label>
+              <input
+                type="text"
+                value={formData?.username || ''}
+                onChange={handleInputChange('username')}
+                disabled={!editing}
+                className="w-full px-4 py-3 bg-blue-900/40 border border-blue-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-white/50 disabled:bg-blue-900/30"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-white/70 mb-1">Phone</label>
+              <input
+                type="tel"
+                value={formData?.phone || ''}
+                onChange={handleInputChange('phone')}
+                disabled={!editing}
+                className="w-full px-4 py-3 bg-blue-900/40 border border-blue-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-white/50 disabled:bg-blue-900/30"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <label className="block text-xs font-bold uppercase text-white/70 mb-1">Role</label>
+              <div className="w-full px-4 py-3 bg-blue-900/40 border border-blue-700 rounded-lg text-white/90 capitalize">
+                {formData?.role || 'User'}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase text-white/70 mb-1">Verification Status</label>
+              <div className="w-full px-4 py-3 bg-blue-900/40 border border-blue-700 rounded-lg text-white/90">
+                {formData?.verificationStatus || 'Verified'}
+              </div>
             </div>
           </div>
         </div>

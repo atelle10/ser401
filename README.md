@@ -30,12 +30,21 @@ just start-clean-all
 The `justfile` in the repo root includes helpers for starting/stopping individual
 services, checking logs, and viewing status.
 
+## QA
+- QA documentation index: [docs/README.md](docs/README.md).
+
 ## Notes
+- QA evidence: [docs/qa/](docs/qa/) — [676-dashboard-exploratory.md](docs/qa/676-dashboard-exploratory.md) (US 676).
 - Better Auth expects the `auth` schema in `famar_db` (the Docker setup handles this).
 - Dev-only admin seeding runs on auth server startup if `DEV_ADMIN_EMAIL` and
   `DEV_ADMIN_PASSWORD` are set.
 - Dev-only: email changes bypass verification; see TODO in `auth_server/src/auth.ts`
   for enabling email verification before production.
+
+## Planning artifacts
+
+- Project Plan: [docs/planning/Project Plan Team 31.docx.pdf](docs/planning/Project%20Plan%20Team%2031.docx.pdf)
+- Software Quality Plan: [docs/planning/Team31_Software Quality Plan.docx.pdf](docs/planning/Team31_Software%20Quality%20Plan.docx.pdf)
 
 ## Manual (non-Docker) setup
 If you prefer running services locally without Docker, you can still use:

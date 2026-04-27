@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- /home/damion-dray/Documents/ASU/SER 401 Capstone 1/Sprints/SER 401 Repo/ser401/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/damion-dray/Documents/ASU/SER 401 Capstone 1/Sprints/SER 401 Repo/ser401
+plugins: anyio-4.11.0
+collecting ... collected 4 items
+
+backend/api/tests/test_mutual_aid.py::test_mutual_aid_counts PASSED      [ 25%]
+backend/api/tests/test_mutual_aid.py::test_mutual_aid_no_data PASSED     [ 50%]
+backend/api/tests/test_unit_origin.py::test_unit_origin_with_data PASSED [ 75%]
+backend/api/tests/test_unit_origin.py::test_unit_origin_no_data PASSED   [100%]
+
+============================== 4 passed in 0.16s ===============================
